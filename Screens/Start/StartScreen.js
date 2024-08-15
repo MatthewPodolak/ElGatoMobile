@@ -1,32 +1,35 @@
-import React from 'react';
-import { View, Button, StyleSheet,ScrollView,Text } from 'react-native';
+import { View, StyleSheet, Text, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Image } from 'react-native';
-
 
 function StartScreen({ navigation }) {
-  
+
+  const registerPress = () => {
+    navigation.navigate('Metric');
+  };
+
+  const loginPress = () => {
+    navigation.navigate('Login');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.view}>
-          <Image style={styles.mainImage} source={require('../../Constants/dieKatzeMain.png')} />
-          <Text style={styles.textMain}>THAT'S WHERE YOUR JOURNEY STARTS.</Text>
+      <View style={styles.textContainer}>
+        <Text style={styles.mainText}>This is where your journey starts.</Text>
+      </View>
+      <View style={styles.imageContainer}>
+        {/* IMG */}
       </View>
       <View style={styles.buttonContainer}>
-        <View style={styles.buttonWrapperOrange}>
-          <Button
-            color="orange"
-            title="Log In"
-            onPress={() => navigation.navigate('Login')}
-          />
-        </View>
-        <View style={styles.buttonWrapperBorder}>
-          <Button
-            color="black"
-            title="Go to Register"
-            onPress={() => navigation.navigate('Register')}
-          />
-        </View>
+        <Pressable style={styles.button} onPress={registerPress}>
+          <Text style={styles.registerText}>Create an account</Text>
+        </Pressable>
+        <Text style={styles.loginText} onPress={loginPress}>
+          Already have an account?
+          <Text style={styles.loginLink} onPress={loginPress}>
+            {" "}Login
+          </Text>
+          .
+        </Text>
       </View>
     </SafeAreaView>
   );
@@ -35,53 +38,55 @@ function StartScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-start',
     alignItems: 'center',
     backgroundColor: 'black',
     padding: 10,
   },
-  view:{
-    width: '100%;',
-    marginTop: '20%',
-    height: '80%',
-    padding: 10,
-  },
-  mainImage: {
+  textContainer: {
     width: '100%',
-    height: undefined,
-    aspectRatio: 1,
+    height: '20%',
+    padding: 20,
   },
-  textMain: {
-    marginTop: 30,
-    fontSize: 32,
-    textAlign: 'center',
-    color: 'whitesmoke',
+  mainText: {
+    fontSize: 38,
     fontWeight: '700',
+    color: 'white',
+  },
+  imageContainer: {
+    width: '100%',
+    height: '65%',
+    padding: 5,
   },
   buttonContainer: {
     width: '100%',
-    justifyContent: 'space-evenly',
-    flexDirection: 'column',
-    paddingBottom: 20,
+    height: '20%',
+    padding: 5,
+    alignItems: 'center',
   },
-  buttonWrapperOrange: {
-    backgroundColor: 'orange',
-    marginBottom: 10,
-    height: 50,
+  button: {
+    alignItems: 'center',
     justifyContent: 'center',
-    borderRadius: 5,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    borderRadius: 4,
+    elevation: 3,
     width: '90%',
-    alignSelf: 'center',
+    backgroundColor: '#FF8303',
+    marginBottom: 10,
   },
-  buttonWrapperBorder: {
-    height: 50,
-    marginBottom: 30,
-    borderColor: 'orange', 
-    borderWidth: 2, 
-    justifyContent: 'center', 
-    borderRadius: 5,
-    width: '90%',
-    alignSelf: 'center',
+  registerText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  loginText: {
+    color: 'white',
+    fontSize: 16,
+    fontWeight: '500',
+  },
+  loginLink: {
+    color: '#FF8303',
   },
 });
 

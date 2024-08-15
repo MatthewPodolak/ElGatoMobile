@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Picker } from '@react-native-picker/picker';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 
-function RegisterScreen({navigation}) {
+function QuestSleepScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questName', answer);
-    navigation.navigate('QuestAge');
+    AsyncStorage.setItem('questSleep', answer);
+    navigation.navigate('QuestTraining');
   };
 
   const backPress = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate('Start');
-    }  
+      navigation.navigate('QuestBody');
+    }
   };
 
   return (
@@ -25,22 +26,33 @@ function RegisterScreen({navigation}) {
       <View style={styles.questionaryHeaderOptionsContainer}>
         <Pressable onPress={backPress}>
           <Image source={BackArrow} style={styles.questionaryBackImg} />
-        </Pressable>  
+        </Pressable>
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBar}></View>
         </View>
       </View>
       <View style={styles.questionHeaderContainer}>
-        <Text style={styles.questionaryText}>WHAT'S YOUR NAME?</Text>
+        <Text style={styles.questionaryText}>HOW MUCH DO YOU SLEEP?</Text>
       </View>
       <View style={styles.questionaryAnswerSection}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          placeholderTextColor="#ccc"
-          onChangeText={(text) => setAnswer(text)}
-          value={answer}
-        />
+        <Picker
+          selectedValue={answer}
+          style={styles.picker}
+          onValueChange={(itemValue) => setAnswer(itemValue)}
+        >
+          <Picker.Item label="1 hour" value="1" />
+          <Picker.Item label="2 hours" value="2" />
+          <Picker.Item label="3 hours" value="3" />
+          <Picker.Item label="4 hours" value="4" />
+          <Picker.Item label="5 hours" value="5" />
+          <Picker.Item label="6 hours" value="6" />
+          <Picker.Item label="7 hours" value="7" />
+          <Picker.Item label="8 hours" value="8" />
+          <Picker.Item label="9 hours" value="9" />
+          <Picker.Item label="10 hours" value="10" />
+          <Picker.Item label="11 hours" value="11" />
+          <Picker.Item label="12 hours" value="12" />
+        </Picker>
       </View>
       <Pressable style={styles.button} onPress={nextPress}>
         <Text style={styles.registerText}>Next</Text>
@@ -77,7 +89,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   progressBar: {
-    width: '16%',
+    width: '72%',
     height: '100%',
     backgroundColor: '#FF8303',
     borderRadius: 5,
@@ -98,14 +110,11 @@ const styles = StyleSheet.create({
     width: '100%',
     paddingHorizontal: 20,
   },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    padding: 10,
+  picker: {
+    height: 50,
+    width: '100%',
     color: 'white',
-    borderColor: 'gray',
     backgroundColor: '#333',
-    marginBottom: 20,
   },
   button: {
     alignItems: 'center',
@@ -127,4 +136,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default QuestSleepScreen;

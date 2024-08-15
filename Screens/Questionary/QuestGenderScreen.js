@@ -1,23 +1,30 @@
 import React, { useState } from 'react';
-import { View, Text, StyleSheet, Pressable, TextInput, Image } from 'react-native';
+import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
+import ManImage from '../../assets/Questionary/man.png'; 
+import FemaleImage from '../../assets/Questionary/woman.png';
 
-function RegisterScreen({navigation}) {
+function QuestGenderScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questName', answer);
-    navigation.navigate('QuestAge');
+    console.log('Answer saved:', answer);
+    AsyncStorage.setItem('questGender', answer);
+    navigation.navigate('QuestBody');
   };
 
   const backPress = () => {
     if (navigation.canGoBack()) {
       navigation.goBack();
     } else {
-      navigation.navigate('Start');
-    }  
+      navigation.navigate('QuestGoal');
+    }
+  };
+
+  const handleOptionPress = (value) => {
+    setAnswer(value);
   };
 
   return (
@@ -25,22 +32,35 @@ function RegisterScreen({navigation}) {
       <View style={styles.questionaryHeaderOptionsContainer}>
         <Pressable onPress={backPress}>
           <Image source={BackArrow} style={styles.questionaryBackImg} />
-        </Pressable>  
+        </Pressable>
         <View style={styles.progressBarContainer}>
           <View style={styles.progressBar}></View>
         </View>
       </View>
       <View style={styles.questionHeaderContainer}>
-        <Text style={styles.questionaryText}>WHAT'S YOUR NAME?</Text>
+        <Text style={styles.questionaryText}>WHAT IS YOUR GENDER?</Text>
       </View>
       <View style={styles.questionaryAnswerSection}>
-        <TextInput
-          style={styles.input}
-          placeholder="Name"
-          placeholderTextColor="#ccc"
-          onChangeText={(text) => setAnswer(text)}
-          value={answer}
-        />
+        <Pressable
+          style={[
+            styles.option,
+            answer === '0' && styles.selectedOption,
+          ]}
+          onPress={() => handleOptionPress('0')}
+        >
+          <Image source={ManImage} style={styles.genderImage} />
+          <Text style={styles.optionText}>Man</Text>
+        </Pressable>
+        <Pressable
+          style={[
+            styles.option,
+            answer === '1' && styles.selectedOption,
+          ]}
+          onPress={() => handleOptionPress('1')}
+        >
+          <Image source={FemaleImage} style={styles.genderImage} />
+          <Text style={styles.optionText}>Female</Text>
+        </Pressable>
       </View>
       <Pressable style={styles.button} onPress={nextPress}>
         <Text style={styles.registerText}>Next</Text>
@@ -77,7 +97,7 @@ const styles = StyleSheet.create({
     marginLeft: 10,
   },
   progressBar: {
-    width: '16%',
+    width: '56%',
     height: '100%',
     backgroundColor: '#FF8303',
     borderRadius: 5,
@@ -97,15 +117,30 @@ const styles = StyleSheet.create({
   questionaryAnswerSection: {
     width: '100%',
     paddingHorizontal: 20,
-  },
-  input: {
-    height: 40,
-    borderWidth: 1,
-    padding: 10,
-    color: 'white',
-    borderColor: 'gray',
-    backgroundColor: '#333',
     marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  option: {
+    backgroundColor: '#333',
+    padding: 15,
+    marginVertical: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+    flex: 1,
+    marginHorizontal: 5,
+  },
+  selectedOption: {
+    backgroundColor: '#FF8303',
+  },
+  genderImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 10,
+  },
+  optionText: {
+    color: 'white',
+    fontSize: 18,
   },
   button: {
     alignItems: 'center',
@@ -114,11 +149,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
     borderRadius: 4,
     elevation: 3,
+    position: 'absolute',
+    bottom: 20,
     width: '90%',
     backgroundColor: '#FF8303',
     marginBottom: 10,
-    position: 'absolute',
-    bottom: 20,
   },
   registerText: {
     color: 'white',
@@ -127,4 +162,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default RegisterScreen;
+export default QuestGenderScreen;
