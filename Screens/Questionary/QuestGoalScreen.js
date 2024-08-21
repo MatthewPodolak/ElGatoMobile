@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
 
 function QuestGoalScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
@@ -25,135 +26,74 @@ function QuestGoalScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.questionaryHeaderOptionsContainer}>
+    <SafeAreaView style={questStyles.container}>
+      <View style={questStyles.topContainer}>
         <Pressable onPress={backPress}>
-          <Image source={BackArrow} style={styles.questionaryBackImg} />
+          <Image source={BackArrow} style={questStyles.questionaryBackImg} />
         </Pressable>
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBar}></View>
+        <View style={questStyles.progressBarContainer}>
+          <View style={[questStyles.progressBar, {width: '48%'}]}></View>
         </View>
       </View>
       <View style={styles.questionHeaderContainer}>
-        <Text style={styles.questionaryText}>WHAT IS YOUR GOAL?</Text>
+        <Text style={questStyles.questionaryText}>What is your goal?</Text>
       </View>
       <View style={styles.questionaryAnswerSection}>
         <Pressable
           style={[
-            styles.option,
-            answer === '1' && styles.selectedOption,
+            questStyles.optionLong,
+            answer === '1' && questStyles.selectedOption,
           ]}
           onPress={() => handleOptionPress('1')}
         >
-          <Text style={styles.optionText}>Lose Weight</Text>
+          <View style={styles.optionImageContainer}></View>
+          <Text style={questStyles.optionTextLong}>Lose Weight</Text>
         </Pressable>
         <Pressable
           style={[
-            styles.option,
-            answer === '2' && styles.selectedOption,
+            questStyles.optionLong,
+            answer === '2' && questStyles.selectedOption,
           ]}
           onPress={() => handleOptionPress('2')}
         >
-          <Text style={styles.optionText}>Build Muscle</Text>
+          <View style={styles.optionImageContainer}></View>
+          <Text style={questStyles.optionTextLong}>Build Muscle</Text>
         </Pressable>
         <Pressable
           style={[
-            styles.option,
-            answer === '3' && styles.selectedOption,
+            questStyles.optionLong,
+            answer === '3' && questStyles.selectedOption,
           ]}
           onPress={() => handleOptionPress('3')}
         >
-          <Text style={styles.optionText}>Maintain weight</Text>
+          <View style={styles.optionImageContainer}></View>
+          <Text style={questStyles.optionTextLong}>Maintain weight</Text>
         </Pressable>
       </View>
-      <Pressable style={styles.button} onPress={nextPress}>
-        <Text style={styles.registerText}>Next</Text>
+      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+        <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: 'black',
-    padding: 10,
-  },
-  questionaryHeaderOptionsContainer: {
-    width: '100%',
-    height: '10%',
-    padding: 20,
-    marginTop: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  questionaryBackImg: {
-    width: 32,
-    height: 32,
-  },
-  progressBarContainer: {
-    flex: 1,
-    height: 10,
-    backgroundColor: 'whitesmoke',
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  progressBar: {
-    width: '48%',
-    height: '100%',
-    backgroundColor: '#FF8303',
-    borderRadius: 5,
-  },
   questionHeaderContainer: {
     width: '100%',
-    height: '30%',
+    height: '20%',
     alignItems: 'center',
     padding: 20,
     marginTop: 10,
-  },
-  questionaryText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: 'whitesmoke',
   },
   questionaryAnswerSection: {
     width: '100%',
     paddingHorizontal: 20,
     marginBottom: 20,
   },
-  option: {
-    backgroundColor: '#333',
-    padding: 15,
-    marginVertical: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  selectedOption: {
-    backgroundColor: '#FF8303',
-  },
-  optionText: {
-    color: 'white',
-    fontSize: 18,
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    elevation: 3,
-    width: '90%',
-    position: 'absolute',
-    bottom: 20,
-    backgroundColor: '#FF8303',
-    marginBottom: 10,
-  },
-  registerText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+  optionImageContainer: {
+    width: 75,
+    height: 75,
+    backgroundColor: '#000',
   },
 });
 

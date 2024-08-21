@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -9,17 +10,33 @@ function LoginScreen({ navigation }) {
   const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async () => {
+    if(!email && !password){
+      setErrorMessage('What dou you want to achive? Type in your credentiatls.');
+      return;
+    }else if(!password){
+      setErrorMessage('Please enter your password.');
+      return;
+    }else if(!email){
+      setErrorMessage('Please enter your email.');
+      return;
+    }
+
+    const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
+
     try {
-      const response = await fetch('http://192.168.0.143:5094/api/Account/Login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: email,
-          password: password,
+      const response = await Promise.race([
+        fetch('http://192.168.0.143:5094/api/Account/Login', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            email: email,
+            password: password,
+          }),
         }),
-      });
+        timeout(10000),
+      ]);
   
       if (response.ok) {
         const data = await response.json();
@@ -27,83 +44,79 @@ function LoginScreen({ navigation }) {
         navigation.navigate('Home');
       } else {
         const errorData = await response.json();
-        setErrorMessage(errorData.errors || 'Login failed');
+        const errorMsg = typeof errorData.errors === 'string' 
+        ? errorData.errors 
+        : (errorData.errors && errorData.errors.Email ? errorData.errors.Email[0] : 'Login failed');
+        setErrorMessage(errorMsg);
       }
     } catch (error) {
-      setErrorMessage('Please try again later.');
+      setErrorMessage(error.message === 'Request timed out' ? 'Something went wrong. Please try again later.' : 'Please try again later.');
     }
   };
   
-  
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.view}>
+    <SafeAreaView style={questStyles.container}>
+      <View style={styles.topContainer}></View>
+      <View style={styles.formContainer}>
+        <Text style={styles.label}>Email:</Text>
         <TextInput
           style={styles.input}
           placeholder="Email"
-          placeholderTextColor="#ccc"
+          placeholderTextColor="#999"
+          selectionColor="#FF8303"
           onChangeText={(text) => setEmail(text)}
           value={email}
+          keyboardType="email-address"
+          autoCapitalize="none"
         />
+        <Text style={styles.label}>Password:</Text>
         <TextInput
           style={styles.input}
           placeholder="Password"
-          placeholderTextColor="#ccc"
-          secureTextEntry
+          selectionColor="#FF8303"
           onChangeText={(text) => setPassword(text)}
           value={password}
+          placeholderTextColor="#999"
+          secureTextEntry
         />
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
-        <Pressable style={styles.button} onPress={handleLogin}>
-          <Text style={styles.loginText}>Login</Text>
-        </Pressable>
       </View>
+      <Pressable style={questStyles.nextButton} onPress={handleLogin}>
+        <Text style={questStyles.nextButtonText}>Log in!</Text>
+      </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+  topContainer: {
+    width: '100%',
+    height: '55%',
     backgroundColor: 'black',
+  },
+  formContainer: {
+    width: '100%',
+    height: '35%',
     padding: 10,
   },
-  view: {
-    width: '100%',
-    marginTop: '20%',
-    height: '80%',
-    padding: 10,
+  label: {
+    fontSize: 20,
+    color: '#000',
+    fontFamily: 'Helvetica',
   },
   input: {
-    height: 40,
-    margin: 12,
-    borderWidth: 1,
-    padding: 10,
-    color: 'white',
-    borderColor: 'gray',
-    backgroundColor: '#333'
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    elevation: 3,
-    width: '90%',
-    backgroundColor: '#FF8303',
-  },
-  loginText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    width: '100%',
+    height: 45,
+    backgroundColor: '#F0E3CA',
+    borderBottomColor: 'black',
+    borderBottomWidth: 2,
   },
   errorText: {
+    fontSize: 18,
     color: 'red',
-    margin: 10,
+    fontFamily: 'Helvetica',
     textAlign: 'center',
+    marginTop: 15,
   },
 });
 

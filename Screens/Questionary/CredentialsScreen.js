@@ -1,17 +1,31 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Pressable, TextInput, Image } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
+
 
 function CredentialsScreen({ navigation }) {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [creedError, setCreedError] = useState(null);
+
+    useEffect(() => {
+        const getCreedError = async () => {
+            const prevCreedError = await AsyncStorage.getItem('finalQuestEmailError');
+            if(prevCreedError != null){
+                setCreedError(prevCreedError);
+            }
+        };
+        getCreedError();
+    });
 
     const finalPress = async () => {
         try {
             await AsyncStorage.setItem('userEmail', email);
             await AsyncStorage.setItem('userPassword', password);
+            await AsyncStorage.removeItem('finalQuestEmailError');
             navigation.navigate('Final');
         } catch (error) {
             //throw error
@@ -27,13 +41,13 @@ function CredentialsScreen({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <View style={styles.questionaryHeaderOptionsContainer}>
+        <SafeAreaView style={questStyles.container}>
+            <View style={questStyles.topContainer}>
                 <Pressable onPress={backPress}>
-                    <Image source={BackArrow} style={styles.questionaryBackImg} />
+                    <Image source={BackArrow} style={questStyles.questionaryBackImg} />
                 </Pressable>
-                <View style={styles.progressBarContainer}>
-                    <View style={styles.progressBar}></View>
+                <View style={questStyles.progressBarContainer}>
+                    <View style={[questStyles.progressBar, {width: '100%'}]}></View>
                 </View>
             </View>
             <View style={styles.questionaryAnswerSection}>
@@ -56,53 +70,23 @@ function CredentialsScreen({ navigation }) {
                     value={password}
                     secureTextEntry
                 />
+                {creedError ? <Text style={styles.errorText}>{JSON.stringify(creedError)}</Text>
+                : null}
             </View>
-            <Pressable style={styles.button} onPress={finalPress}>
-                <Text style={styles.registerText}>Let's get in shape!</Text>
+            <Pressable style={questStyles.nextButton} onPress={finalPress}>
+                <Text style={questStyles.nextButtonText}>Let's get in shape!</Text>
             </Pressable>
         </SafeAreaView>
     );
 }
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        backgroundColor: 'black',
-        padding: 10,
-    },
-    questionaryHeaderOptionsContainer: {
-        width: '100%',
-        height: '10%',
-        padding: 20,
-        marginTop: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
-    },
-    questionaryBackImg: {
-        width: 32,
-        height: 32,
-    },
-    progressBarContainer: {
-        flex: 1,
-        height: 10,
-        backgroundColor: 'whitesmoke',
-        borderRadius: 5,
-        marginLeft: 10,
-    },
-    progressBar: {
-        width: '100%', // Set to 24% of the container width
-        height: '100%',
-        backgroundColor: '#FF8303',
-        borderRadius: 5,
-    },
     questionaryAnswerSection: {
         width: '100%',
         paddingHorizontal: 20,
     },
     label: {
-        color: 'whitesmoke',
+        color: '#1B1A17',
         fontSize: 18,
         marginBottom: 5,
     },
@@ -115,23 +99,10 @@ const styles = StyleSheet.create({
         backgroundColor: '#333',
         marginBottom: 20,
     },
-    button: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 32,
-        borderRadius: 4,
-        elevation: 3,
-        width: '90%',
-        position: 'absolute',
-    bottom: 20,
-        backgroundColor: '#FF8303',
-        marginBottom: 10,
-    },
-    registerText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '600',
+    errorText: {
+        color: 'red',
+        fontSize: 22,
+        textAlign: 'center',
     },
 });
 

@@ -21,12 +21,25 @@ import MetricScreen from './Screens/Questionary/MetricScreen';
 import QuestHightScreen from './Screens/Questionary/QuestHightScreen';
 import CredentialsScreen from './Screens/Questionary/CredentialsScreen';
 import FinalQuestScreen from './Screens/Questionary/FinalQuestScreen';
+import QuestPromiseScreen from './Screens/Questionary/QuestPromiseScreen';
+
+import * as Font from 'expo-font';
+
 
 const Stack = createNativeStackNavigator();
 
 function App() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [fontsLoaded, setFontsLoaded] = useState(false);
+
+  const loadFonts = async () => {
+    await Font.loadAsync({
+      Helvetica: require('./assets/fonts/Helvetica.ttf'),  // Make sure this path is correct
+      HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
+    });
+    setFontsLoaded(true);
+  };
 
   useEffect(() => {
     const checkAuthStatus = async () => {
@@ -46,9 +59,10 @@ function App() {
     };
 
     checkAuthStatus();
+    loadFonts();
   }, []);
 
-  if (isLoading) {
+  if (isLoading && !fontsLoaded) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black', }}>
       </View>
@@ -83,6 +97,7 @@ function App() {
             <Stack.Screen name="QuestHeight" component={QuestHightScreen}/>
             <Stack.Screen name="Credentials" component={CredentialsScreen}/>
             <Stack.Screen name="Final" component={FinalQuestScreen}/>
+            <Stack.Screen name="Promise" component={QuestPromiseScreen}/>
           </>
         ) : (
           <>

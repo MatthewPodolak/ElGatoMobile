@@ -5,12 +5,14 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 import ManImage from '../../assets/Questionary/man.png'; 
 import FemaleImage from '../../assets/Questionary/woman.png';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
+
 
 function QuestJobTypeScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questGender', answer);
+    AsyncStorage.setItem('questJob', answer);
     navigation.navigate('Credentials');
   };
 
@@ -27,108 +29,88 @@ function QuestJobTypeScreen({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <View style={styles.questionaryHeaderOptionsContainer}>
+    <SafeAreaView style={questStyles.container}>
+      <View style={questStyles.topContainer}>
         <Pressable onPress={backPress}>
-          <Image source={BackArrow} style={styles.questionaryBackImg} />
+          <Image source={BackArrow} style={questStyles.questionaryBackImg} />
         </Pressable>
-        <View style={styles.progressBarContainer}>
-          <View style={styles.progressBar}></View>
+        <View style={questStyles.progressBarContainer}>
+          <View style={[questStyles.progressBar, {width: '96%'}]}></View>
         </View>
       </View>
       <View style={styles.questionHeaderContainer}>
-        <Text style={styles.questionaryText}>WHAT TYPE OF THE JOB YOU DO?</Text>
+        <Text style={questStyles.questionaryText}>What's describing your daily job best?</Text>
       </View>
       <View style={styles.questionaryAnswerSection}>
-        <Pressable
-          style={[
-            styles.option,
-            answer === '0' && styles.selectedOption,
-          ]}
-          onPress={() => handleOptionPress('0')}
-        >
-          <Image source={ManImage} style={styles.genderImage} />
-          <Text style={styles.optionText}>Lekka praca biurowa</Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.option,
-            answer === '1' && styles.selectedOption,
-          ]}
-          onPress={() => handleOptionPress('1')}
-        >
-          <Image source={FemaleImage} style={styles.genderImage} />
-          <Text style={styles.optionText}>Srednio fizyczna</Text>
-        </Pressable>
-        <Pressable
-          style={[
-            styles.option,
-            answer === '2' && styles.selectedOption,
-          ]}
-          onPress={() => handleOptionPress('2')}
-        >
-          <Image source={FemaleImage} style={styles.genderImage} />
-          <Text style={styles.optionText}>Ciezka fizolka</Text>
-        </Pressable>
+        <View style={styles.row}>
+          <Pressable
+            style={[
+              questStyles.option,
+              answer === '0' && questStyles.selectedOption,
+            ]}
+            onPress={() => handleOptionPress('0')}
+          >
+            <Image source={ManImage} style={questStyles.optionImage} />
+            <Text style={questStyles.optionText}>Lekka praca biurowa</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              questStyles.option,
+              answer === '1' && questStyles.selectedOption,
+            ]}
+            onPress={() => handleOptionPress('1')}
+          >
+            <Image source={FemaleImage} style={questStyles.optionImage} />
+            <Text style={questStyles.optionText}>Srednio fizyczna</Text>
+          </Pressable>
+        </View>
+        <View style={styles.row}>
+          <Pressable
+            style={[
+              questStyles.option,
+              answer === '2' && questStyles.selectedOption,
+            ]}
+            onPress={() => handleOptionPress('2')}
+          >
+            <Image source={FemaleImage} style={questStyles.optionImage} />
+            <Text style={questStyles.optionText}>Ciezka fizolka</Text>
+          </Pressable>
+          <Pressable
+            style={[
+              questStyles.option,
+              answer === '3' && questStyles.selectedOption,
+            ]}
+            onPress={() => handleOptionPress('3')}
+          >
+            <Image source={FemaleImage} style={questStyles.optionImage} />
+            <Text style={questStyles.optionText}>Praca zdalna</Text>
+          </Pressable>
+        </View>
       </View>
-      <Pressable style={styles.button} onPress={nextPress}>
-        <Text style={styles.registerText}>Next</Text>
+      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+        <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    backgroundColor: 'black',
-    padding: 10,
-  },
-  questionaryHeaderOptionsContainer: {
-    width: '100%',
-    height: '10%',
-    padding: 20,
-    marginTop: 5,
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  questionaryBackImg: {
-    width: 32,
-    height: 32,
-  },
-  progressBarContainer: {
-    flex: 1,
-    height: 10,
-    backgroundColor: 'whitesmoke',
-    borderRadius: 5,
-    marginLeft: 10,
-  },
-  progressBar: {
-    width: '96%',
-    height: '100%',
-    backgroundColor: '#FF8303',
-    borderRadius: 5,
-  },
   questionHeaderContainer: {
     width: '100%',
-    height: '30%',
+    height: '25%',
     alignItems: 'center',
     padding: 20,
     marginTop: 10,
-  },
-  questionaryText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: 'whitesmoke',
   },
   questionaryAnswerSection: {
     width: '100%',
     paddingHorizontal: 20,
     marginBottom: 20,
+  },
+  row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    marginBottom: 10,
   },
   option: {
     backgroundColor: '#333',
@@ -150,24 +132,7 @@ const styles = StyleSheet.create({
   optionText: {
     color: 'white',
     fontSize: 18,
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    borderRadius: 4,
-    elevation: 3,
-    position: 'absolute',
-    bottom: 20,
-    width: '90%',
-    backgroundColor: '#FF8303',
-    marginBottom: 10,
-  },
-  registerText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
+    textAlign: 'center',
   },
 });
 

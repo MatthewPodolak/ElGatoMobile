@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Pressable, TextInput, Image } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
 
 function QuestAgeScreen({navigation}) {
     const [answer, setAnswer] = useState('');
@@ -21,110 +22,34 @@ function QuestAgeScreen({navigation}) {
       };
 
       return (
-        <SafeAreaView style={styles.container}>
-          <View style={styles.questionaryHeaderOptionsContainer}>
+        <SafeAreaView style={questStyles.container}>
+          <View style={questStyles.topContainer}>
             <Pressable onPress={backPress}>
-              <Image source={BackArrow} style={styles.questionaryBackImg} />
+              <Image source={BackArrow} style={questStyles.questionaryBackImg} />
             </Pressable>  
-            <View style={styles.progressBarContainer}>
-              <View style={styles.progressBar}></View>
+            <View style={questStyles.progressBarContainer}>
+              <View style={[questStyles.progressBar, {width: '24%'}]}></View>
             </View>
           </View>
-          <View style={styles.questionHeaderContainer}>
-            <Text style={styles.questionaryText}>HOW OLD ARE YOU?</Text>
+          <View style={questStyles.questionHeaderContainer}>
+            <Text style={questStyles.questionaryText}>How old are you?</Text>
           </View>
-          <View style={styles.questionaryAnswerSection}>
+          <View style={questStyles.questionaryAnswerSectionField}>
             <TextInput
-              style={styles.input}
+              style={questStyles.input}
               placeholder="Age"
-              placeholderTextColor="#ccc"
+              keyboardType='numeric'
+              selectionColor="#FF8303"
+              placeholderTextColor="#999"
               onChangeText={(text) => setAnswer(text)}
               value={answer}
             />
           </View>
-          <Pressable style={styles.button} onPress={nextPress}>
-            <Text style={styles.registerText}>Next</Text>
+          <Pressable style={questStyles.nextButton} onPress={nextPress}>
+            <Text style={questStyles.nextButtonText}>Next</Text>
           </Pressable>
         </SafeAreaView>
       );
     }
     
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        backgroundColor: 'black',
-        padding: 10,
-      },
-      questionaryHeaderOptionsContainer: {
-        width: '100%',
-        height: '10%',
-        padding: 20,
-        marginTop: 5,
-        flexDirection: 'row',
-        alignItems: 'center',
-      },
-      questionaryBackImg: {
-        width: 32,
-        height: 32,
-      },
-      progressBarContainer: {
-        flex: 1,
-        height: 10,
-        backgroundColor: 'whitesmoke',
-        borderRadius: 5,
-        marginLeft: 10,
-      },
-      progressBar: {
-        width: '24%',
-        height: '100%',
-        backgroundColor: '#FF8303',
-        borderRadius: 5,
-      },
-      questionHeaderContainer: {
-        width: '100%',
-        height: '30%',
-        alignItems: 'center',
-        padding: 20,
-        marginTop: 10,
-      },
-      questionaryText: {
-        fontSize: 32,
-        fontWeight: '600',
-        color: 'whitesmoke',
-      },
-      questionaryAnswerSection: {
-        width: '100%',
-        paddingHorizontal: 20,
-      },
-      input: {
-        height: 40,
-        borderWidth: 1,
-        padding: 10,
-        color: 'white',
-        borderColor: 'gray',
-        backgroundColor: '#333',
-        marginBottom: 20,
-      },
-      button: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingVertical: 12,
-        paddingHorizontal: 32,
-        borderRadius: 4,
-        elevation: 3,
-        width: '90%',
-        position: 'absolute',
-    bottom: 20,
-        backgroundColor: '#FF8303',
-        marginBottom: 10,
-      },
-      registerText: {
-        color: 'white',
-        fontSize: 16,
-        fontWeight: '600',
-      },
-    });
-
 export default QuestAgeScreen;

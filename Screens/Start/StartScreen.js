@@ -40,7 +40,7 @@ const styles = StyleSheet.create({
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'center',
-    backgroundColor: 'black',
+    backgroundColor: '#F0E3CA',
     padding: 10,
   },
   textContainer: {
@@ -51,7 +51,8 @@ const styles = StyleSheet.create({
   mainText: {
     fontSize: 38,
     fontWeight: '700',
-    color: 'white',
+    color: '#1B1A17',
+    fontFamily: 'HelveticaBold',
   },
   imageContainer: {
     width: '100%',
@@ -76,17 +77,21 @@ const styles = StyleSheet.create({
     marginBottom: 10,
   },
   registerText: {
-    color: 'white',
+    color: '#1B1A17',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontFamily: 'Helvetica',
   },
   loginText: {
-    color: 'white',
+    color: '#1B1A17',
     fontSize: 16,
     fontWeight: '500',
+    fontFamily: 'Helvetica',
   },
   loginLink: {
     color: '#FF8303',
+    fontWeight: '500',
+    fontFamily: 'Helvetica',
   },
 });
 
