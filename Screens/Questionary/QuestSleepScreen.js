@@ -49,7 +49,7 @@ function QuestSleepScreen({ navigation }) {
           highlightColor="#000"
           highlightBorderWidth={2}
           wrapperBackground="transparent"
-          itemTextStyle={{ color: '#000', fontSize: 24 }}  // Larger font size for items
+          itemTextStyle={{ color: '#000', fontSize: 24 }}
           activeItemTextStyle={{ color: '#FF8303', fontSize: 28, fontWeight: 'bold' }}
         />
       </View>

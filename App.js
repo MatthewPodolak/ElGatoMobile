@@ -25,46 +25,36 @@ import QuestPromiseScreen from './Screens/Questionary/QuestPromiseScreen';
 
 import * as Font from 'expo-font';
 
-
 const Stack = createNativeStackNavigator();
 
 function App() {
-  const [isLoading, setIsLoading] = useState(true);
+  const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [fontsLoaded, setFontsLoaded] = useState(false);
-
-  const loadFonts = async () => {
-    await Font.loadAsync({
-      Helvetica: require('./assets/fonts/Helvetica.ttf'),  // Make sure this path is correct
-      HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
-    });
-    setFontsLoaded(true);
-  };
 
   useEffect(() => {
-    const checkAuthStatus = async () => {
+    const prepare = async () => {
       try {
+        await Font.loadAsync({
+          Helvetica: require('./assets/fonts/Helvetica.ttf'),
+          HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
+        });
+
         const token = await AsyncStorage.getItem('jwtToken');
-        if (token) {
-          setIsAuthenticated(true);
-        } else {
-          setIsAuthenticated(false);
-        }
+        setIsAuthenticated(!!token);
       } catch (error) {
-        console.error('Error checking auth status', error);
-        setIsAuthenticated(false);
+        console.error('Error during app preparation', error);
       } finally {
-        setIsLoading(false);
+        setIsReady(true);
       }
     };
 
-    checkAuthStatus();
-    loadFonts();
+    prepare();
   }, []);
 
-  if (isLoading && !fontsLoaded) {
+  if (!isReady) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black', }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+        <ActivityIndicator size="large" color="#FF8303" />
       </View>
     );
   }
@@ -103,7 +93,6 @@ function App() {
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Start" component={StartScreen} />
-            {/* hbeere home screens navs */}
           </>
         )}
       </Stack.Navigator>
