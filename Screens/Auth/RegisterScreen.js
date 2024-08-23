@@ -10,9 +10,12 @@ function RegisterScreen({navigation}) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questName', answer);
-    navigation.navigate('QuestAge');
-    AsyncStorage.removeItem('finalQuestEmailError');
+    if(answer){
+      AsyncStorage.setItem('questName', answer);
+      navigation.navigate('QuestAge');
+      AsyncStorage.removeItem('finalQuestEmailError');
+    }
+    //notif
   };
 
   const backPress = () => {
@@ -46,7 +49,10 @@ function RegisterScreen({navigation}) {
           value={answer}
         />
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

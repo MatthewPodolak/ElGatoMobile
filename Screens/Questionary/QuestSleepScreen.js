@@ -10,8 +10,10 @@ function QuestSleepScreen({ navigation }) {
   const [answer, setAnswer] = useState('1');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questSleep', answer);
-    navigation.navigate('QuestTraining');
+    if(answer){
+      AsyncStorage.setItem('questSleep', answer);
+      navigation.navigate('QuestTraining');
+    }
   };
 
   const backPress = () => {
@@ -51,7 +53,10 @@ function QuestSleepScreen({ navigation }) {
           activeItemTextStyle={{ color: '#FF8303', fontSize: 28, fontWeight: 'bold' }}
         />
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

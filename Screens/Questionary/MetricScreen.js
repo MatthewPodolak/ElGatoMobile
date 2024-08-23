@@ -11,8 +11,12 @@ function MetricScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('metric', answer);
-    navigation.navigate('Register');
+    if(answer){
+      AsyncStorage.setItem('metric', answer);
+      navigation.navigate('Register');
+    }else{
+      //notif
+    }
   };
 
   const backPress = () => {
@@ -62,13 +66,14 @@ function MetricScreen({ navigation }) {
           <Text style={questStyles.optionText}>Freedom</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>
   );
 }
-
-
 
 export default MetricScreen;

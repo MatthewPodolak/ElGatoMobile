@@ -108,6 +108,11 @@ export const questStyles = StyleSheet.create({
     alignItems: 'center',
     flexDirection: 'row',
   },
+  disabledNextButton: {
+    backgroundColor: '#cccccc',
+    borderColor: '#999999',
+    opacity: 0.6,
+  },
   //FIELDS
   input: {
     height: 100,

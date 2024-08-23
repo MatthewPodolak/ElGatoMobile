@@ -10,8 +10,10 @@ function QuestWalkingScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questWalking', answer);
-    navigation.navigate('QuestJob');
+    if(answer){
+      AsyncStorage.setItem('questWalking', answer);
+      navigation.navigate('QuestJob');
+    }
   };
 
   const backPress = () => {
@@ -81,7 +83,10 @@ function QuestWalkingScreen({ navigation }) {
           <Text style={questStyles.optionTextLong}>4+</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

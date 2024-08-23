@@ -1,25 +1,37 @@
 import React, { useState } from 'react';
-import { View, Text, TextInput, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TextInput, Pressable, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { questStyles } from '../../Styles/QuestionaryStyles.js';
+import BackArrow from '../../assets/Questionary/arrow-left.png';
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
+  const [loading, setLoading] = useState(false);
+
+  const backPress = () => {
+    if (navigation.canGoBack()) {
+      navigation.goBack();
+    } else {
+      navigation.navigate('Start');
+    }       
+  };
 
   const handleLogin = async () => {
-    if(!email && !password){
-      setErrorMessage('What dou you want to achive? Type in your credentiatls.');
+    if (!email && !password) {
+      setErrorMessage('What do you want to achieve? Type in your credentials.');
       return;
-    }else if(!password){
+    } else if (!password) {
       setErrorMessage('Please enter your password.');
       return;
-    }else if(!email){
+    } else if (!email) {
       setErrorMessage('Please enter your email.');
       return;
     }
+
+    setLoading(true);
 
     const timeout = (ms) => new Promise((_, reject) => setTimeout(() => reject(new Error('Request timed out')), ms));
 
@@ -45,18 +57,24 @@ function LoginScreen({ navigation }) {
       } else {
         const errorData = await response.json();
         const errorMsg = typeof errorData.errors === 'string' 
-        ? errorData.errors 
-        : (errorData.errors && errorData.errors.Email ? errorData.errors.Email[0] : 'Login failed');
+          ? errorData.errors 
+          : (errorData.errors && errorData.errors.Email ? errorData.errors.Email[0] : 'Login failed');
         setErrorMessage(errorMsg);
       }
     } catch (error) {
       setErrorMessage(error.message === 'Request timed out' ? 'Something went wrong. Please try again later.' : 'Please try again later.');
+    } finally {
+      setLoading(false);
     }
   };
   
   return (
     <SafeAreaView style={questStyles.container}>
-      <View style={styles.topContainer}></View>
+      <View style={styles.topContainer}>
+        <Pressable onPress={backPress}>
+          <Image source={BackArrow} style={styles.questionaryBackImg} />
+        </Pressable>
+      </View>
       <View style={styles.formContainer}>
         <Text style={styles.label}>Email:</Text>
         <TextInput
@@ -69,7 +87,7 @@ function LoginScreen({ navigation }) {
           keyboardType="email-address"
           autoCapitalize="none"
         />
-        <Text style={styles.label}>Password:</Text>
+        <Text style={[styles.label, {marginTop: 15,}]}>Password:</Text>
         <TextInput
           style={styles.input}
           placeholder="Password"
@@ -81,8 +99,12 @@ function LoginScreen({ navigation }) {
         />
         {errorMessage ? <Text style={styles.errorText}>{errorMessage}</Text> : null}
       </View>
-      <Pressable style={questStyles.nextButton} onPress={handleLogin}>
-        <Text style={questStyles.nextButtonText}>Log in!</Text>
+      <Pressable style={questStyles.nextButton} onPress={handleLogin} disabled={loading}>
+        {loading ? (
+          <ActivityIndicator size="small" color="#FFFFFF" />
+        ) : (
+          <Text style={questStyles.nextButtonText}>Log in!</Text>
+        )}
       </Pressable>
     </SafeAreaView>
   );
@@ -92,7 +114,6 @@ const styles = StyleSheet.create({
   topContainer: {
     width: '100%',
     height: '55%',
-    backgroundColor: 'black',
   },
   formContainer: {
     width: '100%',
@@ -118,6 +139,12 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginTop: 15,
   },
+  questionaryBackImg: {
+    width: 32,
+    height: 32,
+    marginLeft: 10,
+    marginTop: 5,
+  }
 });
 
 export default LoginScreen;

@@ -10,8 +10,11 @@ function QuestWeightScreen({navigation}) {
     const [answer, setAnswer] = useState('');
 
     const nextPress = () => {
-      AsyncStorage.setItem('questWeight', answer);
-      navigation.navigate('QuestHeight');
+      if(answer){
+        AsyncStorage.setItem('questWeight', answer);
+        navigation.navigate('QuestHeight');
+      }
+      //notif
     };
 
     const backPress = () => {
@@ -46,7 +49,10 @@ function QuestWeightScreen({navigation}) {
               value={answer}
             />
           </View>
-          <Pressable style={questStyles.nextButton} onPress={nextPress}>
+          <Pressable style={[
+            questStyles.nextButton,
+            !answer && questStyles.disabledNextButton,
+          ]} onPress={nextPress}>
             <Text style={questStyles.nextButtonText}>Next</Text>
           </Pressable>
         </SafeAreaView>

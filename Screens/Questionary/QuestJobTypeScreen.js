@@ -12,8 +12,10 @@ function QuestJobTypeScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questJob', answer);
-    navigation.navigate('Credentials');
+    if(answer){
+      AsyncStorage.setItem('questJob', answer);
+      navigation.navigate('Credentials');
+    }
   };
 
   const backPress = () => {
@@ -87,7 +89,10 @@ function QuestJobTypeScreen({ navigation }) {
           </Pressable>
         </View>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

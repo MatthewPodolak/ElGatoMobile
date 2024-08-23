@@ -9,8 +9,11 @@ function QuestAgeScreen({navigation}) {
     const [answer, setAnswer] = useState('');
 
     const nextPress = () => {
-      AsyncStorage.setItem('questAge', answer);
-      navigation.navigate('QuestWeight');
+      if(answer){
+        AsyncStorage.setItem('questAge', answer);
+        navigation.navigate('QuestWeight');
+      }
+      //notiff
     };
 
     const backPress = () => {
@@ -45,7 +48,10 @@ function QuestAgeScreen({navigation}) {
               value={answer}
             />
           </View>
-          <Pressable style={questStyles.nextButton} onPress={nextPress}>
+          <Pressable style={[
+            questStyles.nextButton,
+            !answer && questStyles.disabledNextButton,
+          ]} onPress={nextPress}>
             <Text style={questStyles.nextButtonText}>Next</Text>
           </Pressable>
         </SafeAreaView>

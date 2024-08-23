@@ -27,12 +27,12 @@ function FinalQuestScreen({navigation}) {
           return () => clearInterval(interval);
       } else if (calorieCount < 100) {
           const interval = setInterval(() => {
-              setCalorieCount(prevCount => prevCount + 2);
+              setCalorieCount(prevCount => prevCount + 4);
           }, 50);
           return () => clearInterval(interval);
       } else if (xyzCount < 100) {
           const interval = setInterval(() => {
-              setXyzCount(prevCount => prevCount + 2);
+              setXyzCount(prevCount => prevCount + 3);
           }, 50);
           return () => clearInterval(interval);
       } else if (loadCount >= 100 && calorieCount >= 100 && xyzCount >= 100) {
@@ -41,12 +41,11 @@ function FinalQuestScreen({navigation}) {
     }, [loadCount, calorieCount, xyzCount])
 
     useEffect(() => {
-
       const fetchMetricSetting = async () => {
         const metricValue = await AsyncStorage.getItem('metric');
         setIsMetric(metricValue !== '0');
       };
-
+    
       const fetchData = async () => {
         try {
           const nickname = await AsyncStorage.getItem('questName');
@@ -62,12 +61,12 @@ function FinalQuestScreen({navigation}) {
           const jobType = await AsyncStorage.getItem('questJob');
           const userEmail = await AsyncStorage.getItem('userEmail');
           const userPassword = await AsyncStorage.getItem('userPassword');
-
+    
           if (!isMetric) {
             weight = (parseFloat(weight) / 2.205).toFixed(2);
             height = convertFeetInchesToCm(height);
           }
-
+    
           const registerPost = {
             email: userEmail || '',
             password: userPassword || '',
@@ -83,54 +82,50 @@ function FinalQuestScreen({navigation}) {
               trainingDays: parseInt(trainingDays) || 0,
               dailyTimeSpendWorking: parseInt(walking) || 0,
               jobType: parseInt(jobType) || 0,
-              metric: isMetric
-            }
+              metric: isMetric,
+            },
           };
     
-          try{
-            const response = await fetch('http://192.168.0.143:5094/api/Account/RegisterWithQuestionary', {
+          const timeout = (ms) =>
+            new Promise((_, reject) =>
+              setTimeout(() => reject(new Error("Couldn't connect to the server. Please check your internet connection and try again.")), ms)
+            );    
+    
+          const response = await Promise.race([
+            fetch('http://192.168.0.143:5094/api/Account/RegisterWithQuestionary', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify(registerPost),
-            });
-
-            if (response.ok) {
-
-              const data = await response.json();
-              await AsyncStorage.setItem('jwtToken', data.jwt);
-              await AsyncStorage.setItem('calorieInfo', JSON.stringify(data.calorieIntake));        
-              setLoading(false);    
-              console.log('ok ');
-
-            } else if(response.status === 409) {
-              const errorMsg = 'E-mail address already in use';
-              setErrorMessage(errorMsg);
-              console.log('wrong e-mail res');
-              //pass error ret to cred.
-              await AsyncStorage.setItem('finalQuestEmailError', errorMsg);
-              navigation.navigate('Credentials');
-            }else{
-              setErrorMessage('Internal server error. Check your internet connection and try again.');
-              setErrorView(true);
-            }
-
-          }catch(error){
+            }),
+            timeout(10000),
+          ]);
+    
+          if (response.ok) {
+            const data = await response.json();
+            await AsyncStorage.setItem('jwtToken', data.jwt);
+            await AsyncStorage.setItem('calorieInfo', JSON.stringify(data.calorieIntake));
+            setLoading(false);
+          } else if (response.status === 409) {
+            const errorMsg = 'E-mail address already in use';
+            setErrorMessage(errorMsg);
+            await AsyncStorage.setItem('finalQuestEmailError', errorMsg);
+            navigation.navigate('Credentials');
+          } else {
             setErrorMessage('Internal server error. Check your internet connection and try again.');
             setErrorView(true);
           }
-
-
         } catch (error) {
-          setErrorMessage('There was an issue while processing the data from the questionary, please try again later.');
+          setErrorMessage(error.message || 'Internal server error. Check your internet connection and try again.');
           setErrorView(true);
         }
       };
-  
+    
       fetchMetricSetting();
       fetchData();
     }, []);
+    
   
     useEffect(() => {
       if (!loading && countDone === true) {

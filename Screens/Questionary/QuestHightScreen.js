@@ -5,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 import { questStyles } from '../../Styles/QuestionaryStyles.js';
 
-
 function QuestHightScreen({ navigation }) {
     const [answer, setAnswer] = useState('');
     const [feet, setFeet] = useState('');
@@ -21,15 +20,13 @@ function QuestHightScreen({ navigation }) {
         fetchMetricSetting();
     }, []);
 
+    let height = isMetric ? answer : `${feet}'${inches}"`;
+
     const nextPress = () => {
-        let height = answer;
-
-        if (!isMetric) {
-            height = `${feet}'${inches}"`;
+        if(height){
+            AsyncStorage.setItem('questHeight', height);
+            navigation.navigate('QuestGoal');
         }
-
-        AsyncStorage.setItem('questHeight', height);
-        navigation.navigate('QuestGoal');
     };
 
     const backPress = () => {
@@ -39,6 +36,8 @@ function QuestHightScreen({ navigation }) {
             navigation.navigate('QuestWeight');
         }
     };
+
+    const isDisabled = isMetric ? !answer : !feet || !inches;
 
     return (
         <SafeAreaView style={questStyles.container}>
@@ -87,7 +86,14 @@ function QuestHightScreen({ navigation }) {
                     </View>
                 )}
             </View>
-            <Pressable style={questStyles.nextButton} onPress={nextPress}>
+            <Pressable 
+                style={[
+                    questStyles.nextButton,
+                    isDisabled && questStyles.disabledNextButton,
+                ]}
+                onPress={nextPress}
+                disabled={isDisabled}
+            >
                 <Text style={questStyles.nextButtonText}>Next</Text>
             </Pressable>
         </SafeAreaView>

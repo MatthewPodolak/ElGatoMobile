@@ -9,8 +9,11 @@ function QuestGoalScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questGoal', answer);
-    navigation.navigate('QuestGender');
+    if(answer){
+      AsyncStorage.setItem('questGoal', answer);
+      navigation.navigate('QuestGender');
+    }
+    //notif
   };
 
   const backPress = () => {
@@ -70,7 +73,10 @@ function QuestGoalScreen({ navigation }) {
           <Text style={questStyles.optionTextLong}>Maintain weight</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

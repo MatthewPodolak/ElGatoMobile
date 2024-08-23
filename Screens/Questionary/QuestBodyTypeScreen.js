@@ -10,8 +10,11 @@ function QuestBodyTypeScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questBody', answer);
-    navigation.navigate('QuestSleep');
+    if(answer){
+      AsyncStorage.setItem('questBody', answer);
+      navigation.navigate('QuestSleep');
+    }
+    //notif
   };
 
   const backPress = () => {
@@ -81,7 +84,10 @@ function QuestBodyTypeScreen({ navigation }) {
           <Text style={questStyles.optionTextLong}>I don't know ;C</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

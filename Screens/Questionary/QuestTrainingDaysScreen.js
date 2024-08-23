@@ -12,8 +12,10 @@ function QuestTrainingDaysScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questTrainingDays', answer);
-    navigation.navigate('QuestWalking');
+    if(answer){
+      AsyncStorage.setItem('questTrainingDays', answer);
+      navigation.navigate('QuestWalking');
+    }
   };
 
   const backPress = () => {
@@ -85,7 +87,10 @@ function QuestTrainingDaysScreen({ navigation }) {
           <Text style={questStyles.optionText}>6-7</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>

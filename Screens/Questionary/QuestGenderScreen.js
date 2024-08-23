@@ -12,8 +12,11 @@ function QuestGenderScreen({ navigation }) {
   const [answer, setAnswer] = useState('');
 
   const nextPress = () => {
-    AsyncStorage.setItem('questGender', answer);
-    navigation.navigate('QuestBody');
+    if(answer){
+      AsyncStorage.setItem('questGender', answer);
+      navigation.navigate('QuestBody');
+    }
+    //NOTIF
   };
 
   const backPress = () => {
@@ -63,7 +66,10 @@ function QuestGenderScreen({ navigation }) {
           <Text style={questStyles.optionText}>Female</Text>
         </Pressable>
       </View>
-      <Pressable style={questStyles.nextButton} onPress={nextPress}>
+      <Pressable style={[
+          questStyles.nextButton,
+          !answer && questStyles.disabledNextButton,
+        ]} onPress={nextPress}>
         <Text style={questStyles.nextButtonText}>Next</Text>
       </Pressable>
     </SafeAreaView>
