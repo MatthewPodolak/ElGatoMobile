@@ -1,17 +1,20 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Image } from 'react-native';
+import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
+import { questStyles } from '../../Styles/QuestionaryStyles.js';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { convertFeetInchesToCm } from '../../Services/Conversion/MetricConversions';
 import GatoQuestError from '../../assets/Questionary/carCrash.png';
 import GatoQuestLoad from '../../assets/Questionary/carLoad.png';
 import { Dimensions } from 'react-native';
+import ErrorPopup from '../../Components/Error/ErrorPopup';
 
 const screenWidth = Dimensions.get('window').width;
 
 function FinalQuestScreen({navigation}) {
     const [loading, setLoading] = useState(true);
     const [errorView, setErrorView] = useState(false);
+    const [isErrorVisible, setIsErrorVisible] = useState(true);
     const [isMetric, setIsMetric] = useState(true);
     const [errorMessage, setErrorMessage] = useState('');
     const [loadCount, setLoadCount] = useState(0);
@@ -22,23 +25,23 @@ function FinalQuestScreen({navigation}) {
     useEffect(() => {
       if (loadCount < 100) {
           const interval = setInterval(() => {
-              setLoadCount(prevCount => prevCount + 2);
+              setLoadCount(prevCount => prevCount + 4);
           }, 50);
           return () => clearInterval(interval);
       } else if (calorieCount < 100) {
           const interval = setInterval(() => {
-              setCalorieCount(prevCount => prevCount + 4);
+              setCalorieCount(prevCount => prevCount + 2);
           }, 50);
           return () => clearInterval(interval);
       } else if (xyzCount < 100) {
           const interval = setInterval(() => {
-              setXyzCount(prevCount => prevCount + 3);
+              setXyzCount(prevCount => prevCount + 4);
           }, 50);
           return () => clearInterval(interval);
       } else if (loadCount >= 100 && calorieCount >= 100 && xyzCount >= 100) {
           setCountDone(true);
       }
-    }, [loadCount, calorieCount, xyzCount])
+    }, [loadCount, calorieCount, xyzCount]);
 
     useEffect(() => {
       const fetchMetricSetting = async () => {
@@ -50,8 +53,8 @@ function FinalQuestScreen({navigation}) {
         try {
           const nickname = await AsyncStorage.getItem('questName');
           const age = await AsyncStorage.getItem('questAge');
-          const weight = await AsyncStorage.getItem('questWeight');
-          const height = await AsyncStorage.getItem('questHeight');
+          let weight = await AsyncStorage.getItem('questWeight');
+          let height = await AsyncStorage.getItem('questHeight');
           const goal = await AsyncStorage.getItem('questGoal');
           const gender = await AsyncStorage.getItem('questGender');
           const bodyType = await AsyncStorage.getItem('questBody');
@@ -115,10 +118,12 @@ function FinalQuestScreen({navigation}) {
           } else {
             setErrorMessage('Internal server error. Check your internet connection and try again.');
             setErrorView(true);
+            setIsErrorVisible(true); // Show the popup
           }
         } catch (error) {
           setErrorMessage(error.message || 'Internal server error. Check your internet connection and try again.');
           setErrorView(true);
+          setIsErrorVisible(true); // Show the popup
         }
       };
     
@@ -133,57 +138,110 @@ function FinalQuestScreen({navigation}) {
       }
     }, [loading, navigation, countDone]);
 
+    const hideError = () => {
+      setIsErrorVisible(false);
+    };
+
+    const tryAgain = () => {
+      navigation.navigate('Credentials'); 
+    };
+
     if (errorView) {
       return (
         <SafeAreaView style={styles.container}>
           <Image source={GatoQuestError} style={styles.errorImage} />
           <Text style={styles.errorTextMain}>Upss... something went wrong.</Text>
-          {errorMessage ? <Text style={styles.secondaryText}>{JSON.stringify(errorMessage)}</Text>
-          : null}
+          <ErrorPopup
+            visible={isErrorVisible}
+            message={JSON.stringify(errorMessage)}
+            onClose={hideError}
+          />
+          <Pressable style={questStyles.nextButton} onPress={tryAgain}>
+            <Text style={questStyles.nextButtonText}>Try again.</Text>
+          </Pressable>
         </SafeAreaView>
       );
     }
   
     return (    
       <SafeAreaView style={styles.container}>
-        <Image source={GatoQuestLoad} style={styles.errorImage} />
-        <Text style={styles.loadText}>Creating account... {loadCount}%</Text>
-        {loadCount >= 100 && <Text style={styles.loadText}>Calculating calories... {calorieCount}%</Text>}
-        {calorieCount >= 100 && <Text style={styles.loadText}>Coming up with a hype speech... {xyzCount}%</Text>}
-        {xyzCount >= 100 && <Text style={styles.loadText}>Done.</Text>}
+      <View style={styles.topContainer}>
+            <Image source={GatoQuestLoad} style={styles.errorImage} />
+      </View>
+      <View style={styles.bottomContainer}>
+        <Text style={loadCount < 100 ? styles.loadingText : styles.doneText}>
+          Creating account... {loadCount}%
+        </Text>
+        {loadCount >= 100 && (
+          <Text style={calorieCount < 100 ? styles.loadingText : styles.doneText}>
+            Calculating calories... {calorieCount}%
+          </Text>
+        )}
+        {calorieCount >= 100 && (
+          <Text style={xyzCount < 100 ? styles.loadingText : styles.doneText}>
+            Coming up with a hype speech... {xyzCount}%
+          </Text>
+        )}
+        {xyzCount >= 100 && <Text style={styles.done}>Done.</Text>}
+      </View>    
       </SafeAreaView>
     );
   }
-    const styles = StyleSheet.create({
-      container: {
-        flex: 1,
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-        backgroundColor: 'black',
-        padding: 10,
-      },
-      secondaryText: {
-        fontSize: 36,
-        color: 'whitesmoke',
-      },
-      errorTextMain: {
-        padding: 10,
-        marginTop: 20,
-        fontSize: 32,
-        color: 'whitesmoke',
-        textAlign: 'center',
-      },
-      loadText: {
-        padding: 5,
-        fontSize: 16,
-        color: 'whitesmoke',
-        textAlign: 'center',
-      },
-      errorImage: {
-        marginTop: 20,
-        width: screenWidth,
-        height: screenWidth,
-      },
-    });
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'center',
+    backgroundColor: '#F0E3CA',
+    padding: 10,
+  },
+  secondaryText: {
+    fontSize: 36,
+    fontFamily: 'Helvetica',
+    color: 'whitesmoke',
+  },
+  errorTextMain: {
+    padding: 10,
+    marginTop: 20,
+    fontSize: 32,
+    fontFamily: 'Helvetica',
+    color: '#1B1A17',
+    textAlign: 'center',
+  },
+  loadingText: {
+    padding: 5,
+    fontSize: 20,
+    color: '#1B1A17',
+    textAlign: 'center',
+    fontFamily: 'Helvetica',
+  },
+  done: {
+    padding: 5,
+    fontSize: 20,
+    color: '#FF8303',
+    fontFamily: 'Helvetica',
+    textAlign: 'center',
+  },
+  doneText: {
+    fontFamily: 'Helvetica',
+    fontSize: 16,
+    color: 'gray',
+    textAlign: 'center',
+  },
+  errorImage: {
+    marginTop: 20,
+    width: screenWidth,
+    height: screenWidth,
+  },
+  topContainer: {
+    width: '100%',
+    height: '80%',
+  },
+  bottomContainer: {
+    width: '100%',
+    height: '20%',
+  },
+});
 
 export default FinalQuestScreen;
