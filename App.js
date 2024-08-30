@@ -21,7 +21,10 @@ import MetricScreen from './Screens/Questionary/MetricScreen';
 import QuestHightScreen from './Screens/Questionary/QuestHightScreen';
 import CredentialsScreen from './Screens/Questionary/CredentialsScreen';
 import FinalQuestScreen from './Screens/Questionary/FinalQuestScreen';
-import QuestPromiseScreen from './Screens/Questionary/QuestPromiseScreen';
+
+import AccountScreenMain from './Screens/AppScreens/Account/AccountHome';
+import DietScreenMain from './Screens/AppScreens/Diet/DietHome';
+import TrainingScreenMain from './Screens/AppScreens/Training/TrainingHome';
 
 import * as Font from 'expo-font';
 
@@ -87,12 +90,14 @@ function App() {
             <Stack.Screen name="QuestHeight" component={QuestHightScreen}/>
             <Stack.Screen name="Credentials" component={CredentialsScreen}/>
             <Stack.Screen name="Final" component={FinalQuestScreen}/>
-            <Stack.Screen name="Promise" component={QuestPromiseScreen}/>
           </>
         ) : (
           <>
             <Stack.Screen name="Home" component={HomeScreen} />
             <Stack.Screen name="Start" component={StartScreen} />
+            <Stack.Screen name="AccountHome" component={AccountScreenMain} />
+            <Stack.Screen name="DietHome" component={DietScreenMain} />
+            <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
           </>
         )}
       </Stack.Navigator>

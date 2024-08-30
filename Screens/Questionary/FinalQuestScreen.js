@@ -118,12 +118,12 @@ function FinalQuestScreen({navigation}) {
           } else {
             setErrorMessage('Internal server error. Check your internet connection and try again.');
             setErrorView(true);
-            setIsErrorVisible(true); // Show the popup
+            setIsErrorVisible(true);
           }
         } catch (error) {
           setErrorMessage(error.message || 'Internal server error. Check your internet connection and try again.');
           setErrorView(true);
-          setIsErrorVisible(true); // Show the popup
+          setIsErrorVisible(true);
         }
       };
     
@@ -134,7 +134,7 @@ function FinalQuestScreen({navigation}) {
   
     useEffect(() => {
       if (!loading && countDone === true) {
-          navigation.navigate('Promise');
+          navigation.navigate('Home');
       }
     }, [loading, navigation, countDone]);
 
