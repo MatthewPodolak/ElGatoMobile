@@ -4,6 +4,7 @@ import HomeIcon from '../../assets/main/Nav/home.svg';
 import AccountIcon from '../../assets/main/Nav/account.svg';
 import DietIcon from '../../assets/main/Nav/forks.svg';
 import TrainingIcon from '../../assets/main/Nav/dumbell.svg';
+import ChefIcon from '../../assets/main/Nav/chef.svg';
 
 function NavigationMenu({ navigation, currentScreen }) {
   return (
@@ -28,6 +29,17 @@ function NavigationMenu({ navigation, currentScreen }) {
       >
       <View style = {styles.navImgContainer}>
         <DietIcon width={34} height={48} />
+      </View>
+      </Pressable>
+      <Pressable
+        style={[
+          styles.navButton,
+          currentScreen === 'MealsHome' ? styles.activeNavButton : null,
+        ]}
+        onPress={() => navigation.navigate('MealsHome')}
+      >
+      <View style = {styles.navImgContainer}>
+        <ChefIcon width={34} height={48} />
       </View>
       </Pressable>
       <Pressable

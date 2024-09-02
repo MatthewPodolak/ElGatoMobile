@@ -25,8 +25,10 @@ import FinalQuestScreen from './Screens/Questionary/FinalQuestScreen';
 import AccountScreenMain from './Screens/AppScreens/Account/AccountHome';
 import DietScreenMain from './Screens/AppScreens/Diet/DietHome';
 import TrainingScreenMain from './Screens/AppScreens/Training/TrainingHome';
+import MealsScreenMain from './Screens/AppScreens/Meals/MealsHome';
 
 import * as Font from 'expo-font';
+import { populateDb } from './Services/Database/populateDatabase';
 
 const Stack = createNativeStackNavigator();
 
@@ -41,6 +43,8 @@ function App() {
           Helvetica: require('./assets/fonts/Helvetica.ttf'),
           HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
         });
+
+        await populateDb();
 
         const token = await AsyncStorage.getItem('jwtToken');
         setIsAuthenticated(!!token);
@@ -98,6 +102,7 @@ function App() {
             <Stack.Screen name="AccountHome" component={AccountScreenMain} />
             <Stack.Screen name="DietHome" component={DietScreenMain} />
             <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
+            <Stack.Screen name="MealsHome" component={MealsScreenMain} />
           </>
         )}
       </Stack.Navigator>

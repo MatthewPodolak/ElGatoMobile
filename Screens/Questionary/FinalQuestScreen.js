@@ -9,6 +9,9 @@ import GatoQuestLoad from '../../assets/Questionary/carLoad.png';
 import { Dimensions } from 'react-native';
 import ErrorPopup from '../../Components/Error/ErrorPopup';
 
+import { calorieInsertion } from '../../Services/Database/calorieInsertion';
+
+
 const screenWidth = Dimensions.get('window').width;
 
 function FinalQuestScreen({navigation}) {
@@ -106,10 +109,15 @@ function FinalQuestScreen({navigation}) {
           ]);
     
           if (response.ok) {
+            
             const data = await response.json();
             await AsyncStorage.setItem('jwtToken', data.jwt);
             await AsyncStorage.setItem('calorieInfo', JSON.stringify(data.calorieIntake));
+            
+            await calorieInsertion(JSON.stringify(data.calorieIntake));
+
             setLoading(false);
+
           } else if (response.status === 409) {
             const errorMsg = 'E-mail address already in use';
             setErrorMessage(errorMsg);

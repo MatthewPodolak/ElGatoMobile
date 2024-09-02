@@ -2,16 +2,14 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
-import MakroMenu from '../../../Components/Diet/MakroMenu';
 
-function DietHome({ navigation }) {
+function MealsHome({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
-        <Text>Diet Screen</Text>
+        <Text>MEALS Screen</Text>
       </View>
-      <MakroMenu navigation={navigation} />
-      <NavigationMenu navigation={navigation} currentScreen="DietHome" />
+      <NavigationMenu navigation={navigation} currentScreen="MealsHome" />
     </SafeAreaView>
   );
 }
@@ -30,4 +28,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default DietHome;
+export default MealsHome;
