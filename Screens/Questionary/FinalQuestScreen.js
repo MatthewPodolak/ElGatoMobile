@@ -113,8 +113,14 @@ function FinalQuestScreen({navigation}) {
             const data = await response.json();
             await AsyncStorage.setItem('jwtToken', data.jwt);
             await AsyncStorage.setItem('calorieInfo', JSON.stringify(data.calorieIntake));
-            
-            await calorieInsertion(JSON.stringify(data.calorieIntake));
+
+            try{
+              await calorieInsertion(JSON.stringify(data.calorieIntake));
+            }catch(error){
+              setErrorMessage('Database error. Try restarting the app.');
+              setErrorView(true);
+              setIsErrorVisible(true);
+            }
 
             setLoading(false);
 

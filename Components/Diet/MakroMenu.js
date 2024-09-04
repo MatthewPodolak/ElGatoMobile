@@ -2,7 +2,7 @@ import React, { useEffect,useState } from 'react';
 import { ActivityIndicator, View, Pressable, StyleSheet, SafeAreaView, Text } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 
-function MakroMenu({ navigation }) {
+function MakroMenu() {
 
     const [kcal, setKcal] = useState(0);
     const [protein, setProtein] = useState(0);

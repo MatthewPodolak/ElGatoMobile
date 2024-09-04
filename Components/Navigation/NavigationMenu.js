@@ -71,8 +71,6 @@ function NavigationMenu({ navigation, currentScreen }) {
 const styles = StyleSheet.create({
   menuContainer: {
     flexDirection: 'row',
-    borderTopWidth: 2,
-    borderTopColor: '#FF8303',
     width: '100%',
     height: '7%',
     backgroundColor: '#000',
@@ -85,7 +83,7 @@ const styles = StyleSheet.create({
   activeNavButton: {
     borderBottomColor: '#FF8303',
     borderBottomWidth: 3,
-    borderRadius: 5,
+    borderRadius: 1,
   },
   navImgContainer: {
     width: '60%',
