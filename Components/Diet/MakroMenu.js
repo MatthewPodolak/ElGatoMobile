@@ -2,6 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, StyleSheet, SafeAreaView, Text } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 
+import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
+import { calorieInsertion } from '../../Services/Database/calorieInsertion';
+
+
 function MakroMenu({ CalorieCounter }) {
 
     const [kcal, setKcal] = useState(0);
@@ -36,7 +42,54 @@ function MakroMenu({ CalorieCounter }) {
         };
     
         const fetchFromApi = async () => {
-            //API CALL + SQL SAVE
+            try{
+                const token = await AsyncStorage.getItem('jwtToken');
+
+                const response = await fetchWithTimeout(
+                    `http://192.168.0.143:5094/api/UserData/GetUserCaloriesIntake`,
+                    {
+                      method: 'GET',
+                      headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json',
+                      },
+                    },
+                    5000
+                  );
+
+                  if(response.ok){
+                    const data = await response.json();
+
+                    setKcal(data.kcal);
+                    setCarbs(data.carbs);
+                    setFat(data.fats);
+                    setProtein(data.protein);
+
+                    setLoading(false);
+
+                    try{
+                        const calories = {
+                            kcal: data.kcal,
+                            fat: data.fat,
+                            protein: data.protein,
+                            carbs: data.carbs,
+                        };
+                        const caloriesJSON = JSON.stringify(calories);
+                        calorieInsertion(caloriesJSON);
+                    }catch(error){
+                        setLoading(true);
+                        throw "Could'nt connect to the database, try again later.";
+                    }
+
+                  }else{
+                    setLoading(true);
+                    throw "Could'nt connect to the database, try again later.";
+                  }
+
+            }catch(error){
+                setLoading(true);
+                throw "Could'nt connect to the database, try again later.";
+            }
         };
     
         const fetchData = async () => {

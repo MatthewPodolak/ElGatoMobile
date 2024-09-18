@@ -7,6 +7,8 @@ import Calendar from '../../../Components/Diet/DietCalendar';
 import Meal from '../../../Components/Diet/Meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
+import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
+
 function DietHome({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
@@ -21,13 +23,18 @@ function DietHome({ navigation }) {
       console.log(token);
       date = date + 'T00:00:00Z';
       console.log(date);
-      const response = await fetch(`http://192.168.0.143:5094/api/Diet/GetUserDietDay?date=${date}`, {
-        method: 'GET',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
+
+      const response = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/GetUserDietDay?date=${date}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
         },
-      });
+        10000
+      );
 
       if (!response.ok) {
         let currentDate = new Date();
@@ -77,7 +84,12 @@ function DietHome({ navigation }) {
       }
       
     } catch (error) {
-      setError("COS INNEGO ERROR TYPE S!");
+      if (error.message === 'Request timed out') {
+        setError("Request timed out - INTERNET");
+      }else{
+        setError("COS INNEGO ERROR TYPE S!");
+      }
+      console.log(error);
     }
   };
 
