@@ -16,25 +16,38 @@ function DietCalendar({ onDateSelect }) {
         for (let i = 3; i > 0; i--) {
             const pastDay = new Date(today);
             pastDay.setDate(today.getDate() - i);
-            daysArray.push({ day: pastDay.toLocaleDateString('en-US', { weekday: 'short' }), date: pastDay.getDate() });
+            daysArray.push({ 
+                day: pastDay.toLocaleDateString('en-US', { weekday: 'short' }), 
+                date: pastDay.getDate(), 
+                fullDate: pastDay.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+            });
         }
 
-        daysArray.push({ day: today.toLocaleDateString('en-US', { weekday: 'short' }), date: today.getDate(), today: true });
+        daysArray.push({ 
+            day: today.toLocaleDateString('en-US', { weekday: 'short' }), 
+            date: today.getDate(), 
+            today: true, 
+            fullDate: today.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+        });
 
         for (let i = 1; i <= 3; i++) {
             const futureDay = new Date(today);
             futureDay.setDate(today.getDate() + i);
-            daysArray.push({ day: futureDay.toLocaleDateString('en-US', { weekday: 'short' }), date: futureDay.getDate() });
+            daysArray.push({ 
+                day: futureDay.toLocaleDateString('en-US', { weekday: 'short' }), 
+                date: futureDay.getDate(), 
+                fullDate: futureDay.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+            });
         }
 
         setDays(daysArray);
-        setSelectedDate(today.getDate());
-        onDateSelect(today.getDate());
+        setSelectedDate(today.toISOString().split('T')[0]); // Set selectedDate as the full date
+        onDateSelect(today.toISOString().split('T')[0]); // Pass full date to parent
     };
 
     const handleDateSelect = (day) => {
-        setSelectedDate(day.date);
-        onDateSelect(day.date);
+        setSelectedDate(day.fullDate); // Set selectedDate as the full date
+        onDateSelect(day.fullDate); // Pass full date to parent
     };
 
     return (
@@ -48,7 +61,7 @@ function DietCalendar({ onDateSelect }) {
                         key={index}
                         style={[
                             styles.calendarItem,
-                            dayItem.date === selectedDate ? styles.selectedBlock : null
+                            dayItem.fullDate === selectedDate ? styles.selectedBlock : null
                         ]}
                         onPress={() => handleDateSelect(dayItem)}
                     >
@@ -56,7 +69,7 @@ function DietCalendar({ onDateSelect }) {
                             <Text
                                 style={[
                                     styles.boldText,
-                                    dayItem.date === selectedDate ? styles.selectedText : null
+                                    dayItem.fullDate === selectedDate ? styles.selectedText : null
                                 ]}
                             >
                                 {dayItem.day}
@@ -65,7 +78,7 @@ function DietCalendar({ onDateSelect }) {
                         <View style={styles.calendarDayNumberCont}>
                             <Text
                                 style={[
-                                    dayItem.date === selectedDate ? styles.selectedText : null
+                                    dayItem.fullDate === selectedDate ? styles.selectedText : null
                                 ]}
                             >
                                 {dayItem.date < 10 ? `0${dayItem.date}` : dayItem.date}
@@ -77,6 +90,7 @@ function DietCalendar({ onDateSelect }) {
         </SafeAreaView>
     );
 }
+
 
 const styles = StyleSheet.create({
     mainCalendarContainer: {

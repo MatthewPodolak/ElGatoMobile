@@ -1,33 +1,32 @@
-import React, { useEffect,useState } from 'react';
-import { ActivityIndicator, View, Pressable, StyleSheet, SafeAreaView, Text } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { ActivityIndicator, View, StyleSheet, SafeAreaView, Text } from 'react-native';
 import * as SQLite from 'expo-sqlite';
 
-function MakroMenu() {
+function MakroMenu({ CalorieCounter }) {
 
     const [kcal, setKcal] = useState(0);
     const [protein, setProtein] = useState(0);
     const [fat, setFat] = useState(0);
     const [carbs, setCarbs] = useState(0);
 
-    const [currentKcal, setCurrentKcal] = useState(12500);
-    const [currentProtein, setCurrentProtein] = useState(500);
-    const [currentFat, setCurrentFat] = useState(100);
-    const [currentCarbs, setCurrentCarbs] = useState(1900);
+    const [currentKcal, setCurrentKcal] = useState(0);
+    const [currentProtein, setCurrentProtein] = useState(0);
+    const [currentFat, setCurrentFat] = useState(0);
+    const [currentCarbs, setCurrentCarbs] = useState(0);
 
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         const fetchFromLiteSql = async () => {
             const db = await SQLite.openDatabaseAsync('ElGatoDbLite');
-            console.log(db);
-
+    
             try {
                 const userCalories = await db.getFirstAsync('SELECT * FROM user');
                 setKcal(userCalories.calories);
                 setCarbs(userCalories.carbs);
                 setFat(userCalories.fat);
                 setProtein(userCalories.protein);
-
+    
                 setLoading(false);
             } catch (error) {
                 console.error(error);
@@ -35,11 +34,11 @@ function MakroMenu() {
                 throw error;
             }
         };
-
+    
         const fetchFromApi = async () => {
-
+            //API CALL + SQL SAVE
         };
-
+    
         const fetchData = async () => {
             try {
                 await fetchFromLiteSql();
@@ -48,10 +47,26 @@ function MakroMenu() {
                 await fetchFromApi();
             }
         };
-
+    
+        const getEatenMakro = async () => {
+            if (CalorieCounter != null) {
+                setCurrentKcal(CalorieCounter.kcal !== undefined ? Number(CalorieCounter.kcal.toFixed(0)) : 0);
+                setCurrentCarbs(CalorieCounter.carbs !== undefined ? Number(CalorieCounter.carbs.toFixed(0)) : 0);
+                setCurrentFat(CalorieCounter.fats !== undefined ? Number(CalorieCounter.fats.toFixed(0)) : 0);
+                setCurrentProtein(CalorieCounter.protein !== undefined ? Number(CalorieCounter.protein.toFixed(0)) : 0);
+            } else {
+                setCurrentKcal(0);
+                setCurrentCarbs(0);
+                setCurrentFat(0);
+                setCurrentProtein(0);
+            }
+        };
+    
         fetchData();
-
-    }, []);
+        getEatenMakro();
+    
+    }, [CalorieCounter]);
+    
 
     if(loading){
         return (
@@ -72,11 +87,27 @@ function MakroMenu() {
         );
     }
 
-    const kcalProgress = kcal > 0 ? (currentKcal / kcal) * 100 : 0;
-    const proteinProgess = protein > 0 ? (currentProtein / protein) * 100 : 0;
-    const fatProgress = fat > 0 ? (currentFat / fat) * 100 : 0;
-    const carbsProgress = carbs > 0 ? (currentCarbs / carbs) * 100 : 0;
+    const calculateProgress = (current, total) => {
+        if (total === 0) return { progress: 0, overflowProgress: 0 };
+        
+        let progress = (current / total) * 100;
+        let overflowProgress = 0;
 
+        if (progress > 100) {
+            overflowProgress = progress - 100;
+            progress = 100;
+            if (overflowProgress > 100) {
+                overflowProgress = 100;
+            }
+        }
+        
+        return { progress, overflowProgress };
+    };
+
+    const { progress: kcalProgress, overflowProgress: kcalOverflowProgress } = calculateProgress(currentKcal, kcal);
+    const { progress: proteinProgress, overflowProgress: proteinOverflowProgress } = calculateProgress(currentProtein, protein);
+    const { progress: fatProgress, overflowProgress: fatOverflowProgress } = calculateProgress(currentFat, fat);
+    const { progress: carbsProgress, overflowProgress: carbsOverflowProgress } = calculateProgress(currentCarbs, carbs);
 
     return(
         <SafeAreaView style={styles.makroMenuContainer}>     
@@ -84,6 +115,9 @@ function MakroMenu() {
                 <View style={styles.progressBarWrapper}>
                     <View style={styles.progressBarContainer}>
                         <View style={[styles.progressBar, { width: `${kcalProgress}%` }, styles.orange]} />
+                        {kcalOverflowProgress > 0 && (
+                            <View style={[styles.progressBar, { width: `${kcalOverflowProgress}%` }, styles.red]} />
+                        )}
                     </View>
                 </View>
                 <View style={styles.currentValueContainer}>
@@ -96,7 +130,10 @@ function MakroMenu() {
             <View style={styles.makroMenuItem}>
                 <View style={styles.progressBarWrapper}>
                     <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBar, { width: `${proteinProgess}%` }, styles.blue]} />
+                        <View style={[styles.progressBar, { width: `${proteinProgress}%` }, styles.blue]} />
+                        {proteinOverflowProgress > 0 && (
+                            <View style={[styles.progressBar, { width: `${proteinOverflowProgress}%` }, styles.red]} />
+                        )}
                     </View>
                 </View>
                 <View style={styles.currentValueContainer}>
@@ -110,6 +147,9 @@ function MakroMenu() {
                 <View style={styles.progressBarWrapper}>
                     <View style={styles.progressBarContainer}>
                         <View style={[styles.progressBar, { width: `${fatProgress}%` }, styles.darkorange]} />
+                        {fatOverflowProgress > 0 && (
+                            <View style={[styles.progressBar, { width: `${fatOverflowProgress}%` }, styles.red]} />
+                        )}
                     </View>
                 </View>
                 <View style={styles.currentValueContainer}>
@@ -123,6 +163,9 @@ function MakroMenu() {
                 <View style={styles.progressBarWrapper}>
                     <View style={styles.progressBarContainer}>
                         <View style={[styles.progressBar, { width: `${carbsProgress}%` }, styles.purple]} />
+                        {carbsOverflowProgress > 0 && (
+                            <View style={[styles.progressBar, { width: `${carbsOverflowProgress}%` }, styles.red]} />
+                        )}
                     </View>
                 </View>
                 <View style={styles.currentValueContainer}>
@@ -144,8 +187,7 @@ const styles = StyleSheet.create({
         width: '100%',
         height: '8%',
         backgroundColor: '#DCDCDC',
-        },
-
+    },
     makroMenuItem: {
         flex: 1,
     },
@@ -155,6 +197,8 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         marginTop: '5%',
         backgroundColor: 'whitesmoke',
+        overflow: 'hidden',
+        position: 'relative',
     },
     progressBarWrapper: {
         width: '100%',
@@ -163,8 +207,8 @@ const styles = StyleSheet.create({
         alignItems: 'center',
     },
     currentValueContainer: {
-        width: '90%',
-        marginLeft: '5%',
+        width: '95%',
+        marginLeft: '2.5%',
         height: '30%',
     },
     totalValueContainer: {
@@ -175,6 +219,7 @@ const styles = StyleSheet.create({
     progressBar: {
         height: '100%',
         borderRadius: 10,
+        position: 'absolute',
     },
     purple: {
         backgroundColor: 'purple',
@@ -187,6 +232,9 @@ const styles = StyleSheet.create({
     },
     darkorange: {
         backgroundColor: '#A35709',
+    },
+    red: {
+        backgroundColor: 'red',
     },
     mainText: {
         fontFamily: 'Helvetica',
@@ -203,6 +251,6 @@ const styles = StyleSheet.create({
     bold: {
         fontWeight: '700',
     },
-  });
+});
 
 export default MakroMenu;
