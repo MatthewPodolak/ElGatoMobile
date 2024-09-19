@@ -16,6 +16,49 @@ function DietHome({ navigation }) {
   const [error, setError] = useState(null);
   const [idCounter, setIdCounter] = useState(0);
 
+  const handleMealNameChange = async (mealId, newName) => {
+    const currentMeal = dietData.meals.find(meal => meal.publicId === mealId);
+    if (!currentMeal || currentMeal.name === newName || !newName) {
+      return;
+    }
+
+    setDietData(prevDietData => ({
+      ...prevDietData,
+      meals: prevDietData.meals.map(meal =>
+        meal.publicId === mealId ? { ...meal, name: newName } : meal
+      ),
+    }));
+
+    const changeMealDate = selectedDate + 'T00:00:00Z';
+    const token = await AsyncStorage.getItem('jwtToken');
+
+    try{
+      const mealChangeRes = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/UpdateMealName`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            name: newName??"Meal",
+            mealPublicId: mealId,
+            date: changeMealDate,
+          }),
+        },
+        5000
+      );
+
+      if(!mealChangeRes.ok){
+        //error internet prob
+      }
+
+    }catch(error){
+      //catched -> can do non bsc 
+    }
+  };
+
   const onRemoveMeal = async (mealId) => {
     setDietData(prevDietData => ({
       ...prevDietData,
@@ -220,7 +263,7 @@ function DietHome({ navigation }) {
         <Text>SELECTED DATE : {dietData.date}</Text>
         <Text>Water Intake: {dietData.water} ml</Text>
         {dietData.meals.map((meal, index) => (
-          <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} />
+          <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} />
         ))}
         <View style={styles.newMealRow}>
           <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  

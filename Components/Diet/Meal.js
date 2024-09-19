@@ -1,10 +1,11 @@
-import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
+import React, { useState } from 'react';
+import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
-const Meal = ({ meal, onRemoveMeal }) => {
-  console.log(meal);
+const Meal = ({ meal, onRemoveMeal, onChangeMealName }) => {
+  const [isEditing, setIsEditing] = useState(false);
+  const [newMealName, setNewMealName] = useState(meal.name);
 
   const totalSummary = meal.ingridient.reduce(
     (totals, ingredient) => {
@@ -19,13 +20,31 @@ const Meal = ({ meal, onRemoveMeal }) => {
     { energyKcal: 0, proteins: 0, fats: 0, carbs: 0 }
   );
 
+  const handleNameSubmit = () => {
+    setIsEditing(false);
+    onChangeMealName(meal.publicId, newMealName);
+  };
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <View style={styles.mainContainer}>
         <BlurView style={styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
             <View style={styles.headerText}>
-              <Text style={styles.text}>{meal.name}</Text>
+              {isEditing ? (
+                <TextInput
+                  style={styles.input}
+                  value={newMealName}
+                  onChangeText={setNewMealName}
+                  onBlur={handleNameSubmit}
+                  onSubmitEditing={handleNameSubmit}
+                  autoFocus
+                />
+              ) : (
+                <TouchableOpacity onPress={() => setIsEditing(true)}>
+                  <Text style={styles.text}>{meal.name}</Text>
+                </TouchableOpacity>
+              )}
             </View>
             <View style={styles.headerClose}>
               <TouchableOpacity onPress={() => onRemoveMeal(meal.publicId)}>
@@ -124,6 +143,13 @@ const styles = StyleSheet.create({
     color: '#000',
     fontSize: 18,
     fontFamily: 'Helvetica',
+  },
+  input: {
+    color: '#000',
+    fontSize: 18,
+    fontFamily: 'Helvetica',
+    borderBottomWidth: 1,
+    borderBottomColor: '#000',
   },
   summaryRow: {
     width: '100%',
