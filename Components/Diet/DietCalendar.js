@@ -19,7 +19,7 @@ function DietCalendar({ onDateSelect }) {
             daysArray.push({ 
                 day: pastDay.toLocaleDateString('en-US', { weekday: 'short' }), 
                 date: pastDay.getDate(), 
-                fullDate: pastDay.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+                fullDate: pastDay.toISOString().split('T')[0]
             });
         }
 
@@ -27,7 +27,7 @@ function DietCalendar({ onDateSelect }) {
             day: today.toLocaleDateString('en-US', { weekday: 'short' }), 
             date: today.getDate(), 
             today: true, 
-            fullDate: today.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+            fullDate: today.toISOString().split('T')[0]
         });
 
         for (let i = 1; i <= 3; i++) {
@@ -36,18 +36,18 @@ function DietCalendar({ onDateSelect }) {
             daysArray.push({ 
                 day: futureDay.toLocaleDateString('en-US', { weekday: 'short' }), 
                 date: futureDay.getDate(), 
-                fullDate: futureDay.toISOString().split('T')[0] // Store full date in YYYY-MM-DD format
+                fullDate: futureDay.toISOString().split('T')[0]
             });
         }
 
         setDays(daysArray);
-        setSelectedDate(today.toISOString().split('T')[0]); // Set selectedDate as the full date
-        onDateSelect(today.toISOString().split('T')[0]); // Pass full date to parent
+        setSelectedDate(today.toISOString().split('T')[0]);
+        onDateSelect(today.toISOString().split('T')[0]);
     };
 
     const handleDateSelect = (day) => {
-        setSelectedDate(day.fullDate); // Set selectedDate as the full date
-        onDateSelect(day.fullDate); // Pass full date to parent
+        setSelectedDate(day.fullDate);
+        onDateSelect(day.fullDate);
     };
 
     return (

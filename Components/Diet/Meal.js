@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
-const Meal = ({ meal }) => {
+const Meal = ({ meal, onRemoveMeal }) => {
   console.log(meal);
 
   const totalSummary = meal.ingridient.reduce(
@@ -28,7 +28,7 @@ const Meal = ({ meal }) => {
               <Text style={styles.text}>{meal.name}</Text>
             </View>
             <View style={styles.headerClose}>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => onRemoveMeal(meal.publicId)}>
                 <Text style={styles.text}>X</Text>
               </TouchableOpacity>
             </View>

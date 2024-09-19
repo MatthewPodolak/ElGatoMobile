@@ -14,11 +14,44 @@ function DietHome({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
+  const [idCounter, setIdCounter] = useState(0);
+
+  const onRemoveMeal = async (mealId) => {
+    setDietData(prevDietData => ({
+      ...prevDietData,
+      meals: prevDietData.meals.filter(meal => meal.publicId !== mealId),
+    }));
+
+    const delMealDate = selectedDate + 'T00:00:00Z';
+    const token = await AsyncStorage.getItem('jwtToken');
+
+    try{
+      const mealRemoveRes = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/DeleteMeal?publicId=${mealId}&date=${delMealDate}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        5000
+      );
+
+      if(!mealRemoveRes.ok){
+        //error.
+      }
+
+    }catch(error){
+      //could just do none.
+    }
+
+  };
 
   const newMealPress = async () => {
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
-    const counter = dietData.meals.length;
+    const counter = idCounter; //id counter
     const token = await AsyncStorage.getItem('jwtToken');
 
     const newMeal = {
@@ -34,6 +67,8 @@ function DietHome({ navigation }) {
       meals: updatedMeals
     }));
 
+    setIdCounter(idCounter+1);
+
     try {
       const mealAddRes = await fetchWithTimeout(
         `http://192.168.0.143:5094/api/Diet/AddNewMeal?mealName=${newMeal.name}&date=${newMealDate}`,
@@ -47,12 +82,14 @@ function DietHome({ navigation }) {
         5000
       );
       if(!mealAddRes.ok){
-        //set error
-        console.log('dupa while adding');
+        //set error popup no internet - meal could not be saved.
+        console.log('err while adding');
+        setIdCounter(idCounter-1);
       }
     } catch (error) {
       console.log("Error while adding newMeal");
-      //throw.
+      setIdCounter(idCounter-1);
+      //set error popup no internet - meal could not be saved.
     }
   };
 
@@ -112,6 +149,7 @@ function DietHome({ navigation }) {
           };
           const data = dietDayVMO;
           setDietData(data);
+          setIdCounter(idCounter+1);
 
           try{
             console.log(date);
@@ -182,7 +220,7 @@ function DietHome({ navigation }) {
         <Text>SELECTED DATE : {dietData.date}</Text>
         <Text>Water Intake: {dietData.water} ml</Text>
         {dietData.meals.map((meal, index) => (
-          <Meal key={index} meal={meal} />
+          <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} />
         ))}
         <View style={styles.newMealRow}>
           <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  
