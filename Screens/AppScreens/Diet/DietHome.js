@@ -8,11 +8,54 @@ import Meal from '../../../Components/Diet/Meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
+import { TouchableOpacity } from 'react-native';
 
 function DietHome({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
+
+  const newMealPress = async () => {
+    const newMealDate = selectedDate + 'T00:00:00Z';
+    console.log(newMealDate);
+    const counter = dietData.meals.length;
+    const token = await AsyncStorage.getItem('jwtToken');
+
+    const newMeal = {
+      name: `Meal${counter}`,
+      publicId: counter,
+      ingridient: [],
+    };
+
+    const updatedMeals = [...dietData.meals, newMeal];
+
+    setDietData(prevDietData => ({
+      ...prevDietData,
+      meals: updatedMeals
+    }));
+
+    try {
+      const mealAddRes = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/AddNewMeal?mealName=${newMeal.name}&date=${newMealDate}`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        5000
+      );
+      if(!mealAddRes.ok){
+        //set error
+        console.log('dupa while adding');
+      }
+    } catch (error) {
+      console.log("Error while adding newMeal");
+      //throw.
+    }
+  };
+
 
   const handleDateSelect = async (date) => {
     setSelectedDate(date);
@@ -62,7 +105,7 @@ function DietHome({ navigation }) {
           };
 
           const dietDayVMO = {
-            date: currentDate.toDateString(),
+            date: date,
             water: 0,
             meals: [meal],
             calorieCounter: dailyCalorieCount
@@ -70,7 +113,30 @@ function DietHome({ navigation }) {
           const data = dietDayVMO;
           setDietData(data);
 
-          //API CALL WITH STARTER MEAL!
+          try{
+            console.log(date);
+            console.log(dietDayVMO.date);
+            const mealAddRes = await fetchWithTimeout(
+              `http://192.168.0.143:5094/api/Diet/AddNewMeal?mealName=${meal.name}&date=${date}`,
+              {
+                method: 'POST',
+                headers: {
+                  'Authorization': `Bearer ${token}`,
+                  'Content-Type': 'application/json',
+                },
+              },
+              5000
+            );
+            
+
+            if(!mealAddRes.ok){
+              console.log("ERROR HIT");
+              setError("throw net");
+            }
+            console.log("HIT");
+          }catch(error){
+             setError("diff error - throw net");
+          }
 
         }else{
           setError("failed to load - internet!");
@@ -117,7 +183,10 @@ function DietHome({ navigation }) {
         <Text>Water Intake: {dietData.water} ml</Text>
         {dietData.meals.map((meal, index) => (
           <Meal key={index} meal={meal} />
-        ))}       
+        ))}
+        <View style={styles.newMealRow}>
+          <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  
+        </View>
       </SafeAreaView>
     );
   };
@@ -155,6 +224,18 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'red',
+  },
+  newMealRow: {
+    flex: 1,
+    alignItems: 'center',
+    marginTop: 10,
+    marginBottom: 20,
+  },
+  newMealRowText: {
+    fontSize: 22,
+    fontWeight: '700',
+    color: '#FF8303',
+    fontFamily: 'Helvetica',
   },
 });
 
