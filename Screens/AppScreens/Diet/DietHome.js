@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -6,6 +6,7 @@ import MakroMenu from '../../../Components/Diet/MakroMenu';
 import Calendar from '../../../Components/Diet/DietCalendar';
 import Meal from '../../../Components/Diet/Meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useRoute } from '@react-navigation/native';
 
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import { TouchableOpacity } from 'react-native';
@@ -15,6 +16,32 @@ function DietHome({ navigation }) {
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
   const [idCounter, setIdCounter] = useState(0);
+
+  const { params } = useRoute();
+
+  useEffect(() => {
+    if (params?.newIngredient && params?.mealId) {
+      const { mealId, newIngredient } = params;
+
+      addIngredientToMeal(mealId, newIngredient);
+
+      //API CALL
+    }
+  }, [params]);
+
+  const addIngredientToMeal = (mealId, ingredient) => {
+    console.log("hitted");
+    console.log(ingredient);
+    
+    setDietData(prevDietData => ({
+      ...prevDietData,
+      meals: prevDietData.meals.map(meal =>
+        meal.publicId === mealId
+          ? { ...meal, ingridient: [...meal.ingridient, ingredient] }
+          : meal
+      ),
+    }));
+  };
 
   const handleMealNameChange = async (mealId, newName) => {
     const currentMeal = dietData.meals.find(meal => meal.publicId === mealId);
@@ -263,7 +290,8 @@ function DietHome({ navigation }) {
         <Text>SELECTED DATE : {dietData.date}</Text>
         <Text>Water Intake: {dietData.water} ml</Text>
         {dietData.meals.map((meal, index) => (
-          <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} />
+          <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
+            addIngredientToMeal={addIngredientToMeal}/>
         ))}
         <View style={styles.newMealRow}>
           <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  

@@ -27,6 +27,8 @@ import DietScreenMain from './Screens/AppScreens/Diet/DietHome';
 import TrainingScreenMain from './Screens/AppScreens/Training/TrainingHome';
 import MealsScreenMain from './Screens/AppScreens/Meals/MealsHome';
 
+import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
+
 import * as Font from 'expo-font';
 import { populateDb } from './Services/Database/populateDatabase';
 
@@ -103,6 +105,7 @@ function App() {
             <Stack.Screen name="DietHome" component={DietScreenMain} />
             <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
             <Stack.Screen name="MealsHome" component={MealsScreenMain} />
+            <Stack.Screen name="AddIngredient" component={AddIngredientScreen} />
           </>
         )}
       </Stack.Navigator>

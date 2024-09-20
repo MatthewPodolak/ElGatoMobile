@@ -20,5 +20,16 @@ export const populateDb = async () => {
                         entryDate TEXT
                     )
                 `);
+
+    await db.runAsync(`
+                    CREATE TABLE IF NOT EXISTS Ingriedients (
+                        id INTEGER PRIMARY KEY AUTOINCREMENT,
+                        name TEXT,
+                        calories NUMERIC,
+                        protein NUMERIC,
+                        fat NUMERIC,
+                        carbs NUMERIC                       
+                    )
+        `);
 };
   
