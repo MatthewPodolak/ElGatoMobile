@@ -20,19 +20,69 @@ function DietHome({ navigation }) {
   const { params } = useRoute();
 
   useEffect(() => {
-    if (params?.newIngredient && params?.mealId) {
-      const { mealId, newIngredient } = params;
+    if (params?.selectedItemsData && params?.mealId) {
+      const { mealId, selectedItemsData } = params;
+  
+      const addIngredients = async () => {
+        try {
+          selectedItemsData.forEach((ingredient) => {
+            addIngredientToMeal(mealId, ingredient);
+          });
+  
+          const token = await AsyncStorage.getItem('jwtToken');
+          const mealDate = selectedDate + 'T00:00:00Z';
+  
+          const ingredientsToSend = selectedItemsData.map((ingredient) => ({
+            name: ingredient.name,
+            carbs: ingredient.carbs,
+            proteins: ingredient.proteins,
+            weightValue : ingredient.weightValue,
+            fats: ingredient.fats,
+            kcal: ingredient.energyKcal,
+            prep_For: ingredient.prep_For || 100,
+            id: String(ingredient.id) || "123"
+          }));
+  
+          console.log('Payload:', {
+            mealId: mealId,
+            date: mealDate,
+            ingridient: ingredientsToSend
+          });
 
-      addIngredientToMeal(mealId, newIngredient);
-
-      //API CALL
+          const pushIngRes = await fetchWithTimeout(
+            `http://192.168.0.143:5094/api/Diet/AddIngriedientsToMeal`,
+            {
+              method: 'POST',
+              headers: {
+                Authorization: `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                mealId: mealId,
+                date: mealDate,
+                ingridient: ingredientsToSend,
+              }),
+            },
+            10000
+          );
+  
+          if (!pushIngRes.ok) {
+            //error
+            throw new Error(`Failed to push ingredients`);
+          }
+  
+        } catch (error) {
+          //error
+          console.error('Error while adding ingredients to meal:', error);
+        }
+      };
+  
+      addIngredients();
     }
   }, [params]);
+  
 
   const addIngredientToMeal = (mealId, ingredient) => {
-    console.log("hitted");
-    console.log(ingredient);
-    
     setDietData(prevDietData => ({
       ...prevDietData,
       meals: prevDietData.meals.map(meal =>
