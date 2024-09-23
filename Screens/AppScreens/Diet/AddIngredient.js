@@ -10,6 +10,7 @@ import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import BarCodeIcon from '../../../assets/main/Diet/upc-scan.svg';
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import AddIcon from '../../../assets/main/Diet/plus-circle-fill.svg';
+import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
 
 const AddIngredient = ({ route, navigation }) => {
   const [ingredientName, setIngredientName] = useState('');
@@ -22,6 +23,9 @@ const AddIngredient = ({ route, navigation }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedItemsData, setSelectedItemsData] = useState([]);
   const [searchedData, setSearchedData] = useState(null);
+  
+  const [scannedData, setScannedData] = useState([]);
+
   const [typingTimeout, setTypingTimeout] = useState(null);
 
   const [inputGrams, setInputGrams] = useState('');
@@ -44,6 +48,23 @@ const AddIngredient = ({ route, navigation }) => {
     }
   };
   
+  const removeScannedItem = (item) => {  
+    const scannedItemIndex = scannedData.findIndex(scannedItem => scannedItem.id === item.id);
+    if (scannedItemIndex > -1) {
+      const updatedScannedData = [...scannedData];
+      updatedScannedData.splice(scannedItemIndex, 1);
+      setScannedData(updatedScannedData);
+    }
+  
+    const selectedItemIndex = selectedItemsData.findIndex(selectedItem => selectedItem.id === item.id);
+    if (selectedItemIndex > -1) {
+      const updatedSelectedItemsData = [...selectedItemsData];
+      updatedSelectedItemsData.splice(selectedItemIndex, 1);
+      setSelectedItemsData(updatedSelectedItemsData);
+    }
+  };
+  
+  
 
   const handleItemPress = (item) => {
     setSelectedItem(item);
@@ -62,9 +83,10 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const handleAddIngredient = (selectedItem) => {
+    console.log(selectedItem);
     if(gramsCounter === 0){
       console.log('zero');
-      //przem err
+      //error
       return;
     }
 
@@ -85,19 +107,73 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const closeModalIng = () => {
+    if (gramsCounter === 0 && selectedItem) {  
+      const selectedItemDataIndex = selectedItemsData.findIndex(item => item.id === selectedItem.id);
+      if (selectedItemDataIndex > -1) {
+        const updatedSelectedItemsData = [...selectedItemsData];
+        updatedSelectedItemsData.splice(selectedItemDataIndex, 1);
+        setSelectedItemsData(updatedSelectedItemsData);
+      }
+  
+      const scannedItemIndex = scannedData.findIndex(item => item.id === selectedItem.id);
+      if (scannedItemIndex > -1) {
+        const updatedScannedData = [...scannedData];
+        updatedScannedData.splice(scannedItemIndex, 1);
+        setScannedData(updatedScannedData);
+      }
+  
+      const selectedItemIndex = selectedItems.findIndex(item => item.id === selectedItem.id);
+      if (selectedItemIndex > -1) {
+        const updatedSelectedItems = [...selectedItems];
+        updatedSelectedItems.splice(selectedItemIndex, 1);
+        setSelectedItems(updatedSelectedItems);
+      }
+    }
+  
     setSelectedItem(null);
     setIngModalVisible(false);
   };
+  
+  
 
   const addGrams = (grams) => {
     setGramsCounter(gramsCounter + grams);
   };
 
-  const handleBarCodeScanned = ({ type, data }) => {
+  const handleBarCodeScanned = async ({ type, data }) => {
     setScanned(true);
-    setModalVisible(false);
+    //api call 
+    try{
+      const token = await AsyncStorage.getItem('jwtToken');
 
-    Alert.alert(`${type} \n \n ${data}`);
+      const scannedIngredient = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/GetIngridientByEan?ean=${data}`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        5000
+      );
+
+      if(!scannedIngredient.ok){
+        console.log('not ok');
+        //error
+      }else{
+        const responseBody = await scannedIngredient.json();
+        setSelectedItem(responseBody);
+        setIngModalVisible(true);
+        setScannedData((prevItems) => [...prevItems, responseBody]);
+      }
+    }catch(error){
+      //error getting
+    }
+
+    setModalVisible(false);
+    setGramsCounter(0);
+    setInputGrams('');
   };
 
   const openScanner = async () => {
@@ -196,6 +272,23 @@ const AddIngredient = ({ route, navigation }) => {
       </View>
 
       <View style={styles.contentContainer}>
+        {scannedData == null || scannedData.length === 0 ? (
+          <Text></Text>
+        ) : (
+          scannedData.map((item, index) => (
+            <View key={`${item.id}-${index}`} style={styles.scannedContentRow}>
+              <TouchableOpacity onPress={() => removeScannedItem(item)}>
+                <View style = {styles.scannedRowLeft}>
+                    <Text style={styles.itemName}>{item.name}</Text>
+                </View>
+                <View style = {styles.scannedRowRight}>
+                  <CloseIcon width={22} height={22} />
+                </View>
+              </TouchableOpacity>
+            </View>
+          ))
+        )}
+
         {searchedData == null ? (
           <View style={styles.contentError}>
             <Text style={styles.specialText}>EL GATO LOTTIE HERE!</Text>
@@ -621,6 +714,29 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center', 
     alignItems: 'center', 
+  },
+
+  scannedRowLeft: {
+    borderBottomColor: '#FF8303',
+    borderBottomWidth: 2,
+    width: '85%',
+  },
+  scannedContentRow: {
+    width: '100%',
+    paddingLeft: 10,
+    paddingRight: 10,
+    marginBottom: 20,
+    position: 'relative', 
+  },
+  scannedRowRight: {
+    width: '10%',
+    height: '100%',
+    backgroundColor: '#1B1A17',
+    position: 'absolute', 
+    right: 0, 
+    top: 0, 
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   contentRow: {
     width: '100%',
