@@ -3,6 +3,13 @@ import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-nativ
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
+import CloseIcon from '../../assets/main/Diet/x-lg.svg';
+import EditIcon from '../../assets/main/Diet/pencil-square.svg';
+import TrashIcon from '../../assets/main/Diet/trash3.svg';
+import AddSquareIcon from '../../assets/main/Diet/plus-square.svg';
+import HeartIcon from '../../assets/main/Diet/heart.svg';
+
+
 const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal  }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newMealName, setNewMealName] = useState(meal.name);
@@ -50,13 +57,16 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
                 />
               ) : (
                 <TouchableOpacity onPress={() => setIsEditing(true)}>
-                  <Text style={styles.text}>{meal.name}</Text>
+                  <Text style={styles.mealText}>{meal.name}</Text>
                 </TouchableOpacity>
               )}
             </View>
             <View style={styles.headerClose}>
+              <TouchableOpacity style={{ marginRight: 5 }}>
+                <HeartIcon fill={'#FF8303'} width={24} height={26} />
+              </TouchableOpacity>
               <TouchableOpacity onPress={() => onRemoveMeal(meal.publicId)}>
-                <Text style={styles.text}>X</Text>
+                <TrashIcon fill={'#000'} width={22} height={26} />
               </TouchableOpacity>
             </View>
           </View>
@@ -64,32 +74,44 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
           <View style={styles.contentRow}>
             {meal.ingridient.map((ingredient, index) => (
               <View key={index} style={styles.ingredientRow}>
-                <Text style={styles.ingredientName}>{ingredient.name}</Text>
-                <Text style={styles.ingredientName}>{ingredient.weightValue} g</Text>
-                <TouchableOpacity>
-                  <Text style={styles.ingredientEdit}>E </Text>
-                </TouchableOpacity>
-                <TouchableOpacity>
-                  <Text style={styles.ingredientClose}> X</Text>
-                </TouchableOpacity>
+                <View style = {styles.ingNameCont}>
+                  <Text style={styles.ingredientName}>{ingredient.name}</Text>
+                </View>
+                <View style = {styles.ingWeightCont}>
+                  <Text style={styles.ingredientName}>{ingredient.weightValue} g</Text>
+                </View>
+                <View style = {styles.ingOptionsCont}>
+                  <TouchableOpacity>
+                    <EditIcon width={20} height={20} />
+                  </TouchableOpacity>
+                  <TouchableOpacity>
+                    <CloseIcon fill={'#000'} width={20} height={20} />
+                  </TouchableOpacity>
+                </View>
+
               </View>
             ))}
               <View style={styles.ingredientRow}>
               <TouchableOpacity onPress={handleAddIngredient}>
-                  <Text style={styles.addIngridientText}>+</Text>
+                  <AddSquareIcon style={styles.addSquare} width={24} height={24}/>
                 </TouchableOpacity>
               </View>
           </View>
           <View style = {styles.hrLine}></View>
           <View style={styles.summaryRow}>
-            <View style={styles.kcal}><Text>Kcal: {totalSummary.energyKcal.toFixed(2)} </Text></View>
-            <View style={styles.prot}><Text>P: {totalSummary.proteins.toFixed(2)}g </Text></View>
-            <View style={styles.fat}><Text>F: {totalSummary.fats.toFixed(2)}g </Text></View>
-            <View style={styles.carbs}><Text>C: {totalSummary.carbs.toFixed(2)}g </Text></View>
-          </View>
+            <View style={styles.kcal}>
+                <Text>Kcal: {totalSummary.energyKcal.toFixed()} </Text>
+            </View>
+            <View style={styles.macros}>
+                <Text>P: {totalSummary.proteins.toFixed(2)}g </Text>
+                <Text>F: {totalSummary.fats.toFixed(2)}g </Text>
+                <Text>C: {totalSummary.carbs.toFixed(2)}g </Text>
+            </View>
+        </View>
         </BlurView>
       </View>
       <View style={styles.spacing}></View>
+          
     </SafeAreaView>
   );
 };
@@ -127,34 +149,55 @@ const styles = StyleSheet.create({
   },
   headerClose: {
     alignItems: 'flex-end',
+    flexDirection: 'row',
   },
   contentRow: {
     marginBottom: 20,
   },
   ingredientRow: {
     flexDirection: 'row',
-    justifyContent: 'space-between',
     marginBottom: 10,
   },
+  ingNameCont: {
+    width: '60%',
+    
+  },
+  ingWeightCont: {
+    width: '25%',
+    
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  ingOptionsCont: {
+    width: '15%',
+    
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
+
+
   ingredientName: {
-    flex: 2,
     color: '#000',
   },
   ingredientWeight: {
-    flex: 1,
-    color: '#000',
+    color: '#000',  
   },
   ingredientEdit: {
-    flex: 0.5,
     color: '#000',
   },
   ingredientClose: {
-    flex: 0.5,
     color: '#000',
   },
   text: {
     color: '#000',
     fontSize: 18,
+    fontFamily: 'Helvetica',
+  },
+  mealText: {
+    color: '#000',
+    fontWeight: '600',
+    fontSize: 22,
     fontFamily: 'Helvetica',
   },
   input: {
@@ -165,31 +208,34 @@ const styles = StyleSheet.create({
     borderBottomColor: '#000',
   },
   summaryRow: {
-    width: '100%',
-    flexDirection: 'row',
-    marginTop: 10,
+  width: '100%',
+  flexDirection: 'row',
+  justifyContent: 'space-between',
+  marginTop: 10,
   },
   kcal: {
-    marginBottom: 5,
+    flex: 1,
   },
-  prot: {
-    marginBottom: 5,
-  },
-  fat: {
-    marginBottom: 5,
-  },
-  carbs: {
-    marginBottom: 5,
+  macros: {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    flex: 1,
+    textAlign: 'right',
   },
   spacing: {
     height: 10,
   },
   hrLine: {
     borderBottomColor: 'black',
+    opacity: 0.2,
     borderBottomWidth: 1,
+    marginBottom: 10,
   },
   addIngridientText: {
     fontSize: 22,
+  },
+  addSquare: {
+    marginTop: 10,
   },
 });
 

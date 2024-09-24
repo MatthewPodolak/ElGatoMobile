@@ -64,7 +64,6 @@ const AddIngredient = ({ route, navigation }) => {
     }
   };
   
-  
 
   const handleItemPress = (item) => {
     setSelectedItem(item);
@@ -134,8 +133,6 @@ const AddIngredient = ({ route, navigation }) => {
     setIngModalVisible(false);
   };
   
-  
-
   const addGrams = (grams) => {
     setGramsCounter(gramsCounter + grams);
   };
@@ -160,7 +157,7 @@ const AddIngredient = ({ route, navigation }) => {
 
       if(!scannedIngredient.ok){
         console.log('not ok');
-        //error
+        //error return info to user that the ean is invalid and perform adding options pr.
       }else{
         const responseBody = await scannedIngredient.json();
         setSelectedItem(responseBody);

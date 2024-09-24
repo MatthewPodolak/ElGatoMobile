@@ -15,9 +15,28 @@ function DietHome({ navigation }) {
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
-  const [idCounter, setIdCounter] = useState(0);
 
   const { params } = useRoute();
+
+  const getIdCounter = () => {
+    if (!dietData || !dietData.meals) {
+      return 0;
+    }
+  
+    console.log(dietData.meals);
+  
+    const numbers = dietData.meals.map(meal => {
+      const mealName = meal.name;
+    
+      const match = mealName.match(/\d+/);
+      return match ? parseInt(match[0], 10) : 0;
+    });
+  
+    const highestNumber = Math.max(...numbers);
+  
+    return (highestNumber+1);
+  };
+  
 
   useEffect(() => {
     if (params?.selectedItemsData && params?.mealId) {
@@ -171,7 +190,7 @@ function DietHome({ navigation }) {
   const newMealPress = async () => {
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
-    const counter = idCounter; //id counter
+    const counter = getIdCounter(); //id counter
     const token = await AsyncStorage.getItem('jwtToken');
 
     const newMeal = {
@@ -186,8 +205,6 @@ function DietHome({ navigation }) {
       ...prevDietData,
       meals: updatedMeals
     }));
-
-    setIdCounter(idCounter+1);
 
     try {
       const mealAddRes = await fetchWithTimeout(
@@ -204,11 +221,9 @@ function DietHome({ navigation }) {
       if(!mealAddRes.ok){
         //set error popup no internet - meal could not be saved.
         console.log('err while adding');
-        setIdCounter(idCounter-1);
       }
     } catch (error) {
       console.log("Error while adding newMeal");
-      setIdCounter(idCounter-1);
       //set error popup no internet - meal could not be saved.
     }
   };
@@ -269,7 +284,6 @@ function DietHome({ navigation }) {
           };
           const data = dietDayVMO;
           setDietData(data);
-          setIdCounter(idCounter+1);
 
           try{
             console.log(date);
@@ -337,8 +351,9 @@ function DietHome({ navigation }) {
 
     return (
       <SafeAreaView>
-        <Text>SELECTED DATE : {dietData.date}</Text>
-        <Text>Water Intake: {dietData.water} ml</Text>
+        {/*<Text>SELECTED DATE : {dietData.date}</Text>
+        <Text>Water Intake: {dietData.water} ml</Text> */}
+        <View style = {styles.topMargin}></View>
         {dietData.meals.map((meal, index) => (
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
             addIngredientToMeal={addIngredientToMeal}/>
@@ -372,6 +387,9 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     backgroundColor: 'whitesmoke',
     alignItems: 'center',
+  },
+  topMargin: {
+    height: 15,
   },
   scrollContainer: {
     width: '100%',
