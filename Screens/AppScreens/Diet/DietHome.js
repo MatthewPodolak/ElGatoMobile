@@ -103,6 +103,98 @@ function DietHome({ navigation }) {
   }, [params]);
   
 
+  const removeIngredientFromMeal = async (publicId, id, name, weightValue) => {  
+    
+    setDietData(prevDietData => {
+      const updatedMeals = prevDietData.meals.map(meal => {
+        if (meal.publicId === publicId) {
+          const updatedIngredients = [...meal.ingridient];
+  
+          const ingredientIndex = updatedIngredients.findIndex(
+            ingredient => ingredient.name === name && ingredient.weightValue === weightValue
+          );
+  
+          if (ingredientIndex !== -1) {
+            updatedIngredients.splice(ingredientIndex, 1);
+          }
+  
+          return {
+            ...meal,
+            ingridient: updatedIngredients,
+            calorieCounter: {
+              kcal: totalKcal,
+              protein: totalProtein,
+              fats: totalFats,
+              carbs: totalCarbs,
+            },
+          };
+        }
+  
+        return meal; 
+      });
+  
+      let totalKcal = 0;
+      let totalProtein = 0;
+      let totalFats = 0;
+      let totalCarbs = 0;
+  
+      updatedMeals.forEach(meal => {
+        meal.ingridient.forEach(ingredient => {
+          totalKcal += (ingredient.energyKcal * (ingredient.weightValue / 100));
+          totalProtein += (ingredient.proteins * (ingredient.weightValue / 100));
+          totalFats += (ingredient.fats * (ingredient.weightValue / 100));
+          totalCarbs += (ingredient.carbs * (ingredient.weightValue / 100));
+        });
+      });
+  
+      return {
+        ...prevDietData,
+        meals: updatedMeals,
+        calorieCounter: {
+          kcal: totalKcal,
+          protein: totalProtein,
+          fats: totalFats,
+          carbs: totalCarbs,
+        },
+      };
+    });
+
+    //API CALL!
+    try{
+      const token = await AsyncStorage.getItem('jwtToken');
+      const mealDate = selectedDate + 'T00:00:00Z';
+
+      const removeIngredientFromMeal = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/RemoveIngridientFromMeal`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mealPublicId: publicId,
+            ingridientId: id,
+            ingridientName: name,
+            weightValue: weightValue,
+            date: mealDate          
+          }),
+        },
+        10000
+      );
+
+      if(!removeIngredientFromMeal.ok){
+        //error handling
+        console.log('NOT REMOVED - ERROR');
+      }
+
+    }catch(error){
+      //throew error int.
+    }
+
+  };
+  
+
   const addIngredientToMeal = (mealId, ingredient) => {
     setDietData(prevDietData => {
 
@@ -397,7 +489,9 @@ function DietHome({ navigation }) {
         <View style = {styles.topMargin}></View>
         {dietData.meals.map((meal, index) => (
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
-            addIngredientToMeal={addIngredientToMeal}/>
+            addIngredientToMeal={addIngredientToMeal}
+            onRemoveIngredientFromMeal = {removeIngredientFromMeal}
+            />
         ))}
         <View style={styles.newMealRow}>
           <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  

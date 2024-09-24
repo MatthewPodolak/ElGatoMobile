@@ -10,7 +10,7 @@ import AddSquareIcon from '../../assets/main/Diet/plus-square.svg';
 import HeartIcon from '../../assets/main/Diet/heart.svg';
 
 
-const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal  }) => {
+const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal  }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [newMealName, setNewMealName] = useState(meal.name);
 
@@ -84,7 +84,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
                   <TouchableOpacity>
                     <EditIcon width={20} height={20} />
                   </TouchableOpacity>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => onRemoveIngredientFromMeal(meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}>
                     <CloseIcon fill={'#000'} width={20} height={20} />
                   </TouchableOpacity>
                 </View>
