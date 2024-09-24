@@ -23,6 +23,15 @@ function MakroMenu({ CalorieCounter }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
+        if (CalorieCounter) {
+          setCurrentKcal(CalorieCounter.kcal || 0);
+          setCurrentProtein(CalorieCounter.protein || 0);
+          setCurrentFat(CalorieCounter.fats || 0);
+          setCurrentCarbs(CalorieCounter.carbs || 0);
+        }
+      }, [CalorieCounter]);
+
+    useEffect(() => {
         const fetchFromLiteSql = async () => {
             const db = await SQLite.openDatabaseAsync('ElGatoDbLite');
     

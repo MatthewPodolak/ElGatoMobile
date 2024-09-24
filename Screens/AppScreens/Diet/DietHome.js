@@ -88,8 +88,10 @@ function DietHome({ navigation }) {
           if (!pushIngRes.ok) {
             //error
             throw new Error(`Failed to push ingredients`);
+          }else{
+            //good
           }
-  
+          
         } catch (error) {
           //error
           console.error('Error while adding ingredients to meal:', error);
@@ -102,15 +104,30 @@ function DietHome({ navigation }) {
   
 
   const addIngredientToMeal = (mealId, ingredient) => {
-    setDietData(prevDietData => ({
-      ...prevDietData,
-      meals: prevDietData.meals.map(meal =>
+    setDietData(prevDietData => {
+
+      const updatedCalorieCounter = {
+        kcal: prevDietData.calorieCounter.kcal + (ingredient.energyKcal * (ingredient.weightValue / 100)),
+        protein: prevDietData.calorieCounter.protein + ingredient.proteins * (ingredient.weightValue / 100),
+        fats: prevDietData.calorieCounter.fats + ingredient.fats * (ingredient.weightValue / 100),
+        carbs: prevDietData.calorieCounter.carbs + ingredient.carbs * (ingredient.weightValue / 100),
+      };
+  
+      const updatedMeals = prevDietData.meals.map(meal =>
         meal.publicId === mealId
           ? { ...meal, ingridient: [...meal.ingridient, ingredient] }
           : meal
-      ),
-    }));
+      );
+  
+      return {
+        ...prevDietData,
+        meals: updatedMeals,
+        calorieCounter: updatedCalorieCounter,
+      };
+    });
+    
   };
+  
 
   const handleMealNameChange = async (mealId, newName) => {
     const currentMeal = dietData.meals.find(meal => meal.publicId === mealId);
@@ -156,10 +173,34 @@ function DietHome({ navigation }) {
   };
 
   const onRemoveMeal = async (mealId) => {
-    setDietData(prevDietData => ({
-      ...prevDietData,
-      meals: prevDietData.meals.filter(meal => meal.publicId !== mealId),
-    }));
+    setDietData(prevDietData => {
+      const updatedMeals = prevDietData.meals.filter(meal => meal.publicId !== mealId);
+      
+      let totalKcal = 0;
+      let totalProtein = 0;
+      let totalFats = 0;
+      let totalCarbs = 0;
+  
+      updatedMeals.forEach(meal => {
+        meal.ingridient.forEach(ingredient => {
+          totalKcal += (ingredient.energyKcal * (ingredient.weightValue / 100));
+          totalProtein += (ingredient.proteins * (ingredient.weightValue / 100));
+          totalFats += (ingredient.fats * (ingredient.weightValue / 100));
+          totalCarbs += (ingredient.carbs * (ingredient.weightValue / 100));
+        });
+      });
+  
+      return {
+        ...prevDietData,
+        meals: updatedMeals,
+        calorieCounter: { 
+          kcal: totalKcal,
+          protein: totalProtein,
+          fats: totalFats,
+          carbs: totalCarbs,
+        }
+      };
+    });
 
     const delMealDate = selectedDate + 'T00:00:00Z';
     const token = await AsyncStorage.getItem('jwtToken');
