@@ -104,7 +104,7 @@ function DietHome({ navigation }) {
   
 
   const removeIngredientFromMeal = async (publicId, id, name, weightValue) => {  
-    
+
     setDietData(prevDietData => {
       const updatedMeals = prevDietData.meals.map(meal => {
         if (meal.publicId === publicId) {
@@ -194,6 +194,112 @@ function DietHome({ navigation }) {
 
   };
   
+  const changeIngredientWieghtValue = async (mealId, publicId, name, oldWeight, newWeightValue) => {
+    setDietData(prevDietData => {
+      const updatedMeals = prevDietData.meals.map(meal => {
+        if (meal.publicId === mealId) {
+          const updatedIngredients = [...meal.ingridient];
+  
+          const ingredientIndex = updatedIngredients.findIndex(
+            ingredient => ingredient.name === name && ingredient.weightValue === oldWeight && ingredient.publicId === publicId
+          );
+  
+          if (ingredientIndex !== -1) {
+            updatedIngredients[ingredientIndex] = {
+              ...updatedIngredients[ingredientIndex],
+              weightValue: newWeightValue
+            };
+          }
+  
+          let mealKcal = 0;
+          let mealProtein = 0;
+          let mealFats = 0;
+          let mealCarbs = 0;
+  
+          updatedIngredients.forEach(ingredient => {
+            mealKcal += (ingredient.energyKcal * (ingredient.weightValue / 100));
+            mealProtein += (ingredient.proteins * (ingredient.weightValue / 100));
+            mealFats += (ingredient.fats * (ingredient.weightValue / 100));
+            mealCarbs += (ingredient.carbs * (ingredient.weightValue / 100));
+          });
+  
+          return {
+            ...meal,
+            ingridient: updatedIngredients,
+            calorieCounter: {
+              kcal: mealKcal,
+              protein: mealProtein,
+              fats: mealFats,
+              carbs: mealCarbs,
+            },
+          };
+        }
+  
+        return meal;
+      });
+  
+      let totalKcal = 0;
+      let totalProtein = 0;
+      let totalFats = 0;
+      let totalCarbs = 0;
+  
+      updatedMeals.forEach(meal => {
+        meal.ingridient.forEach(ingredient => {
+          totalKcal += (ingredient.energyKcal * (ingredient.weightValue / 100));
+          totalProtein += (ingredient.proteins * (ingredient.weightValue / 100));
+          totalFats += (ingredient.fats * (ingredient.weightValue / 100));
+          totalCarbs += (ingredient.carbs * (ingredient.weightValue / 100));
+        });
+      });
+  
+      return {
+        ...prevDietData,
+        meals: updatedMeals,
+        calorieCounter: {
+          kcal: totalKcal,
+          protein: totalProtein,
+          fats: totalFats,
+          carbs: totalCarbs,
+        },
+      };
+    });
+  
+    //API
+    try{
+      const token = await AsyncStorage.getItem('jwtToken');
+      const mealDate = selectedDate + 'T00:00:00Z';
+
+      const patchIngredientWeight = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Diet/UpdateIngridientWeightValue`,
+        {
+          method: 'PATCH',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            mealPublicId: mealId,
+            ingridientName: name,
+            ingridientId: publicId,
+            ingridientWeightOld: oldWeight,
+            ingridientWeightNew: newWeightValue,
+            date: mealDate          
+          }),
+        },
+        10000
+      );
+
+      if(!patchIngredientWeight.ok){
+        //error handle
+        console.log('error patching new weight');
+      }
+
+    }catch(error){
+      //error int
+      console.log('hitted error');
+    }
+
+  };
 
   const addIngredientToMeal = (mealId, ingredient) => {
     setDietData(prevDietData => {
@@ -491,6 +597,7 @@ function DietHome({ navigation }) {
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
             addIngredientToMeal={addIngredientToMeal}
             onRemoveIngredientFromMeal = {removeIngredientFromMeal}
+            onChangeIngredientWeightValue = {changeIngredientWieghtValue}
             />
         ))}
         <View style={styles.newMealRow}>

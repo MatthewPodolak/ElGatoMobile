@@ -10,9 +10,11 @@ import AddSquareIcon from '../../assets/main/Diet/plus-square.svg';
 import HeartIcon from '../../assets/main/Diet/heart.svg';
 
 
-const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal  }) => {
+const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal, onChangeIngredientWeightValue  }) => {
   const [isEditing, setIsEditing] = useState(false);
+  const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
   const [newMealName, setNewMealName] = useState(meal.name);
+  const [newWeightValue, setNewWeightValue] = useState('');
 
   const totalSummary = meal.ingridient.reduce(
     (totals, ingredient) => {
@@ -38,6 +40,19 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
   const handleNameSubmit = () => {
     setIsEditing(false);
     onChangeMealName(meal.publicId, newMealName);
+  };
+
+  const handleWeightSubmit = (ingredientId, mealId, publicId, name, oldWeight) => {
+    const parsedNewWeight = parseInt(newWeightValue, 10);
+
+    if(parsedNewWeight === 0 || parsedNewWeight === undefined || isNaN(parsedNewWeight)|| parsedNewWeight === oldWeight){
+      //handle double
+      setEditingIngredientIndex(null);
+      return;
+    } 
+
+    onChangeIngredientWeightValue(mealId, publicId, name, oldWeight, parsedNewWeight);
+    setEditingIngredientIndex(null);
   };
 
   return (
@@ -78,10 +93,24 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
                   <Text style={styles.ingredientName}>{ingredient.name}</Text>
                 </View>
                 <View style = {styles.ingWeightCont}>
-                  <Text style={styles.ingredientName}>{ingredient.weightValue} g</Text>
+                  {editingIngredientIndex === index ? (
+                    <TextInput
+                      style={styles.input}
+                      value={newWeightValue}
+                      onChangeText={setNewWeightValue}
+                      keyboardType="numeric"
+                      onBlur={() => handleWeightSubmit(index, meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}
+                      autoFocus
+                    />
+                  ) : (
+                    <Text style={styles.ingredientName}>{ingredient.weightValue} g</Text>
+                  )}
                 </View>
                 <View style = {styles.ingOptionsCont}>
-                  <TouchableOpacity>
+                  <TouchableOpacity onPress={() => {
+                    setEditingIngredientIndex(index);
+                    setNewWeightValue(String(ingredient.weightValue));
+                  }}>
                     <EditIcon width={20} height={20} />
                   </TouchableOpacity>
                   <TouchableOpacity onPress={() => onRemoveIngredientFromMeal(meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}>
