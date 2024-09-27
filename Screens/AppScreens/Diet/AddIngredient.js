@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, Modal, Alert } from 'react-native';
+import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback  } from 'react-native';
 import { ScrollView,View, Text, TextInput, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
@@ -20,6 +20,9 @@ const AddIngredient = ({ route, navigation }) => {
   const [modalVisible, setModalVisible] = useState(false);
   const [cameraPermission, requestCameraPermission] = useCameraPermissions();
   
+  const [reportModalVisible, setReportModalVisible] = useState(false);
+  const [reportedItem, setReportedItem] = useState(null);
+
   const [ingModalVisible, setIngModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -36,6 +39,28 @@ const AddIngredient = ({ route, navigation }) => {
 
   const { mealId } = route.params;
   const { mealName } = route.params;
+
+  const sendReport = (sendingCase) => {
+    console.log('report sended with ++=', sendingCase, "for item", reportedItem);
+
+    //api call for reporting
+    //
+    //
+
+    setReportedItem(null);
+    setReportModalVisible(false);
+  };
+
+  const reportItem = (item) => {
+    console.log('reported +++', item.name);
+    setReportedItem(item);
+    setReportModalVisible(true);
+  };
+
+  const closeReportModal = () => { 
+    setReportModalVisible(false);
+    setReportedItem(null);
+  };
 
   const passSelectedIngredients = () => {
     console.log('backed');
@@ -141,6 +166,7 @@ const AddIngredient = ({ route, navigation }) => {
     setIngModalVisible(false);
   };
   
+
   const addGrams = (grams) => {
     setGramsCounter(gramsCounter + grams);
   };
@@ -379,6 +405,55 @@ const AddIngredient = ({ route, navigation }) => {
         </View>
       </Modal>
 
+      <Modal
+        animationType="slide"
+        visible={reportModalVisible}
+        onRequestClose={closeReportModal}
+        transparent={true}
+      >
+        <View style={styles.reportModalOverlay}>
+          <TouchableWithoutFeedback onPress={closeReportModal}>
+            <View style={styles.reportModalClosingTransparent}></View>
+          </TouchableWithoutFeedback>
+
+          <View style={styles.reportModalContainer}>
+            {/* Title Section */}
+            <View style={styles.reportTitleCont}>
+              <Text style={styles.reportTitleText}>Report</Text>
+            </View>
+            <View style = {styles.reportHr}></View>
+            <View style={styles.reportDescCont}>
+              <Text style={styles.reportDescTextBold}>Why are you reporting this?</Text>
+              <Text style={styles.reportDescText}>Reporting offensive language will always be anonymus. blablabla.</Text>
+            </View>
+
+            <View style={styles.reportOptionsCont}>
+              <TouchableOpacity onPress={() => sendReport(1)}>
+                <Text style={styles.reportOptionText}>Incorrect product name</Text>
+              </TouchableOpacity>
+              <TouchableOpacity  onPress={() => sendReport(2)}>
+                <Text style={styles.reportOptionText}>Incorrect/old calorie information</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sendReport(3)}>
+                <Text style={styles.reportOptionText}>Offensive product name</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sendReport(4)}>
+                <Text style={styles.reportOptionText}>Misleading information</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sendReport(5)}>
+                <Text style={styles.reportOptionText}>Spam</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => sendReport(6)}>
+                <Text style={styles.reportOptionText}>Something else</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+
+
+
       {selectedItem && (
         <Modal
           animationType="slide"
@@ -397,7 +472,7 @@ const AddIngredient = ({ route, navigation }) => {
                 <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{selectedItem.name}</Text>
               </View>
               <View style = {styles.topContIngReport}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => reportItem(selectedItem)}>
                   <ReportIcon width={26} height={26} fill={'#fff'} />
                 </TouchableOpacity>
               </View>
@@ -1002,6 +1077,79 @@ const styles = StyleSheet.create({
     color: 'whitesmoke',
     justifyContent: 'center',
   },
+
+
+  reportModalOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
+  },
+  reportModalClosingTransparent: {
+    height: '10%',
+    backgroundColor: 'transparent',
+    width: '100%',
+  },
+  reportModalContainer: {
+    height: '85%',
+    backgroundColor: '#F0E3CA',
+    borderTopLeftRadius: 20,
+    borderTopRightRadius: 20,
+    padding: 15,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 5,
+    elevation: 5,
+  },
+  reportTitleCont: {
+    width: '100%',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  reportTitleText: {
+    fontSize: 20,
+    fontFamily: 'Helvetica',
+    fontWeight: 'bold',
+    color: '#333',
+  },
+  reportDescCont: {
+    width: '100%',
+    padding: 10,
+    borderRadius: 10,
+    alignItems: 'center',
+  },
+  reportDescTextBold: {
+    fontSize: 16,
+    color: '#333',
+    fontWeight: '700',
+    textAlign: 'center',
+    fontFamily: 'Helvetica',
+  },
+  reportDescText: {
+    fontSize: 16,
+    color: '#333',
+    textAlign: 'center',
+    fontFamily: 'Helvetica',
+  },
+  reportOptionsCont: {
+    width: '100%',
+    padding: 5,
+    borderRadius: 10,
+  },
+  reportOptionText: {
+    color: 'black',
+    marginBottom: 15,
+    fontSize: 16,
+    fontWeight: '600',
+    fontFamily: 'Helvetica',
+  },
+  reportHr: {
+    width: '100%',
+    borderBottomWidth: 1,
+    borderColor: 'black',
+    opacity: 0.2,
+  }
 });
 
 export default AddIngredient;
