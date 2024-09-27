@@ -8,6 +8,9 @@ import Meal from '../../../Components/Diet/Meal';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 
+import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
+
+
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import { TouchableOpacity } from 'react-native';
 
@@ -600,9 +603,7 @@ function DietHome({ navigation }) {
             onChangeIngredientWeightValue = {changeIngredientWieghtValue}
             />
         ))}
-        <View style={styles.newMealRow}>
-          <TouchableOpacity onPress={newMealPress}><Text style={styles.newMealRowText}>Add new meal</Text></TouchableOpacity>  
-        </View>
+        <View style={styles.bottomSpacing}></View>
       </SafeAreaView>
     );
   };
@@ -617,6 +618,9 @@ function DietHome({ navigation }) {
       >
         {selectedDate ? generateContentForDate() : <Text>Select a date to see meals.</Text>}
       </ScrollView>
+      <TouchableOpacity style={styles.addMealButton} onPress={newMealPress}>
+        <PlusIcon style={styles.plusText} fill={'#fff'} width={27} height={27} />
+      </TouchableOpacity>
       <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />
     </SafeAreaView>
@@ -638,24 +642,29 @@ const styles = StyleSheet.create({
     backgroundColor: 'whitesmoke',
     flex: 1,
   },
+  addMealButton: {
+    position: 'absolute',
+    bottom: 130,
+    right: 10,
+    width: 60,
+    height: 60,
+    backgroundColor: '#FF8303',
+    borderRadius: 30,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 10,
+  },
   loadingContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: 'red',
   },
-  newMealRow: {
+  bottomSpacing: {
     flex: 1,
-    alignItems: 'center',
-    marginTop: 10,
-    marginBottom: 20,
+    height: 80,
   },
-  newMealRowText: {
-    fontSize: 22,
-    fontWeight: '700',
-    color: '#FF8303',
-    fontFamily: 'Helvetica',
-  },
+
 });
 
 export default DietHome;

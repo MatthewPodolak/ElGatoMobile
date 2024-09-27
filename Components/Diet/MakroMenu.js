@@ -275,10 +275,10 @@ const styles = StyleSheet.create({
         position: 'absolute',
     },
     purple: {
-        backgroundColor: 'purple',
+        backgroundColor: '#038CFF',
     },
     blue: {
-        backgroundColor: 'darkblue',
+        backgroundColor: '#8BFF03',
     },
     orange: {
         backgroundColor: '#FF8303',

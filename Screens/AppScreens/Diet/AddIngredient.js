@@ -11,6 +11,7 @@ import BarCodeIcon from '../../../assets/main/Diet/upc-scan.svg';
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import AddIcon from '../../../assets/main/Diet/plus-circle-fill.svg';
 import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
+import CheckIcon from '../../../assets/main/Diet/check2.svg';
 
 const AddIngredient = ({ route, navigation }) => {
   const [ingredientName, setIngredientName] = useState('');
@@ -68,18 +69,24 @@ const AddIngredient = ({ route, navigation }) => {
   const handleItemPress = (item) => {
     setSelectedItem(item);
     console.log('SELECTED:', item);
-
+  
     setSelectedItems(prevItems => {
-      if (!prevItems.some(selected => selected.id === item.id)) {
+      const itemExists = prevItems.some(selected => selected.id === item.id);
+  
+      if (itemExists) {
+        setIngModalVisible(false);
+        setSelectedItemsData(prevData => prevData.filter(selected => selected.id !== item.id));
+        return prevItems.filter(selected => selected.id !== item.id);
+      } else {
+        setIngModalVisible(true);
         return [...prevItems, item];
       }
-      return prevItems;
     });
-
-    setIngModalVisible(true);
+  
     setGramsCounter(0);
     setInputGrams('');
   };
+  
 
   const handleAddIngredient = (selectedItem) => {
     console.log(selectedItem);
@@ -296,18 +303,27 @@ const AddIngredient = ({ route, navigation }) => {
               <View key={item.id || index} style={styles.contentRow}>
                 <TouchableOpacity
                   key={item.id || index}
-                  style={[
-                    selectedItems.some(selected => selected.id === item.id) ? styles.selectedRow : null,
-                  ]}
                   onPress={() => handleItemPress(item)}
                 >
                   <View style={styles.contentTopRow}>
                     <View style={styles.contentLeftName}>
-                      <Text style={styles.itemName}>{item.name}</Text>
+                    <Text
+                        style={[
+                          styles.itemName,
+                          selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
+                        ]}
+                        >
+                      {item.name}
+                    </Text>
                     </View>
+
                     <View style={styles.contentRightCheck}>
-                      {/* Checkbox */}
+                      {selectedItems.some(selected => selected.id === item.id) && (
+                        <CheckIcon style={styles.check} width={38} height={38} fill={'#FF8303'} />
+                      )}
+                      <View style = {styles.checkBox}></View>
                     </View>
+
                   </View>
                   <View style={styles.contentBottomRow}>
                     <Text style={styles.nutrientText}>P: {item.proteins}g</Text>
@@ -340,6 +356,15 @@ const AddIngredient = ({ route, navigation }) => {
               barcodeTypes: ["ean13"],
             }}
           />
+          <View style={styles.grayCodeBorderContainer}>
+            <View style={styles.croshair}>
+              <View style={styles.cornerTopLeft}></View>
+              <View style={styles.cornerTopRight}></View>
+              <View style={styles.cornerBottomLeft}></View>
+              <View style={styles.cornerBottomRight}></View>
+            </View>
+          </View>
+
           <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
             <Text style={styles.closeButtonText}>Close Scanner</Text>
           </TouchableOpacity>
@@ -691,15 +716,68 @@ const styles = StyleSheet.create({
   closeButton: {
     position: 'absolute',
     bottom: 50,
-    backgroundColor: 'white',
+    backgroundColor: '#FF8303',
     padding: 10,
     borderRadius: 5,
   },
   closeButtonText: {
-    color: 'black',
+    color: '#fff',
     fontSize: 16,
   },
-
+    grayCodeBorderContainer: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  croshair: {
+    width: '70%',
+    height: '20%',
+    position: 'relative',
+    borderWidth: 2,
+    borderColor: 'transparent',
+  },
+  cornerTopLeft: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: 30,
+    height: 30,
+    borderLeftWidth: 3,
+    borderTopWidth: 3,
+    borderColor: 'black',
+  },
+  cornerTopRight: {
+    position: 'absolute',
+    top: 0,
+    right: 0,
+    width: 30,
+    height: 30,
+    borderRightWidth: 3,
+    borderTopWidth: 3,
+    borderColor: 'black',
+  },
+  cornerBottomLeft: {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    width: 30,
+    height: 30,
+    borderLeftWidth: 3,
+    borderBottomWidth: 3,
+    borderColor: 'black',
+  },
+  cornerBottomRight: {
+    position: 'absolute',
+    bottom: 0,
+    right: 0,
+    width: 30,
+    height: 30,
+    borderRightWidth: 3,
+    borderBottomWidth: 3,
+    borderColor: 'black',
+  },
 
   contentContainer: {
     marginTop: 20,
@@ -740,12 +818,33 @@ const styles = StyleSheet.create({
     height: '15%',
     paddingLeft: 10,
     paddingRight: 10, 
+    position: 'relative',
   },
   contentTopRow: {
     flex: 1,
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
+  },
+  contentRightCheck: {
+    position: 'absolute',
+    right: 20,
+
+    height: '100%',
+    width: '10%',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  checkBox: {
+    width: '55%',
+    height: '55%',
+    borderWidth: 1,   
+  },
+  check: {
+    position: 'absolute',
+    bottom: 0,
+    left: -1,
+    zIndex: 99,
   },
   contentBottomRow: {
     flex: 1,
