@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback  } from 'react-native';
+import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Image  } from 'react-native';
 import { ScrollView,View, Text, TextInput, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
@@ -25,6 +25,9 @@ const AddIngredient = ({ route, navigation }) => {
 
   const [addProductModalVisible, setAddProductModalVisible] = useState(false);
 
+  const [elGatoAddModalVisible, setElGatoAddModalVisible] = useState(false);
+  const [elGatoCurrentEan, setElGatoCurrentEan] = useState(null);
+
   const [ingModalVisible, setIngModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -48,7 +51,18 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const closeAddProductModal = () => {
+    setElGatoCurrentEan(null);
     setAddProductModalVisible(false);
+  };
+
+  const elGatoProceedAdding = () => {
+    setElGatoAddModalVisible(false);
+    setAddProductModalVisible(true);
+  };
+
+  const closeElGatoAddModal = () => {
+    setElGatoCurrentEan(null);
+    setElGatoAddModalVisible(false);
   };
 
   const sendReport = (sendingCase) => {
@@ -202,6 +216,8 @@ const AddIngredient = ({ route, navigation }) => {
 
       if(!scannedIngredient.ok){
         console.log('not ok');
+        setElGatoCurrentEan(data);
+        setElGatoAddModalVisible(true);
         //error return info to user that the ean is invalid and perform adding options pr.
       }else{
         const responseBody = await scannedIngredient.json();
@@ -466,6 +482,7 @@ const AddIngredient = ({ route, navigation }) => {
                     placeholderTextColor="#888"
                     keyboardType="numeric"
                     selectionColor="#FF8303"
+                    value={elGatoCurrentEan !== null && elGatoCurrentEan !== undefined ? elGatoCurrentEan : ''}
                   />
                 </View>
               </View>
@@ -547,6 +564,29 @@ const AddIngredient = ({ route, navigation }) => {
           </View>
 
         </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        visible={elGatoAddModalVisible}
+        onRequestClose={closeElGatoAddModal}
+        transparent={true}
+      >
+       <TouchableWithoutFeedback onPress={closeElGatoAddModal}>
+        <View style = {styles.elGatoAddOverlay}>
+              <View style = {styles.elGatoAddBubbleContainer}>
+                <Image source={require('../../../assets/main/Gato/speechBubble.png')} style={styles.elGatoBubbleImage} />
+              </View>
+              <View style = {styles.elGatoAddMainContainer}>
+
+              </View>
+              <TouchableOpacity onPress={() => elGatoProceedAdding()}>
+                <View style = {styles.elGatoAddConfirm}>
+                  <Text style = {styles.elGatoConfirmText}>Let's do it!</Text>
+                </View>
+              </TouchableOpacity>
+        </View>
+      </TouchableWithoutFeedback>
       </Modal>
 
       <Modal
@@ -1386,6 +1426,43 @@ addProductBtnText: {
   fontFamily: 'Helvetica',
 },
 
+elGatoAddOverlay: {
+  flex: 1,
+  backgroundColor: 'rgba(0, 0, 0, 0.5)',
+  position: 'relative',
+},
+elGatoAddBubbleContainer: {
+  width: '100%',
+  height: '20%',
+},
+elGatoAddMainContainer: {
+  width: '100%',
+  height: '80%',
+  backgroundColor: 'transparent',
+},
+elGatoAddConfirm: {
+  width: '50%',
+  position: 'absolute',
+  height: 50,
+  bottom: 20,
+  borderRadius: 25,
+  marginLeft: '25%',
+  backgroundColor: '#FF8303',
+  justifyContent: 'center',  
+  alignItems: 'center',      
+},
+elGatoConfirmText: {
+  color: 'white',          
+  fontSize: 16,           
+  fontWeight: '600',
+  fontFamily: 'Helvetica', 
+},
+elGatoBubbleImage: {
+  width: '90%',
+  marginLeft: '5%',
+  marginTop: '5%',
+  height: '80%',
+},
 });
 
 export default AddIngredient;
