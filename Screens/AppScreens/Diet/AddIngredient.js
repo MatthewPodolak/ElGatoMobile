@@ -23,6 +23,8 @@ const AddIngredient = ({ route, navigation }) => {
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportedItem, setReportedItem] = useState(null);
 
+  const [addProductModalVisible, setAddProductModalVisible] = useState(false);
+
   const [ingModalVisible, setIngModalVisible] = useState(false);
   const [selectedItem, setSelectedItem] = useState(null);
   const [selectedItems, setSelectedItems] = useState([]);
@@ -39,6 +41,15 @@ const AddIngredient = ({ route, navigation }) => {
 
   const { mealId } = route.params;
   const { mealName } = route.params;
+
+  const addProduct = () => {
+    console.log('add product form clicked.');
+    setAddProductModalVisible(true);
+  };
+
+  const closeAddProductModal = () => {
+    setAddProductModalVisible(false);
+  };
 
   const sendReport = (sendingCase) => {
     console.log('report sended with ++=', sendingCase, "for item", reportedItem);
@@ -329,7 +340,15 @@ const AddIngredient = ({ route, navigation }) => {
 
         {searchedData == null ? (
           <View style={styles.contentError}>
-            <Text style={styles.specialText}>EL GATO LOTTIE HERE!</Text>
+            <View style = {styles.errorLottieContainer}>
+              <Text>EL GATO LOTTIE HERE</Text>
+            </View>
+            <View style = {styles.errorAddingContainer}>
+              <Text style = {styles.errorAddNormal}>Couldn't find what you are looking for?</Text>
+              <TouchableOpacity onPress={() => addProduct()}>
+                <Text style={styles.errorAddOrange}>Add product<Text style = {styles.errorAddNormal}>.</Text></Text>
+              </TouchableOpacity>
+            </View>
           </View>
         ) : (
           <ScrollView>
@@ -402,6 +421,131 @@ const AddIngredient = ({ route, navigation }) => {
           <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
             <Text style={styles.closeButtonText}>Close Scanner</Text>
           </TouchableOpacity>
+        </View>
+      </Modal>
+
+      <Modal
+        animationType="slide"
+        visible={addProductModalVisible}
+        onRequestClose={closeAddProductModal}
+        transparent={true}
+      >
+        <View style = {styles.addProductModal}>
+
+          <TouchableWithoutFeedback onPress={closeAddProductModal}>
+            <View style={styles.reportModalClosingTransparent}></View>
+          </TouchableWithoutFeedback>
+
+          <View style={styles.reportModalContainer}>
+            <View style={styles.reportTitleCont}>
+              <Text style={styles.reportTitleText}>Add a product</Text>
+            </View>
+            <View style = {styles.reportHr}></View>
+            <View style={styles.reportDescCont}>
+              <Text style={styles.reportDescTextBold}>Please fill in the form below</Text>
+              <Text style={styles.reportDescText}>After adding the product our team will review the given information, then product will apear in the database. Thank you for your xyz xyz xyz...</Text>
+            </View>
+            <View style={[styles.reportDescCont, { marginTop: 10 }]}>
+              <View style = {styles.addProductRow}>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.label}>Product name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter product name"
+                    placeholderTextColor="#888"
+                    selectionColor="#FF8303"
+                  />
+                </View>
+              </View>
+              <View style = {styles.addProductRow}>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.label}>Ean</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter ean-13 code"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    selectionColor="#FF8303"
+                  />
+                </View>
+              </View>
+              <View style = {styles.addProductRow}>
+                <View style={styles.inputWrapper}>
+                  <Text style={styles.label}>Brand name</Text>
+                  <TextInput
+                    style={styles.input}
+                    placeholder="Enter brand name"
+                    placeholderTextColor="#888"
+                    selectionColor="#FF8303"
+                  />
+                </View>
+              </View>
+              <View style = {styles.addProductRowShort}>
+                <View style = {styles.addProductRowShortLeft}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.label}>Kcal</Text>
+                    <TextInput
+                    style={styles.input}
+                    placeholder="Enter kcal"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    selectionColor="#FF8303"
+                    />
+                  </View>
+                </View>
+                <View style = {styles.addProductRowShortRight}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.label}>Protein</Text>
+                    <TextInput
+                    style={styles.input}
+                    placeholder="Enter protein"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    selectionColor="#FF8303"
+                    />
+                  </View>
+                </View>           
+              </View>
+              <View style = {styles.addProductRowShort}>
+                <View style = {styles.addProductRowShortLeft}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.label}>Fat</Text>
+                    <TextInput
+                    style={styles.input}
+                    placeholder="Enter fat"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    selectionColor="#FF8303"
+                    />
+                  </View>
+                </View>
+                <View style = {styles.addProductRowShortRight}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.label}>Carbs</Text>
+                    <TextInput
+                    style={styles.input}
+                    placeholder="Enter carbs"
+                    placeholderTextColor="#888"
+                    keyboardType="numeric"
+                    selectionColor="#FF8303"
+                    />
+                  </View>
+                </View>           
+              </View>
+              <View style = {styles.addProductRow}>
+                <Text style = {styles.productRowNotify}>Please enter the given makro components per 100g.</Text>
+              </View>
+              <View style = {styles.addProductRow}>
+                <TouchableOpacity>
+                  <View style = {styles.addProductConfirmButton}>
+                    <Text style={styles.addProductBtnText}>Add</Text>
+                  </View>
+                </TouchableOpacity>
+              </View>
+              
+            </View>
+          </View>
+
         </View>
       </Modal>
 
@@ -900,6 +1044,28 @@ const styles = StyleSheet.create({
     justifyContent: 'center', 
     alignItems: 'center', 
   },
+  errorLottieContainer: {
+    width: '100%',
+    height: '70%',
+  },
+  errorAddingContainer: {
+    width: '100%',
+    height: '30%',
+    justifyContent: 'center',
+    alignItems: 'center',
+    textAlign: 'center',
+  },
+  errorAddOrange: {
+    color: '#FF8303',
+    fontWeight: '600', //700?
+    fontSize: 18,
+    fontFamily: 'Helvetica',
+  },
+  errorAddNormal: {
+    fontSize: 18,
+    fontFamily: 'Helvetica',
+    color: '#000',
+  },
 
   scannedRowLeft: {
     borderBottomColor: '#FF8303',
@@ -1085,7 +1251,7 @@ const styles = StyleSheet.create({
     backgroundColor: 'transparent',
   },
   reportModalClosingTransparent: {
-    height: '10%',
+    height: '15%',
     backgroundColor: 'transparent',
     width: '100%',
   },
@@ -1149,7 +1315,77 @@ const styles = StyleSheet.create({
     borderBottomWidth: 1,
     borderColor: 'black',
     opacity: 0.2,
-  }
+  },
+
+  addProductModal: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    backgroundColor: 'transparent',
+  },
+  addProductModalClosingTransparent: {
+    height: '15%',
+    backgroundColor: 'transparent',
+    width: '100%',
+  },
+
+  addProductRow: {
+    width: '100%',
+    marginBottom: 20,
+  },
+  productRowNotify: {
+    textAlign: 'center',
+    fontFamily: 'Helvetica',
+  },
+  addProductRowShort: {
+    width: '100%',
+    marginBottom: 20,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+  },
+  addProductRowShortLeft: {
+    width: '45%',
+  },
+  addProductRowShortRight: {
+    width: '45%',
+  },
+  inputWrapper: {
+    position: 'relative',
+    borderWidth: 1,
+    borderColor: '#000',
+    borderRadius: 10,
+    paddingTop: 2,
+    paddingHorizontal: 10,
+    height: 50,
+  },
+  label: {
+    position: 'absolute',
+    top: -10,
+    left: 15,
+    backgroundColor: '#F0E3CA',
+    paddingHorizontal: 5,
+    fontSize: 14,
+    color: '#000',
+  },
+  input: {
+    flex: 1,
+    height: 40,
+    paddingHorizontal: 5,
+    fontSize: 16,
+    color: '#000',
+  },
+  addProductConfirmButton: {     
+    width: '100%', 
+    height: 50,          
+    backgroundColor: '#FF8303',
+    justifyContent: 'center',
+    alignItems: 'center',   
+    borderRadius: 10,   
+},
+addProductBtnText: {
+  fontSize: 18,
+  fontFamily: 'Helvetica',
+},
+
 });
 
 export default AddIngredient;
