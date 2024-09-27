@@ -12,6 +12,7 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import AddIcon from '../../../assets/main/Diet/plus-circle-fill.svg';
 import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
+import ReportIcon from '../../../assets/main/Diet/flag-fill.svg';
 
 const AddIngredient = ({ route, navigation }) => {
   const [ingredientName, setIngredientName] = useState('');
@@ -242,12 +243,19 @@ const AddIngredient = ({ route, navigation }) => {
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
       <View style={styles.topContainer}>
-        <View style={styles.topName}>
-          <Text style={styles.topNameText}>{mealName}</Text>
+        <View style = {styles.topContIngBack}>
+          <TouchableOpacity style={styles.topBack} onPress={() => passSelectedIngredients()}>
+              <ChevronLeft width={28} height={28} />
+          </TouchableOpacity>
         </View>
-        <TouchableOpacity style={styles.topBack} onPress={() => passSelectedIngredients()}>
-          <ChevronLeft width={28} height={28} />
-        </TouchableOpacity>
+        <View style = {styles.topContIngTitle}>
+          <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{mealName}</Text>
+        </View>
+        <View style = {styles.topContIngReport}>
+          <TouchableOpacity onPress={() => passSelectedIngredients()}>
+            <CheckIcon width={37} height={37} fill={'#fff'} />
+          </TouchableOpacity>
+        </View>
       </View>
 
       <View style={styles.categoryContainer}>
@@ -379,14 +387,21 @@ const AddIngredient = ({ route, navigation }) => {
         >
         <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
           <View style={styles.ingModalContainer}>
-            <View style={styles.topContainer}>
-              <View style={styles.topName}>
-                <Text style={styles.topNameText}>{selectedItem.name}</Text>
+            <View style = {styles.topContainer}>
+              <View style = {styles.topContIngBack}>
+                <TouchableOpacity style={styles.topBack} onPress={closeModalIng}>
+                  <ChevronLeft width={28} height={28} />
+                </TouchableOpacity>
               </View>
-              <TouchableOpacity style={styles.topBack} onPress={closeModalIng}>
-                <ChevronLeft width={28} height={28} />
-              </TouchableOpacity>
-            </View>
+              <View style = {styles.topContIngTitle}>
+                <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{selectedItem.name}</Text>
+              </View>
+              <View style = {styles.topContIngReport}>
+                <TouchableOpacity>
+                  <ReportIcon width={26} height={26} fill={'#fff'} />
+                </TouchableOpacity>
+              </View>
+            </View>           
 
             <View style={styles.ingModalContentContainer}>
               <View style = {styles.ingModalContentRow}>
@@ -651,6 +666,25 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     position: 'relative',
   },
+  topContIngBack: {
+    width: '15%',
+    height: '100%',
+  },
+  topContIngTitle: {
+    width: '70%',
+    height: '100%',
+    justifyContent: 'center',
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+  topContIngReport: {
+    width: '15%',
+    height: '100%',
+    justifyContent: 'center',
+    textAlign: 'center',
+    alignItems: 'center',
+  },
+
   topBack: {
     position: 'absolute',
     left: 10,
@@ -665,6 +699,7 @@ const styles = StyleSheet.create({
     fontSize: 22,
     fontWeight: '700',
     fontFamily: 'Helvetica',
+    textAlign: 'center',
   },
 
   categoryContainer: {
