@@ -55,6 +55,11 @@ const AddIngredient = ({ route, navigation }) => {
   const { mealName } = route.params;
 
   const addProductRequest = async () => {
+    if (productName == null || brandName  == null || ean  == null || kcal  == null || protein  == null || fat  == null || carbs  == null) {
+      setAddProductModalVisible(false);
+      return;
+    }
+
     try{
       const token = await AsyncStorage.getItem('jwtToken');
       const requestAddProduct = await fetchWithTimeout(
@@ -433,6 +438,7 @@ const AddIngredient = ({ route, navigation }) => {
             </View>
           </View>
         ) : (
+          //xdd
           <ScrollView>
             {searchedData.map((item, index) => (
               <View key={item.id || index} style={styles.contentRow}>
@@ -440,34 +446,39 @@ const AddIngredient = ({ route, navigation }) => {
                   key={item.id || index}
                   onPress={() => handleItemPress(item)}
                 >
-                  <View style={styles.contentTopRow}>
-                    <View style={styles.contentLeftName}>
-                    <Text
-                        style={[
-                          styles.itemName,
-                          selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
-                        ]}
-                        >
-                      {item.name}
-                    </Text>
+                <View style = {styles.contentRowListTop}>
+                  <View style = {styles.ListContentRowLeft}>
+                    <View style = {styles.ListLeftNameRow}>
+                      <Text
+                          style={[
+                            styles.itemName,
+                            selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
+                          ]}
+                          >
+                        {item.name}
+                      </Text>
                     </View>
-
-                    <View style={styles.contentRightCheck}>
+                    <View style = {styles.ListLeftBrandRow}>
+                      <Text style = {styles.brandName}>{item.brand}</Text>
+                    </View>
+                  </View>
+                  <View style = {styles.ListContentRowRight}>
+                    <View style = {styles.ListCheckContainer}>
                       {selectedItems.some(selected => selected.id === item.id) && (
-                        <CheckIcon style={styles.check} width={38} height={38} fill={'#FF8303'} />
-                      )}
+                        <CheckIcon style={styles.check} width={46} height={46} fill={'#FF8303'} />
+                      )}    
                       <View style = {styles.checkBox}></View>
                     </View>
-
                   </View>
-                  <View style={styles.contentBottomRow}>
+                </View>
+                <View style = {styles.contentRowListBottom}>
                     <Text style={styles.nutrientText}>P: {item.proteins}g</Text>
                     <Text style={styles.nutrientText}>C: {item.carbs}g</Text>
                     <Text style={styles.nutrientText}>F: {item.fats}g</Text>
                     <View style={styles.kcalContainer}>
                       <Text style={styles.kcalText}>Kcal: {item.kcal}</Text>
                     </View>
-                  </View>
+                </View>                  
                 </TouchableOpacity>
                 <View style={styles.hr}></View>
               </View>
@@ -1212,50 +1223,62 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
+  //xdd
   contentRow: {
     width: '100%',
-    height: '15%',
     paddingLeft: 10,
     paddingRight: 10, 
     position: 'relative',
   },
-  contentTopRow: {
+
+  contentRowListTop: {
+    marginTop: 5,
+    marginBottom: 2,
+    width: '100%',
+    flexDirection: 'row',
+  },
+  ListContentRowLeft: {
+    width: '80%',
+  },
+  ListContentRowRight: {
+    width: '20%',
+    alignItems: 'center',
+    justifyContent: 'center',   
+  },
+  contentRowListBottom: {
     flex: 1,
     width: '100%',
     flexDirection: 'row',
     alignItems: 'center',
+    marginBottom: 5,
   },
-  contentRightCheck: {
-    position: 'absolute',
-    right: 20,
-
-    height: '100%',
-    width: '10%',
-    alignItems: 'center',
-    justifyContent: 'center',
+  brandName: {
+    fontSize: 14,
+    marginLeft: 5,
+    fontFamily: 'Helvetica',
+  },
+  ListCheckContainer:{
+    width: 25,
+    height: 25,
   },
   checkBox: {
-    width: '55%',
-    height: '55%',
+    width: '100%',
+    height: '100%',
     borderWidth: 1,   
   },
   check: {
     position: 'absolute',
     bottom: 0,
-    left: -1,
+    left: -10,
+    top: -15,
     zIndex: 99,
-  },
-  contentBottomRow: {
-    flex: 1,
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
   },
   itemName: {
     fontSize: 18,
     marginLeft: 5,
     fontFamily: 'Helvetica',
   },
+  
   nutrientText: {
     marginLeft: 10,
   },
