@@ -42,11 +42,59 @@ const AddIngredient = ({ route, navigation }) => {
   const [macros, setMacros] = useState({ proteins: 0, carbs: 0, fats: 0, kcal: 0 });
   const [gramsCounter, setGramsCounter] = useState(0);
 
+  //adding params
+  const [productName, setProductName] = useState('');
+  const [ean, setEan] = useState('');
+  const [brandName, setBrandName] = useState('');
+  const [kcal, setKcal] = useState('');
+  const [protein, setProtein] = useState('');
+  const [fat, setFat] = useState('');
+  const [carbs, setCarbs] = useState('');
+
   const { mealId } = route.params;
   const { mealName } = route.params;
 
+  const addProductRequest = async () => {
+    try{
+      const token = await AsyncStorage.getItem('jwtToken');
+      const requestAddProduct = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/UserRequest/AddIngredientRequest`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+              productName: productName,
+              productBrand: brandName,
+              productEan13: ean,
+              proteins: protein,
+              carbs: carbs,
+              fats: fat,
+              energyKcal: kcal 
+          }),
+        },
+        5000
+      );
+
+    }catch(error){
+      //error
+      //prob do none.
+    }
+
+    setProductName(null);
+    setEan(null);
+    setBrandName(null);
+    setKcal(null);
+    setProtein(null);
+    setFat(null);
+    setCarbs(null);
+
+    setAddProductModalVisible(false);
+  };
+
   const addProduct = () => {
-    console.log('add product form clicked.');
     setAddProductModalVisible(true);
   };
 
@@ -65,12 +113,30 @@ const AddIngredient = ({ route, navigation }) => {
     setElGatoAddModalVisible(false);
   };
 
-  const sendReport = (sendingCase) => {
-    console.log('report sended with ++=', sendingCase, "for item", reportedItem);
+  const sendReport = async (sendingCase) => {
+    try{
+      const token = await AsyncStorage.getItem('jwtToken');
+      const requestReport = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/UserRequest/ReportIngredientRequest`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+                ingredientId: reportedItem.id,
+                ingredientName: reportedItem.name,
+                cause: sendingCase
+          }),
+        },
+        5000
+      );
 
-    //api call for reporting
-    //
-    //
+    }catch(error){
+      //error handle
+      console.log(error);
+    }
 
     setReportedItem(null);
     setReportModalVisible(false);
@@ -446,7 +512,7 @@ const AddIngredient = ({ route, navigation }) => {
         onRequestClose={closeAddProductModal}
         transparent={true}
       >
-        <View style = {styles.addProductModal}>
+        <View style={styles.addProductModal}>
 
           <TouchableWithoutFeedback onPress={closeAddProductModal}>
             <View style={styles.reportModalClosingTransparent}></View>
@@ -456,13 +522,13 @@ const AddIngredient = ({ route, navigation }) => {
             <View style={styles.reportTitleCont}>
               <Text style={styles.reportTitleText}>Add a product</Text>
             </View>
-            <View style = {styles.reportHr}></View>
+            <View style={styles.reportHr}></View>
             <View style={styles.reportDescCont}>
               <Text style={styles.reportDescTextBold}>Please fill in the form below</Text>
-              <Text style={styles.reportDescText}>After adding the product our team will review the given information, then product will apear in the database. Thank you for your xyz xyz xyz...</Text>
+              <Text style={styles.reportDescText}>After adding the product our team will review the given information, then product will appear in the database.</Text>
             </View>
             <View style={[styles.reportDescCont, { marginTop: 10 }]}>
-              <View style = {styles.addProductRow}>
+              <View style={styles.addProductRow}>
                 <View style={styles.inputWrapper}>
                   <Text style={styles.label}>Product name</Text>
                   <TextInput
@@ -470,10 +536,13 @@ const AddIngredient = ({ route, navigation }) => {
                     placeholder="Enter product name"
                     placeholderTextColor="#888"
                     selectionColor="#FF8303"
+                    value={productName}
+                    onChangeText={(text) => setProductName(text)}
                   />
                 </View>
               </View>
-              <View style = {styles.addProductRow}>
+
+              <View style={styles.addProductRow}>
                 <View style={styles.inputWrapper}>
                   <Text style={styles.label}>Ean</Text>
                   <TextInput
@@ -482,11 +551,13 @@ const AddIngredient = ({ route, navigation }) => {
                     placeholderTextColor="#888"
                     keyboardType="numeric"
                     selectionColor="#FF8303"
-                    value={elGatoCurrentEan !== null && elGatoCurrentEan !== undefined ? elGatoCurrentEan : ''}
+                    value={ean}
+                    onChangeText={(text) => setEan(text)}
                   />
                 </View>
               </View>
-              <View style = {styles.addProductRow}>
+
+              <View style={styles.addProductRow}>
                 <View style={styles.inputWrapper}>
                   <Text style={styles.label}>Brand name</Text>
                   <TextInput
@@ -494,77 +565,89 @@ const AddIngredient = ({ route, navigation }) => {
                     placeholder="Enter brand name"
                     placeholderTextColor="#888"
                     selectionColor="#FF8303"
+                    value={brandName}
+                    onChangeText={(text) => setBrandName(text)}
                   />
                 </View>
               </View>
-              <View style = {styles.addProductRowShort}>
-                <View style = {styles.addProductRowShortLeft}>
+
+              <View style={styles.addProductRowShort}>
+                <View style={styles.addProductRowShortLeft}>
                   <View style={styles.inputWrapper}>
                     <Text style={styles.label}>Kcal</Text>
                     <TextInput
-                    style={styles.input}
-                    placeholder="Enter kcal"
-                    placeholderTextColor="#888"
-                    keyboardType="numeric"
-                    selectionColor="#FF8303"
+                      style={styles.input}
+                      placeholder="Enter kcal"
+                      placeholderTextColor="#888"
+                      keyboardType="numeric"
+                      selectionColor="#FF8303"
+                      value={kcal}
+                      onChangeText={(text) => setKcal(text)}
                     />
                   </View>
                 </View>
-                <View style = {styles.addProductRowShortRight}>
+                <View style={styles.addProductRowShortRight}>
                   <View style={styles.inputWrapper}>
                     <Text style={styles.label}>Protein</Text>
                     <TextInput
-                    style={styles.input}
-                    placeholder="Enter protein"
-                    placeholderTextColor="#888"
-                    keyboardType="numeric"
-                    selectionColor="#FF8303"
-                    />
-                  </View>
-                </View>           
-              </View>
-              <View style = {styles.addProductRowShort}>
-                <View style = {styles.addProductRowShortLeft}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.label}>Fat</Text>
-                    <TextInput
-                    style={styles.input}
-                    placeholder="Enter fat"
-                    placeholderTextColor="#888"
-                    keyboardType="numeric"
-                    selectionColor="#FF8303"
+                      style={styles.input}
+                      placeholder="Enter protein"
+                      placeholderTextColor="#888"
+                      keyboardType="numeric"
+                      selectionColor="#FF8303"
+                      value={protein}
+                      onChangeText={(text) => setProtein(text)}
                     />
                   </View>
                 </View>
-                <View style = {styles.addProductRowShortRight}>
+              </View>
+
+              <View style={styles.addProductRowShort}>
+                <View style={styles.addProductRowShortLeft}>
+                  <View style={styles.inputWrapper}>
+                    <Text style={styles.label}>Fat</Text>
+                    <TextInput
+                      style={styles.input}
+                      placeholder="Enter fat"
+                      placeholderTextColor="#888"
+                      keyboardType="numeric"
+                      selectionColor="#FF8303"
+                      value={fat}
+                      onChangeText={(text) => setFat(text)}
+                    />
+                  </View>
+                </View>
+                <View style={styles.addProductRowShortRight}>
                   <View style={styles.inputWrapper}>
                     <Text style={styles.label}>Carbs</Text>
                     <TextInput
-                    style={styles.input}
-                    placeholder="Enter carbs"
-                    placeholderTextColor="#888"
-                    keyboardType="numeric"
-                    selectionColor="#FF8303"
+                      style={styles.input}
+                      placeholder="Enter carbs"
+                      placeholderTextColor="#888"
+                      keyboardType="numeric"
+                      selectionColor="#FF8303"
+                      value={carbs}
+                      onChangeText={(text) => setCarbs(text)}
                     />
                   </View>
-                </View>           
+                </View>
               </View>
-              <View style = {styles.addProductRow}>
-                <Text style = {styles.productRowNotify}>Please enter the given makro components per 100g.</Text>
+
+              <View style={styles.addProductRow}>
+                <Text style={styles.productRowNotify}>Please enter the given macro components per 100g.</Text>
               </View>
-              <View style = {styles.addProductRow}>
-                <TouchableOpacity>
-                  <View style = {styles.addProductConfirmButton}>
+              <View style={styles.addProductRow}>
+                <TouchableOpacity onPress={addProductRequest}>
+                  <View style={styles.addProductConfirmButton}>
                     <Text style={styles.addProductBtnText}>Add</Text>
                   </View>
                 </TouchableOpacity>
               </View>
-              
             </View>
           </View>
-
         </View>
       </Modal>
+
 
       <Modal
         animationType="slide"
