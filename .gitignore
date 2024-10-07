@@ -3,6 +3,9 @@
 # dependencies
 node_modules/
 
+#sec
+secrets.json
+
 # Expo
 .expo/
 dist/

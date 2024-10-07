@@ -1,15 +1,19 @@
-import React, { useState } from 'react';
+import React, { useState, useContext  } from 'react';
 import { View, Text, TextInput, Pressable, StyleSheet, Image, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { questStyles } from '../../Styles/QuestionaryStyles.js';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 
+import { AuthContext } from '../../Services/Auth/AuthContext';
+
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [loading, setLoading] = useState(false);
+
+  const { setIsAuthenticated } = useContext(AuthContext); 
 
   const backPress = () => {
     if (navigation.canGoBack()) {
@@ -53,6 +57,8 @@ function LoginScreen({ navigation }) {
       if (response.ok) {
         const data = await response.json();
         await AsyncStorage.setItem('jwtToken', data.token);
+
+        setIsAuthenticated(true);
         navigation.navigate('Home');
       } else {
         const errorData = await response.json();

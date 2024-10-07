@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext  } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
@@ -29,6 +29,8 @@ import MealsScreenMain from './Screens/AppScreens/Meals/MealsHome';
 
 import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
 
+import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
+
 import * as Font from 'expo-font';
 import { populateDb } from './Services/Database/populateDatabase';
 
@@ -36,10 +38,10 @@ const Stack = createNativeStackNavigator();
 
 function App() {
   const [isReady, setIsReady] = useState(false);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isAuthenticated } = useContext(AuthContext);
 
   useEffect(() => {
-    const prepare = async () => {
+    const prepareApp = async () => {
       try {
         await Font.loadAsync({
           Helvetica: require('./assets/fonts/Helvetica.ttf'),
@@ -47,17 +49,14 @@ function App() {
         });
 
         await populateDb();
-
-        const token = await AsyncStorage.getItem('jwtToken');
-        setIsAuthenticated(!!token);
+        
+        setIsReady(true);
       } catch (error) {
         console.error('Error during app preparation', error);
-      } finally {
-        setIsReady(true);
       }
     };
 
-    prepare();
+    prepareApp();
   }, []);
 
   if (!isReady) {
@@ -113,4 +112,10 @@ function App() {
   );
 }
 
-export default App;
+export default function AppWrapper() {
+  return (
+    <AuthProvider>
+      <App />
+    </AuthProvider>
+  );
+}

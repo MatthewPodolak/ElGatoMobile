@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, Image, Pressable } from 'react-native';
 import { questStyles } from '../../Styles/QuestionaryStyles.js';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -11,6 +11,7 @@ import ErrorPopup from '../../Components/Error/ErrorPopup';
 
 import { calorieInsertion } from '../../Services/Database/calorieInsertion';
 
+import { AuthContext } from '../../Services/Auth/AuthContext';
 
 const screenWidth = Dimensions.get('window').width;
 
@@ -24,6 +25,9 @@ function FinalQuestScreen({navigation}) {
     const [calorieCount, setCalorieCount] = useState(0);
     const [xyzCount, setXyzCount] = useState(0);
     const [countDone, setCountDone] = useState(false);
+    const [regComplete, setRegComplete] = useState(false);
+
+    const { setIsAuthenticated } = useContext(AuthContext);
 
     useEffect(() => {
       if (loadCount < 100) {
@@ -121,8 +125,9 @@ function FinalQuestScreen({navigation}) {
               setErrorView(true);
               setIsErrorVisible(true);
             }
-
+       
             setLoading(false);
+            setRegComplete(true);
 
           } else if (response.status === 409) {
             const errorMsg = 'E-mail address already in use';
@@ -147,7 +152,8 @@ function FinalQuestScreen({navigation}) {
     
   
     useEffect(() => {
-      if (!loading && countDone === true) {
+      if (!loading && countDone === true && regComplete === true) {
+          setIsAuthenticated(true);  
           navigation.navigate('Home');
       }
     }, [loading, navigation, countDone]);
