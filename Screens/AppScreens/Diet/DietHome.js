@@ -9,6 +9,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
+import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
 
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
@@ -576,7 +577,7 @@ function DietHome({ navigation }) {
   const generateContentForDate = () => {
     if (!dietData && error == null) {
       return (
-        <View style={styles.loadingContainer}>
+        <View style={DietHomeStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF8303" />
         </View>
       );
@@ -595,7 +596,7 @@ function DietHome({ navigation }) {
       <SafeAreaView>
         {/*<Text>SELECTED DATE : {dietData.date}</Text>
         <Text>Water Intake: {dietData.water} ml</Text> */}
-        <View style = {styles.topMargin}></View>
+        <View style = {DietHomeStyles.topMargin}></View>
         {dietData.meals.map((meal, index) => (
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
             addIngredientToMeal={addIngredientToMeal}
@@ -603,68 +604,28 @@ function DietHome({ navigation }) {
             onChangeIngredientWeightValue = {changeIngredientWieghtValue}
             />
         ))}
-        <View style={styles.bottomSpacing}></View>
+        <View style={DietHomeStyles.bottomSpacing}></View>
       </SafeAreaView>
     );
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={DietHomeStyles.container}>
       <Calendar onDateSelect={handleDateSelect} />
       <ScrollView
-        style={styles.scrollContainer}
+        style={DietHomeStyles.scrollContainer}
         showsVerticalScrollIndicator={false}
         showsHorizontalScrollIndicator={false}
       >
         {selectedDate ? generateContentForDate() : <Text>Select a date to see meals.</Text>}
       </ScrollView>
-      <TouchableOpacity style={styles.addMealButton} onPress={newMealPress}>
-        <PlusIcon style={styles.plusText} fill={'#fff'} width={27} height={27} />
+      <TouchableOpacity style={DietHomeStyles.addMealButton} onPress={newMealPress}>
+        <PlusIcon style={DietHomeStyles.plusText} fill={'#fff'} width={27} height={27} />
       </TouchableOpacity>
       <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'space-between',
-    backgroundColor: 'whitesmoke',
-    alignItems: 'center',
-  },
-  topMargin: {
-    height: 15,
-  },
-  scrollContainer: {
-    width: '100%',
-    backgroundColor: 'whitesmoke',
-    flex: 1,
-  },
-  addMealButton: {
-    position: 'absolute',
-    bottom: 130,
-    right: 10,
-    width: 60,
-    height: 60,
-    backgroundColor: '#FF8303',
-    borderRadius: 30,
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 10,
-  },
-  loadingContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    backgroundColor: 'red',
-  },
-  bottomSpacing: {
-    flex: 1,
-    height: 80,
-  },
-
-});
 
 export default DietHome;

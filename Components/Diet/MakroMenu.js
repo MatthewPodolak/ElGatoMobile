@@ -6,6 +6,7 @@ import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { calorieInsertion } from '../../Services/Database/calorieInsertion';
+import { MakroMenuStyles } from '../../Styles/Components/MakroMenuStyles.js';
 
 
 function MakroMenu({ CalorieCounter }) {
@@ -123,17 +124,17 @@ function MakroMenu({ CalorieCounter }) {
 
     if(loading){
         return (
-        <SafeAreaView style={styles.makroMenuContainer}>
-            <View style={styles.makroMenuItem}>
+        <SafeAreaView style={MakroMenuStyles.makroMenuContainer}>
+            <View style={MakroMenuStyles.makroMenuItem}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={styles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItem}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={styles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItem}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={styles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItem}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
         </SafeAreaView>
@@ -163,147 +164,73 @@ function MakroMenu({ CalorieCounter }) {
     const { progress: carbsProgress, overflowProgress: carbsOverflowProgress } = calculateProgress(currentCarbs, carbs);
 
     return(
-        <SafeAreaView style={styles.makroMenuContainer}>     
-            <View style={styles.makroMenuItem}>
-                <View style={styles.progressBarWrapper}>
-                    <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBar, { width: `${kcalProgress}%` }, styles.orange]} />
+        <SafeAreaView style={MakroMenuStyles.makroMenuContainer}>     
+            <View style={MakroMenuStyles.makroMenuItem}>
+                <View style={MakroMenuStyles.progressBarWrapper}>
+                    <View style={MakroMenuStyles.progressBarContainer}>
+                        <View style={[MakroMenuStyles.progressBar, { width: `${kcalProgress}%` }, MakroMenuStyles.orange]} />
                         {kcalOverflowProgress > 0 && (
-                            <View style={[styles.progressBar, { width: `${kcalOverflowProgress}%` }, styles.red]} />
+                            <View style={[MakroMenuStyles.progressBar, { width: `${kcalOverflowProgress}%` }, MakroMenuStyles.red]} />
                         )}
                     </View>
                 </View>
-                <View style={styles.currentValueContainer}>
-                    <Text style={styles.mainText} >Kcal: <Text style={styles.bold}>{currentKcal}</Text></Text>
+                <View style={MakroMenuStyles.currentValueContainer}>
+                    <Text style={MakroMenuStyles.mainText} >Kcal: <Text style={MakroMenuStyles.bold}>{currentKcal}</Text></Text>
                 </View>
-                <View style={styles.totalValueContainer}>
-                    <Text style={styles.secondaryText}>/ {kcal} k.</Text>
+                <View style={MakroMenuStyles.totalValueContainer}>
+                    <Text style={MakroMenuStyles.secondaryText}>/ {kcal} k.</Text>
                 </View>
             </View>
-            <View style={styles.makroMenuItem}>
-                <View style={styles.progressBarWrapper}>
-                    <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBar, { width: `${proteinProgress}%` }, styles.blue]} />
+            <View style={MakroMenuStyles.makroMenuItem}>
+                <View style={MakroMenuStyles.progressBarWrapper}>
+                    <View style={MakroMenuStyles.progressBarContainer}>
+                        <View style={[MakroMenuStyles.progressBar, { width: `${proteinProgress}%` }, MakroMenuStyles.blue]} />
                         {proteinOverflowProgress > 0 && (
-                            <View style={[styles.progressBar, { width: `${proteinOverflowProgress}%` }, styles.red]} />
+                            <View style={[MakroMenuStyles.progressBar, { width: `${proteinOverflowProgress}%` }, MakroMenuStyles.red]} />
                         )}
                     </View>
                 </View>
-                <View style={styles.currentValueContainer}>
-                    <Text style={styles.mainText}>Protein: <Text style={styles.bold}>{currentProtein}</Text></Text>
+                <View style={MakroMenuStyles.currentValueContainer}>
+                    <Text style={MakroMenuStyles.mainText}>Protein: <Text style={MakroMenuStyles.bold}>{currentProtein}</Text></Text>
                 </View>
-                <View style={styles.totalValueContainer}>
-                    <Text style={styles.secondaryText}>/ {protein} g</Text>
+                <View style={MakroMenuStyles.totalValueContainer}>
+                    <Text style={MakroMenuStyles.secondaryText}>/ {protein} g</Text>
                 </View>
             </View>
-            <View style={styles.makroMenuItem}>
-                <View style={styles.progressBarWrapper}>
-                    <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBar, { width: `${fatProgress}%` }, styles.darkorange]} />
+            <View style={MakroMenuStyles.makroMenuItem}>
+                <View style={MakroMenuStyles.progressBarWrapper}>
+                    <View style={MakroMenuStyles.progressBarContainer}>
+                        <View style={[MakroMenuStyles.progressBar, { width: `${fatProgress}%` }, MakroMenuStyles.darkorange]} />
                         {fatOverflowProgress > 0 && (
-                            <View style={[styles.progressBar, { width: `${fatOverflowProgress}%` }, styles.red]} />
+                            <View style={[MakroMenuStyles.progressBar, { width: `${fatOverflowProgress}%` }, MakroMenuStyles.red]} />
                         )}
                     </View>
                 </View>
-                <View style={styles.currentValueContainer}>
-                    <Text style={styles.mainText}>Fat: <Text style={styles.bold}>{currentFat}</Text></Text>
+                <View style={MakroMenuStyles.currentValueContainer}>
+                    <Text style={MakroMenuStyles.mainText}>Fat: <Text style={MakroMenuStyles.bold}>{currentFat}</Text></Text>
                 </View>
-                <View style={styles.totalValueContainer}>
-                    <Text style={styles.secondaryText}>/ {fat} g</Text>
+                <View style={MakroMenuStyles.totalValueContainer}>
+                    <Text style={MakroMenuStyles.secondaryText}>/ {fat} g</Text>
                 </View>
             </View>
-            <View style={styles.makroMenuItem}>
-                <View style={styles.progressBarWrapper}>
-                    <View style={styles.progressBarContainer}>
-                        <View style={[styles.progressBar, { width: `${carbsProgress}%` }, styles.purple]} />
+            <View style={MakroMenuStyles.makroMenuItem}>
+                <View style={MakroMenuStyles.progressBarWrapper}>
+                    <View style={MakroMenuStyles.progressBarContainer}>
+                        <View style={[MakroMenuStyles.progressBar, { width: `${carbsProgress}%` }, MakroMenuStyles.purple]} />
                         {carbsOverflowProgress > 0 && (
-                            <View style={[styles.progressBar, { width: `${carbsOverflowProgress}%` }, styles.red]} />
+                            <View style={[MakroMenuStyles.progressBar, { width: `${carbsOverflowProgress}%` }, MakroMenuStyles.red]} />
                         )}
                     </View>
                 </View>
-                <View style={styles.currentValueContainer}>
-                    <Text style={styles.mainText}>Carbs: <Text style={styles.bold}>{currentCarbs}</Text></Text>
+                <View style={MakroMenuStyles.currentValueContainer}>
+                    <Text style={MakroMenuStyles.mainText}>Carbs: <Text style={MakroMenuStyles.bold}>{currentCarbs}</Text></Text>
                 </View>
-                <View style={styles.totalValueContainer}>
-                    <Text style={styles.secondaryText}>/ {carbs} g</Text>
+                <View style={MakroMenuStyles.totalValueContainer}>
+                    <Text style={MakroMenuStyles.secondaryText}>/ {carbs} g</Text>
                 </View>
             </View>
         </SafeAreaView>
     );
 }
-
-const styles = StyleSheet.create({
-    makroMenuContainer: {
-        flexDirection: 'row',
-        borderTopRightRadius: 21,
-        borderTopLeftRadius: 21,
-        width: '100%',
-        height: '8%',
-        backgroundColor: '#DCDCDC',
-    },
-    makroMenuItem: {
-        flex: 1,
-    },
-    progressBarContainer: {
-        width: '80%',
-        height: '60%',
-        borderRadius: 20,
-        marginTop: '5%',
-        backgroundColor: 'whitesmoke',
-        overflow: 'hidden',
-        position: 'relative',
-    },
-    progressBarWrapper: {
-        width: '100%',
-        height: '30%',
-        justifyContent: 'center',
-        alignItems: 'center',
-    },
-    currentValueContainer: {
-        width: '95%',
-        marginLeft: '2.5%',
-        height: '30%',
-    },
-    totalValueContainer: {
-        width: '90%',
-        marginLeft: '5%',
-        height: '30%',
-    },
-    progressBar: {
-        height: '100%',
-        borderRadius: 10,
-        position: 'absolute',
-    },
-    purple: {
-        backgroundColor: '#038CFF',
-    },
-    blue: {
-        backgroundColor: '#8BFF03',
-    },
-    orange: {
-        backgroundColor: '#FF8303',
-    },
-    darkorange: {
-        backgroundColor: '#A35709',
-    },
-    red: {
-        backgroundColor: 'red',
-    },
-    mainText: {
-        fontFamily: 'Helvetica',
-        fontSize: 14,
-        marginLeft: 7,
-    },
-    secondaryText: {
-        fontFamily: 'Helvetica',
-        fontSize: 14,
-        color: 'gray',
-        textAlign: 'center',
-        marginRight: 15,
-    },
-    bold: {
-        fontWeight: '700',
-    },
-});
 
 export default MakroMenu;

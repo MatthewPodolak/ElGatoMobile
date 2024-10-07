@@ -14,6 +14,10 @@ import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ReportIcon from '../../../assets/main/Diet/flag-fill.svg';
 
+import GatoRightModal from '../../../Components/ElGato/GatoRightModal';
+import { AddIngredientStyles } from '../../../Styles/Diet/AddIngredientStyles.js';
+
+
 const AddIngredient = ({ route, navigation }) => {
   const [ingredientName, setIngredientName] = useState('');
   const [scanned, setScanned] = useState(false);
@@ -364,35 +368,35 @@ const AddIngredient = ({ route, navigation }) => {
   }, [ingredientName]);
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={AddIngredientStyles.container}>
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
-      <View style={styles.topContainer}>
-        <View style = {styles.topContIngBack}>
-          <TouchableOpacity style={styles.topBack} onPress={() => passSelectedIngredients()}>
+      <View style={AddIngredientStyles.topContainer}>
+        <View style = {AddIngredientStyles.topContIngBack}>
+          <TouchableOpacity style={AddIngredientStyles.topBack} onPress={() => passSelectedIngredients()}>
               <ChevronLeft width={28} height={28} />
           </TouchableOpacity>
         </View>
-        <View style = {styles.topContIngTitle}>
-          <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{mealName}</Text>
+        <View style = {AddIngredientStyles.topContIngTitle}>
+          <Text numberOfLines={2} ellipsizeMode="tail" style={AddIngredientStyles.topNameText}>{mealName}</Text>
         </View>
-        <View style = {styles.topContIngReport}>
+        <View style = {AddIngredientStyles.topContIngReport}>
           <TouchableOpacity onPress={() => passSelectedIngredients()}>
             <CheckIcon width={37} height={37} fill={'#fff'} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.categoryContainer}>
-        <TouchableOpacity style={styles.option}><Text style={styles.optionText}>Search</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.option}><Text style={styles.optionText}>Favs</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.option}><Text style={styles.optionText}>Own</Text></TouchableOpacity>
-        <TouchableOpacity style={styles.option}><Text style={styles.optionText}>Meals</Text></TouchableOpacity>
+      <View style={AddIngredientStyles.categoryContainer}>
+        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Search</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Favs</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Own</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Meals</Text></TouchableOpacity>
       </View>
 
-      <View style={styles.searchContainer}>
-        <View style={styles.barContainer}>
+      <View style={AddIngredientStyles.searchContainer}>
+        <View style={AddIngredientStyles.barContainer}>
           <TextInput
-            style={styles.searchInput}
+            style={AddIngredientStyles.searchInput}
             selectionColor="#FF8303"
             placeholder="Enter ingredient name"
             placeholderTextColor="#999"
@@ -400,24 +404,24 @@ const AddIngredient = ({ route, navigation }) => {
             onChangeText={setIngredientName}
           />
         </View>
-        <View style={styles.codeContainer}>
+        <View style={AddIngredientStyles.codeContainer}>
           <TouchableOpacity onPress={openScanner}>
             <BarCodeIcon width={34} height={48} />
           </TouchableOpacity>
         </View>
       </View>
 
-      <View style={styles.contentContainer}>
+      <View style={AddIngredientStyles.contentContainer}>
         {scannedData == null || scannedData.length === 0 ? (
           <Text></Text>
         ) : (
           scannedData.map((item, index) => (
-            <View key={`${item.id}-${index}`} style={styles.scannedContentRow}>
+            <View key={`${item.id}-${index}`} style={AddIngredientStyles.scannedContentRow}>
               <TouchableOpacity onPress={() => removeScannedItem(item)}>
-                <View style = {styles.scannedRowLeft}>
-                    <Text style={styles.itemName}>{item.name}</Text>
+                <View style = {AddIngredientStyles.scannedRowLeft}>
+                    <Text style={AddIngredientStyles.itemName}>{item.name}</Text>
                 </View>
-                <View style = {styles.scannedRowRight}>
+                <View style = {AddIngredientStyles.scannedRowRight}>
                   <CloseIcon width={22} height={22} />
                 </View>
               </TouchableOpacity>
@@ -426,14 +430,14 @@ const AddIngredient = ({ route, navigation }) => {
         )}
 
         {searchedData == null ? (
-          <View style={styles.contentError}>
-            <View style = {styles.errorLottieContainer}>
+          <View style={AddIngredientStyles.contentError}>
+            <View style = {AddIngredientStyles.errorLottieContainer}>
               <Text>EL GATO LOTTIE HERE</Text>
             </View>
-            <View style = {styles.errorAddingContainer}>
-              <Text style = {styles.errorAddNormal}>Couldn't find what you are looking for?</Text>
+            <View style = {AddIngredientStyles.errorAddingContainer}>
+              <Text style = {AddIngredientStyles.errorAddNormal}>Couldn't find what you are looking for?</Text>
               <TouchableOpacity onPress={() => addProduct()}>
-                <Text style={styles.errorAddOrange}>Add product<Text style = {styles.errorAddNormal}>.</Text></Text>
+                <Text style={AddIngredientStyles.errorAddOrange}>Add product<Text style = {AddIngredientStyles.errorAddNormal}>.</Text></Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -441,46 +445,46 @@ const AddIngredient = ({ route, navigation }) => {
           //xdd
           <ScrollView>
             {searchedData.map((item, index) => (
-              <View key={item.id || index} style={styles.contentRow}>
+              <View key={item.id || index} style={AddIngredientStyles.contentRow}>
                 <TouchableOpacity
                   key={item.id || index}
                   onPress={() => handleItemPress(item)}
                 >
-                <View style = {styles.contentRowListTop}>
-                  <View style = {styles.ListContentRowLeft}>
-                    <View style = {styles.ListLeftNameRow}>
+                <View style = {AddIngredientStyles.contentRowListTop}>
+                  <View style = {AddIngredientStyles.ListContentRowLeft}>
+                    <View style = {AddIngredientStyles.ListLeftNameRow}>
                       <Text
                           style={[
-                            styles.itemName,
+                            AddIngredientStyles.itemName,
                             selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
                           ]}
                           >
                         {item.name}
                       </Text>
                     </View>
-                    <View style = {styles.ListLeftBrandRow}>
-                      <Text style = {styles.brandName}>{item.brand}</Text>
+                    <View style = {AddIngredientStyles.ListLeftBrandRow}>
+                      <Text style = {AddIngredientStyles.brandName}>{item.brand}</Text>
                     </View>
                   </View>
-                  <View style = {styles.ListContentRowRight}>
-                    <View style = {styles.ListCheckContainer}>
+                  <View style = {AddIngredientStyles.ListContentRowRight}>
+                    <View style = {AddIngredientStyles.ListCheckContainer}>
                       {selectedItems.some(selected => selected.id === item.id) && (
-                        <CheckIcon style={styles.check} width={46} height={46} fill={'#FF8303'} />
+                        <CheckIcon style={AddIngredientStyles.check} width={46} height={46} fill={'#FF8303'} />
                       )}    
-                      <View style = {styles.checkBox}></View>
+                      <View style = {AddIngredientStyles.checkBox}></View>
                     </View>
                   </View>
                 </View>
-                <View style = {styles.contentRowListBottom}>
-                    <Text style={styles.nutrientText}>P: {item.proteins}g</Text>
-                    <Text style={styles.nutrientText}>C: {item.carbs}g</Text>
-                    <Text style={styles.nutrientText}>F: {item.fats}g</Text>
-                    <View style={styles.kcalContainer}>
-                      <Text style={styles.kcalText}>Kcal: {item.kcal}</Text>
+                <View style = {AddIngredientStyles.contentRowListBottom}>
+                    <Text style={AddIngredientStyles.nutrientText}>P: {item.proteins}g</Text>
+                    <Text style={AddIngredientStyles.nutrientText}>C: {item.carbs}g</Text>
+                    <Text style={AddIngredientStyles.nutrientText}>F: {item.fats}g</Text>
+                    <View style={AddIngredientStyles.kcalContainer}>
+                      <Text style={AddIngredientStyles.kcalText}>Kcal: {item.kcal}</Text>
                     </View>
                 </View>                  
                 </TouchableOpacity>
-                <View style={styles.hr}></View>
+                <View style={AddIngredientStyles.hr}></View>
               </View>
             ))}
           </ScrollView>
@@ -493,7 +497,7 @@ const AddIngredient = ({ route, navigation }) => {
         transparent={false}
         animationType="slide"
       >
-        <View style={styles.modalContainer}>
+        <View style={AddIngredientStyles.modalContainer}>
           <CameraView
             style={{ width:'100%', height:'100%' }}
             barcodeScannerEnabled
@@ -502,17 +506,17 @@ const AddIngredient = ({ route, navigation }) => {
               barcodeTypes: ["ean13"],
             }}
           />
-          <View style={styles.grayCodeBorderContainer}>
-            <View style={styles.croshair}>
-              <View style={styles.cornerTopLeft}></View>
-              <View style={styles.cornerTopRight}></View>
-              <View style={styles.cornerBottomLeft}></View>
-              <View style={styles.cornerBottomRight}></View>
+          <View style={AddIngredientStyles.grayCodeBorderContainer}>
+            <View style={AddIngredientStyles.croshair}>
+              <View style={AddIngredientStyles.cornerTopLeft}></View>
+              <View style={AddIngredientStyles.cornerTopRight}></View>
+              <View style={AddIngredientStyles.cornerBottomLeft}></View>
+              <View style={AddIngredientStyles.cornerBottomRight}></View>
             </View>
           </View>
 
-          <TouchableOpacity style={styles.closeButton} onPress={() => setModalVisible(false)}>
-            <Text style={styles.closeButtonText}>Close Scanner</Text>
+          <TouchableOpacity style={AddIngredientStyles.closeButton} onPress={() => setModalVisible(false)}>
+            <Text style={AddIngredientStyles.closeButtonText}>Close Scanner</Text>
           </TouchableOpacity>
         </View>
       </Modal>
@@ -523,27 +527,27 @@ const AddIngredient = ({ route, navigation }) => {
         onRequestClose={closeAddProductModal}
         transparent={true}
       >
-        <View style={styles.addProductModal}>
+        <View style={AddIngredientStyles.addProductModal}>
 
           <TouchableWithoutFeedback onPress={closeAddProductModal}>
-            <View style={styles.reportModalClosingTransparent}></View>
+            <View style={AddIngredientStyles.reportModalClosingTransparent}></View>
           </TouchableWithoutFeedback>
 
-          <View style={styles.reportModalContainer}>
-            <View style={styles.reportTitleCont}>
-              <Text style={styles.reportTitleText}>Add a product</Text>
+          <View style={AddIngredientStyles.reportModalContainer}>
+            <View style={AddIngredientStyles.reportTitleCont}>
+              <Text style={AddIngredientStyles.reportTitleText}>Add a product</Text>
             </View>
-            <View style={styles.reportHr}></View>
-            <View style={styles.reportDescCont}>
-              <Text style={styles.reportDescTextBold}>Please fill in the form below</Text>
-              <Text style={styles.reportDescText}>After adding the product our team will review the given information, then product will appear in the database.</Text>
+            <View style={AddIngredientStyles.reportHr}></View>
+            <View style={AddIngredientStyles.reportDescCont}>
+              <Text style={AddIngredientStyles.reportDescTextBold}>Please fill in the form below</Text>
+              <Text style={AddIngredientStyles.reportDescText}>After adding the product our team will review the given information, then product will appear in the database.</Text>
             </View>
-            <View style={[styles.reportDescCont, { marginTop: 10 }]}>
-              <View style={styles.addProductRow}>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.label}>Product name</Text>
+            <View style={[AddIngredientStyles.reportDescCont, { marginTop: 10 }]}>
+              <View style={AddIngredientStyles.addProductRow}>
+                <View style={AddIngredientStyles.inputWrapper}>
+                  <Text style={AddIngredientStyles.label}>Product name</Text>
                   <TextInput
-                    style={styles.input}
+                    style={AddIngredientStyles.input}
                     placeholder="Enter product name"
                     placeholderTextColor="#888"
                     selectionColor="#FF8303"
@@ -553,11 +557,11 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.addProductRow}>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.label}>Ean</Text>
+              <View style={AddIngredientStyles.addProductRow}>
+                <View style={AddIngredientStyles.inputWrapper}>
+                  <Text style={AddIngredientStyles.label}>Ean</Text>
                   <TextInput
-                    style={styles.input}
+                    style={AddIngredientStyles.input}
                     placeholder="Enter ean-13 code"
                     placeholderTextColor="#888"
                     keyboardType="numeric"
@@ -568,11 +572,11 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.addProductRow}>
-                <View style={styles.inputWrapper}>
-                  <Text style={styles.label}>Brand name</Text>
+              <View style={AddIngredientStyles.addProductRow}>
+                <View style={AddIngredientStyles.inputWrapper}>
+                  <Text style={AddIngredientStyles.label}>Brand name</Text>
                   <TextInput
-                    style={styles.input}
+                    style={AddIngredientStyles.input}
                     placeholder="Enter brand name"
                     placeholderTextColor="#888"
                     selectionColor="#FF8303"
@@ -582,12 +586,12 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.addProductRowShort}>
-                <View style={styles.addProductRowShortLeft}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.label}>Kcal</Text>
+              <View style={AddIngredientStyles.addProductRowShort}>
+                <View style={AddIngredientStyles.addProductRowShortLeft}>
+                  <View style={AddIngredientStyles.inputWrapper}>
+                    <Text style={AddIngredientStyles.label}>Kcal</Text>
                     <TextInput
-                      style={styles.input}
+                      style={AddIngredientStyles.input}
                       placeholder="Enter kcal"
                       placeholderTextColor="#888"
                       keyboardType="numeric"
@@ -597,11 +601,11 @@ const AddIngredient = ({ route, navigation }) => {
                     />
                   </View>
                 </View>
-                <View style={styles.addProductRowShortRight}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.label}>Protein</Text>
+                <View style={AddIngredientStyles.addProductRowShortRight}>
+                  <View style={AddIngredientStyles.inputWrapper}>
+                    <Text style={AddIngredientStyles.label}>Protein</Text>
                     <TextInput
-                      style={styles.input}
+                      style={AddIngredientStyles.input}
                       placeholder="Enter protein"
                       placeholderTextColor="#888"
                       keyboardType="numeric"
@@ -613,12 +617,12 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.addProductRowShort}>
-                <View style={styles.addProductRowShortLeft}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.label}>Fat</Text>
+              <View style={AddIngredientStyles.addProductRowShort}>
+                <View style={AddIngredientStyles.addProductRowShortLeft}>
+                  <View style={AddIngredientStyles.inputWrapper}>
+                    <Text style={AddIngredientStyles.label}>Fat</Text>
                     <TextInput
-                      style={styles.input}
+                      style={AddIngredientStyles.input}
                       placeholder="Enter fat"
                       placeholderTextColor="#888"
                       keyboardType="numeric"
@@ -628,11 +632,11 @@ const AddIngredient = ({ route, navigation }) => {
                     />
                   </View>
                 </View>
-                <View style={styles.addProductRowShortRight}>
-                  <View style={styles.inputWrapper}>
-                    <Text style={styles.label}>Carbs</Text>
+                <View style={AddIngredientStyles.addProductRowShortRight}>
+                  <View style={AddIngredientStyles.inputWrapper}>
+                    <Text style={AddIngredientStyles.label}>Carbs</Text>
                     <TextInput
-                      style={styles.input}
+                      style={AddIngredientStyles.input}
                       placeholder="Enter carbs"
                       placeholderTextColor="#888"
                       keyboardType="numeric"
@@ -644,13 +648,13 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
 
-              <View style={styles.addProductRow}>
-                <Text style={styles.productRowNotify}>Please enter the given macro components per 100g.</Text>
+              <View style={AddIngredientStyles.addProductRow}>
+                <Text style={AddIngredientStyles.productRowNotify}>Please enter the given macro components per 100g.</Text>
               </View>
-              <View style={styles.addProductRow}>
+              <View style={AddIngredientStyles.addProductRow}>
                 <TouchableOpacity onPress={addProductRequest}>
-                  <View style={styles.addProductConfirmButton}>
-                    <Text style={styles.addProductBtnText}>Add</Text>
+                  <View style={AddIngredientStyles.addProductConfirmButton}>
+                    <Text style={AddIngredientStyles.addProductBtnText}>Add</Text>
                   </View>
                 </TouchableOpacity>
               </View>
@@ -660,28 +664,11 @@ const AddIngredient = ({ route, navigation }) => {
       </Modal>
 
 
-      <Modal
-        animationType="slide"
+      <GatoRightModal
         visible={elGatoAddModalVisible}
         onRequestClose={closeElGatoAddModal}
-        transparent={true}
-      >
-       <TouchableWithoutFeedback onPress={closeElGatoAddModal}>
-        <View style = {styles.elGatoAddOverlay}>
-              <View style = {styles.elGatoAddBubbleContainer}>
-                <Image source={require('../../../assets/main/Gato/speechBubble.png')} style={styles.elGatoBubbleImage} />
-              </View>
-              <View style = {styles.elGatoAddMainContainer}>
-
-              </View>
-              <TouchableOpacity onPress={() => elGatoProceedAdding()}>
-                <View style = {styles.elGatoAddConfirm}>
-                  <Text style = {styles.elGatoConfirmText}>Let's do it!</Text>
-                </View>
-              </TouchableOpacity>
-        </View>
-      </TouchableWithoutFeedback>
-      </Modal>
+        elGatoProceedAdding={elGatoProceedAdding}>
+      </GatoRightModal>
 
       <Modal
         animationType="slide"
@@ -689,40 +676,39 @@ const AddIngredient = ({ route, navigation }) => {
         onRequestClose={closeReportModal}
         transparent={true}
       >
-        <View style={styles.reportModalOverlay}>
+        <View style={AddIngredientStyles.reportModalOverlay}>
           <TouchableWithoutFeedback onPress={closeReportModal}>
-            <View style={styles.reportModalClosingTransparent}></View>
+            <View style={AddIngredientStyles.reportModalClosingTransparent}></View>
           </TouchableWithoutFeedback>
 
-          <View style={styles.reportModalContainer}>
-            {/* Title Section */}
-            <View style={styles.reportTitleCont}>
-              <Text style={styles.reportTitleText}>Report</Text>
+          <View style={AddIngredientStyles.reportModalContainer}>
+            <View style={AddIngredientStyles.reportTitleCont}>
+              <Text style={AddIngredientStyles.reportTitleText}>Report</Text>
             </View>
-            <View style = {styles.reportHr}></View>
-            <View style={styles.reportDescCont}>
-              <Text style={styles.reportDescTextBold}>Why are you reporting this?</Text>
-              <Text style={styles.reportDescText}>Reporting offensive language will always be anonymus. blablabla.</Text>
+            <View style = {AddIngredientStyles.reportHr}></View>
+            <View style={AddIngredientStyles.reportDescCont}>
+              <Text style={AddIngredientStyles.reportDescTextBold}>Why are you reporting this?</Text>
+              <Text style={AddIngredientStyles.reportDescText}>Reporting offensive language will always be anonymus. blablabla.</Text>
             </View>
 
-            <View style={styles.reportOptionsCont}>
+            <View style={AddIngredientStyles.reportOptionsCont}>
               <TouchableOpacity onPress={() => sendReport(1)}>
-                <Text style={styles.reportOptionText}>Incorrect product name</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Incorrect product name</Text>
               </TouchableOpacity>
               <TouchableOpacity  onPress={() => sendReport(2)}>
-                <Text style={styles.reportOptionText}>Incorrect/old calorie information</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Incorrect/old calorie information</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => sendReport(3)}>
-                <Text style={styles.reportOptionText}>Offensive product name</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Offensive product name</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => sendReport(4)}>
-                <Text style={styles.reportOptionText}>Misleading information</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Misleading information</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => sendReport(5)}>
-                <Text style={styles.reportOptionText}>Spam</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Spam</Text>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => sendReport(6)}>
-                <Text style={styles.reportOptionText}>Something else</Text>
+                <Text style={AddIngredientStyles.reportOptionText}>Something else</Text>
               </TouchableOpacity>
             </View>
           </View>
@@ -739,202 +725,202 @@ const AddIngredient = ({ route, navigation }) => {
           onRequestClose={closeModalIng}
         >
         <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
-          <View style={styles.ingModalContainer}>
-            <View style = {styles.topContainer}>
-              <View style = {styles.topContIngBack}>
-                <TouchableOpacity style={styles.topBack} onPress={closeModalIng}>
+          <View style={AddIngredientStyles.ingModalContainer}>
+            <View style = {AddIngredientStyles.topContainer}>
+              <View style = {AddIngredientStyles.topContIngBack}>
+                <TouchableOpacity style={AddIngredientStyles.topBack} onPress={closeModalIng}>
                   <ChevronLeft width={28} height={28} />
                 </TouchableOpacity>
               </View>
-              <View style = {styles.topContIngTitle}>
-                <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{selectedItem.name}</Text>
+              <View style = {AddIngredientStyles.topContIngTitle}>
+                <Text numberOfLines={2} ellipsizeMode="tail" style={AddIngredientStyles.topNameText}>{selectedItem.name}</Text>
               </View>
-              <View style = {styles.topContIngReport}>
+              <View style = {AddIngredientStyles.topContIngReport}>
                 <TouchableOpacity onPress={() => reportItem(selectedItem)}>
                   <ReportIcon width={26} height={26} fill={'#fff'} />
                 </TouchableOpacity>
               </View>
             </View>           
 
-            <View style={styles.ingModalContentContainer}>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
-                  <Text style={styles.gramsTextModal}>10 g</Text>
+            <View style={AddIngredientStyles.ingModalContentContainer}>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
+                  <Text style={AddIngredientStyles.gramsTextModal}>10 g</Text>
                 </View>
-                <View style = {styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 0.1) 
+                <View style = {AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 0.1) 
                     ? (selectedItem.proteins * 0.1).toFixed(0) 
                     : (selectedItem.proteins * 0.1).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 0.1) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 0.1) 
                     ? (selectedItem.carbs * 0.1).toFixed(0) 
                     : (selectedItem.carbs * 0.1).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 0.1) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 0.1) 
                     ? (selectedItem.fats * 0.1).toFixed(0) 
                     : (selectedItem.fats * 0.1).toFixed(1)}
                   </Text>
                 </View>
-                <View style = {styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 0.1).toFixed(0)}</Text>
+                <View style = {AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 0.1).toFixed(0)}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(10)}>
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
-                  <Text style={styles.gramsTextModal}>50 g</Text>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
+                  <Text style={AddIngredientStyles.gramsTextModal}>50 g</Text>
                 </View>
-                <View style = {styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 0.5) 
+                <View style = {AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 0.5) 
                     ? (selectedItem.proteins * 0.5).toFixed(0) 
                     : (selectedItem.proteins * 0.5).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 0.5) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 0.5) 
                     ? (selectedItem.carbs * 0.5).toFixed(0) 
                     : (selectedItem.carbs * 0.5).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 0.5) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 0.5) 
                     ? (selectedItem.fats * 0.5).toFixed(0) 
                     : (selectedItem.fats * 0.5).toFixed(1)}
                   </Text>
                 </View>
-                <View style = {styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 0.5).toFixed(0)}</Text>
+                <View style = {AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 0.5).toFixed(0)}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(50)} >
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
-                  <Text style={styles.gramsTextModal}>100 g</Text>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
+                  <Text style={AddIngredientStyles.gramsTextModal}>100 g</Text>
                 </View>
-                <View style = {styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 1) 
+                <View style = {AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 1) 
                     ? (selectedItem.proteins * 1).toFixed(0) 
                     : (selectedItem.proteins * 1).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 1) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 1) 
                     ? (selectedItem.carbs * 1).toFixed(0) 
                     : (selectedItem.carbs * 1).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 1) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 1) 
                     ? (selectedItem.fats * 1).toFixed(0) 
                     : (selectedItem.fats * 1).toFixed(1)}
                   </Text>
                 </View>
-                <View style = {styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text><Text>{(selectedItem.kcal ).toFixed(0)}</Text>
+                <View style = {AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text><Text>{(selectedItem.kcal ).toFixed(0)}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(100)}>
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
-                  <Text style={styles.gramsTextModal}>150 g</Text>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
+                  <Text style={AddIngredientStyles.gramsTextModal}>150 g</Text>
                 </View>
-                <View style = {styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 1.5) 
+                <View style = {AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 1.5) 
                     ? (selectedItem.proteins * 1.5).toFixed(0) 
                     : (selectedItem.proteins * 1.5).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 1.5) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 1.5) 
                     ? (selectedItem.carbs * 1.5).toFixed(0) 
                     : (selectedItem.carbs * 1.5).toFixed(1)}
                   </Text>
 
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 1.5) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 1.5) 
                     ? (selectedItem.fats * 1.5).toFixed(0) 
                     : (selectedItem.fats * 1.5).toFixed(1)}
                   </Text>
                 </View>
-                <View style = {styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 1.5).toFixed(0)}</Text>
+                <View style = {AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 1.5).toFixed(0)}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(150)}>
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
-                  <Text style={styles.gramsTextModal}>200 g</Text>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
+                  <Text style={AddIngredientStyles.gramsTextModal}>200 g</Text>
                 </View>
-                <View style = {styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 2) 
+                <View style = {AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.proteins * 2) 
                     ? (selectedItem.proteins * 2).toFixed(0) 
                     : (selectedItem.proteins * 2).toFixed(1)}
                   </Text>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 2) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.carbs * 2) 
                     ? (selectedItem.carbs * 2).toFixed(0) 
                     : (selectedItem.carbs * 2).toFixed(1)}
                   </Text>
-                  <Text style={[styles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 2) 
+                  <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}> {Number.isInteger(selectedItem.fats * 2) 
                     ? (selectedItem.fats * 2).toFixed(0) 
                     : (selectedItem.fats * 2).toFixed(1)}
                   </Text>
                 </View>
-                <View style = {styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 2).toFixed(0)}</Text>
+                <View style = {AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text><Text>{(selectedItem.kcal * 2).toFixed(0)}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(200)}>
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style = {styles.ingModalContentRow}>
-                <View style = {styles.ingContentRowContent}>
-                <View style = {styles.ingContentRowGrams}>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style = {AddIngredientStyles.ingModalContentRow}>
+                <View style = {AddIngredientStyles.ingContentRowContent}>
+                <View style = {AddIngredientStyles.ingContentRowGrams}>
                   <TextInput
-                    style={styles.inputBorder}
+                    style={AddIngredientStyles.inputBorder}
                     placeholder="0 g"
                     keyboardType="numeric"
                     value={inputGrams}
@@ -956,40 +942,40 @@ const AddIngredient = ({ route, navigation }) => {
                     }}
                   />
                 </View>
-                <View style={styles.ingContentRowMakro}>
-                  <Text style={[styles.nutrientTextModal, { fontWeight: 'bold' }]}>P:</Text>
-                  <Text style={styles.nutrientTextModalValue}>{macros.proteins}</Text>
+                <View style={AddIngredientStyles.ingContentRowMakro}>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, { fontWeight: 'bold' }]}>P:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}>{macros.proteins}</Text>
 
-                  <Text style={[styles.nutrientTextModal, { fontWeight: 'bold' }]}>C:</Text>
-                  <Text style={styles.nutrientTextModalValue}>{macros.carbs}</Text>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, { fontWeight: 'bold' }]}>C:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}>{macros.carbs}</Text>
 
-                  <Text style={[styles.nutrientTextModal, { fontWeight: 'bold' }]}>F:</Text>
-                  <Text style={styles.nutrientTextModalValue}>{macros.fats}</Text>
+                  <Text style={[AddIngredientStyles.nutrientTextModal, { fontWeight: 'bold' }]}>F:</Text>
+                  <Text style={AddIngredientStyles.nutrientTextModalValue}>{macros.fats}</Text>
                 </View>
-                <View style={styles.ingContentRowKcal}>
-                  <Text style={styles.bold}>Kcal: </Text>
+                <View style={AddIngredientStyles.ingContentRowKcal}>
+                  <Text style={AddIngredientStyles.bold}>Kcal: </Text>
                   <Text>{macros.kcal}</Text>
                 </View>
                 </View>
-                <View style={styles.ingContentRowButton}>
+                <View style={AddIngredientStyles.ingContentRowButton}>
                   <TouchableOpacity onPress={() => addGrams(parseFloat(inputGrams))}>
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={styles.hr}></View>
-              <View style={styles.ingModalContentSummaryRow}>
-                  <View style = {styles.summaryTopRow}>
-                      <Text style = {styles.summaryText}> {gramsCounter} g</Text>
+              <View style={AddIngredientStyles.hr}></View>
+              <View style={AddIngredientStyles.ingModalContentSummaryRow}>
+                  <View style = {AddIngredientStyles.summaryTopRow}>
+                      <Text style = {AddIngredientStyles.summaryText}> {gramsCounter} g</Text>
                   </View>
-                  <View style = {styles.summaryBottomRow}>
+                  <View style = {AddIngredientStyles.summaryBottomRow}>
                       <Text style = { { textAlign: 'center' }}>P: {selectedItem.proteins * (gramsCounter / 100)} C: {selectedItem.carbs * (gramsCounter / 100)} F: {selectedItem.fats * (gramsCounter / 100)} KCAL: {selectedItem.kcal * (gramsCounter / 100)}</Text>
                   </View>
               </View>
             </View>
 
-            <TouchableOpacity onPress={() => handleAddIngredient(selectedItem)} style={styles.confirmButtonContainer}>
-              <View style={styles.confirmButton}>
+            <TouchableOpacity onPress={() => handleAddIngredient(selectedItem)} style={AddIngredientStyles.confirmButtonContainer}>
+              <View style={AddIngredientStyles.confirmButton}>
                 <Text style = {{color: 'whitesmoke', fontSize: 26, fontWeight: '700', fontFamily: 'Helvetica'}}>+</Text>
               </View>
             </TouchableOpacity>
@@ -1002,573 +988,5 @@ const AddIngredient = ({ route, navigation }) => {
   );
 };
 
-const styles = StyleSheet.create({
-  bold: {
-    fontWeight: '700',
-  },
-  container: {
-    flex: 1,
-    backgroundColor: 'whitesmoke',
-  },
-  topContainer: {
-    width: '100%',
-    height: '9%',
-    backgroundColor: '#FF8303',
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    position: 'relative',
-  },
-  topContIngBack: {
-    width: '15%',
-    height: '100%',
-  },
-  topContIngTitle: {
-    width: '70%',
-    height: '100%',
-    justifyContent: 'center',
-    textAlign: 'center',
-    alignItems: 'center',
-  },
-  topContIngReport: {
-    width: '15%',
-    height: '100%',
-    justifyContent: 'center',
-    textAlign: 'center',
-    alignItems: 'center',
-  },
-
-  topBack: {
-    position: 'absolute',
-    left: 10,
-    height: '100%',
-    justifyContent: 'center',
-  },
-  topName: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  topNameText: {
-    fontSize: 22,
-    fontWeight: '700',
-    fontFamily: 'Helvetica',
-    textAlign: 'center',
-  },
-
-  categoryContainer: {
-    marginTop: 15,
-    width: '100%',
-    flexDirection: 'row',
-  },
-  option: {
-    marginLeft: 15,
-  },
-  optionText: {
-    fontSize: 18,
-    fontFamily: 'Helvetica',
-  },
-
-  searchContainer: {
-    marginTop: 10,
-    width: '100%',
-    height: 50,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 10,
-  },
-  barContainer: {
-    height: '100%',
-    width: '80%',
-    justifyContent: 'center',
-    marginLeft: 10,
-  },
-  searchInput: {
-    height: '80%',
-    backgroundColor: '#1B1A17',
-    color: 'white',
-    borderRadius: 5,
-    paddingHorizontal: 10,
-  },
-  codeContainer: {
-    width: '15%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  modalContainer: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  closeButton: {
-    position: 'absolute',
-    bottom: 50,
-    backgroundColor: '#FF8303',
-    padding: 10,
-    borderRadius: 5,
-  },
-  closeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-  },
-    grayCodeBorderContainer: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  croshair: {
-    width: '70%',
-    height: '20%',
-    position: 'relative',
-    borderWidth: 2,
-    borderColor: 'transparent',
-  },
-  cornerTopLeft: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: 30,
-    height: 30,
-    borderLeftWidth: 3,
-    borderTopWidth: 3,
-    borderColor: 'black',
-  },
-  cornerTopRight: {
-    position: 'absolute',
-    top: 0,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRightWidth: 3,
-    borderTopWidth: 3,
-    borderColor: 'black',
-  },
-  cornerBottomLeft: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    width: 30,
-    height: 30,
-    borderLeftWidth: 3,
-    borderBottomWidth: 3,
-    borderColor: 'black',
-  },
-  cornerBottomRight: {
-    position: 'absolute',
-    bottom: 0,
-    right: 0,
-    width: 30,
-    height: 30,
-    borderRightWidth: 3,
-    borderBottomWidth: 3,
-    borderColor: 'black',
-  },
-
-  contentContainer: {
-    marginTop: 20,
-    flex: 1,
-    flexDirection: 'column',
-  },
-  contentError:{
-    width: '100%',
-    height: '100%',
-    justifyContent: 'center', 
-    alignItems: 'center', 
-  },
-  errorLottieContainer: {
-    width: '100%',
-    height: '70%',
-  },
-  errorAddingContainer: {
-    width: '100%',
-    height: '30%',
-    justifyContent: 'center',
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-  errorAddOrange: {
-    color: '#FF8303',
-    fontWeight: '600', //700?
-    fontSize: 18,
-    fontFamily: 'Helvetica',
-  },
-  errorAddNormal: {
-    fontSize: 18,
-    fontFamily: 'Helvetica',
-    color: '#000',
-  },
-
-  scannedRowLeft: {
-    borderBottomColor: '#FF8303',
-    borderBottomWidth: 2,
-    width: '85%',
-  },
-  scannedContentRow: {
-    width: '100%',
-    paddingLeft: 10,
-    paddingRight: 10,
-    marginBottom: 20,
-    position: 'relative', 
-  },
-  scannedRowRight: {
-    width: '10%',
-    height: '100%',
-    backgroundColor: '#1B1A17',
-    position: 'absolute', 
-    right: 0, 
-    top: 0, 
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  //xdd
-  contentRow: {
-    width: '100%',
-    paddingLeft: 10,
-    paddingRight: 10, 
-    position: 'relative',
-  },
-
-  contentRowListTop: {
-    marginTop: 5,
-    marginBottom: 2,
-    width: '100%',
-    flexDirection: 'row',
-  },
-  ListContentRowLeft: {
-    width: '80%',
-  },
-  ListContentRowRight: {
-    width: '20%',
-    alignItems: 'center',
-    justifyContent: 'center',   
-  },
-  contentRowListBottom: {
-    flex: 1,
-    width: '100%',
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 5,
-  },
-  brandName: {
-    fontSize: 14,
-    marginLeft: 5,
-    fontFamily: 'Helvetica',
-  },
-  ListCheckContainer:{
-    width: 25,
-    height: 25,
-  },
-  checkBox: {
-    width: '100%',
-    height: '100%',
-    borderWidth: 1,   
-  },
-  check: {
-    position: 'absolute',
-    bottom: 0,
-    left: -10,
-    top: -15,
-    zIndex: 99,
-  },
-  itemName: {
-    fontSize: 18,
-    marginLeft: 5,
-    fontFamily: 'Helvetica',
-  },
-  
-  nutrientText: {
-    marginLeft: 10,
-  },
-  kcalContainer: {
-    flex: 1, 
-    alignItems: 'flex-end',
-  },
-  kcalText: {
-    marginRight: 10, 
-  },
-  selectedRow: {
-    backgroundColor: '#FF8303',
-  },
-
-  hr: {
-    borderBottomColor: 'lightgray',
-    opacity: 0.6,
-    marginTop: 2,
-    borderBottomWidth: 1,
-  },
-
-
-  ingModalContainer: {
-    flex: 1,
-    backgroundColor: 'whitesmoke',
-  },
-  ingModalContentContainer: {
-    flex: 1,
-  },
-  ingModalContentRow: {
-    flexDirection: 'row',
-    paddingTop: 10,
-    paddingBottom: 10,
-  },
-  ingContentRowContent: {
-    width: '90%',
-    flexDirection: 'row',
-    paddingLeft: 15,
-  },
-  ingContentRowButton: {
-    width: '10%',
-    paddingRight: 15,
-  },
-  ingContentRowGrams: {
-    width: '18%',
-    alignItems: 'center',
-  },
-  ingContentRowMakro: {
-    flexDirection: 'row',
-    width: '60%',
-    alignItems: 'center',
-  },
-  ingContentRowKcal:{
-    width: '20%',
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  nutrientTextModal: {
-    fontSize: 16,
-    marginLeft: 12,
-  },
-  nutrientTextModalValue: {
-    fontSize: 16,
-    marginLeft: 5,
-  },
-  gramsTextModal: {
-    fontSize: 22,
-    fontFamily: 'Helvetica',
-    fontWeight: '600',
-  },
-  inputBorder: {
-    borderColor: 'black',
-    borderWidth: 1,
-    width: '100%',
-    paddingLeft: 12,
-  },
-  ingModalContentSummaryRow: {
-    marginTop: 25,
-  },
-  summaryTopRow: {
-    width: '100%',
-  },
-  summaryBottomRow: {
-    width: '100%',
-  },
-  summaryText: {
-    fontSize: 32,
-    fontWeight: '600',
-    color: '#FF8303',
-    fontFamily: 'Helvetica',
-    alignItems: 'center',
-    textAlign: 'center',
-  },
-
-  confirmButtonContainer: {
-    position: 'absolute',
-    bottom: 20,
-    width: '50%',
-    marginLeft: '25%',
-    alignItems: 'center',
-  },
-  confirmButton: {
-    width: '100%',
-    backgroundColor: '#1B1A17',
-    paddingVertical: 9,
-    borderRadius: 50,
-    alignItems: 'center',
-    color: 'whitesmoke',
-    justifyContent: 'center',
-  },
-
-
-  reportModalOverlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'transparent',
-  },
-  reportModalClosingTransparent: {
-    height: '15%',
-    backgroundColor: 'transparent',
-    width: '100%',
-  },
-  reportModalContainer: {
-    height: '85%',
-    backgroundColor: '#F0E3CA',
-    borderTopLeftRadius: 20,
-    borderTopRightRadius: 20,
-    padding: 15,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.3,
-    shadowRadius: 5,
-    elevation: 5,
-  },
-  reportTitleCont: {
-    width: '100%',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  reportTitleText: {
-    fontSize: 20,
-    fontFamily: 'Helvetica',
-    fontWeight: 'bold',
-    color: '#333',
-  },
-  reportDescCont: {
-    width: '100%',
-    padding: 10,
-    borderRadius: 10,
-    alignItems: 'center',
-  },
-  reportDescTextBold: {
-    fontSize: 16,
-    color: '#333',
-    fontWeight: '700',
-    textAlign: 'center',
-    fontFamily: 'Helvetica',
-  },
-  reportDescText: {
-    fontSize: 16,
-    color: '#333',
-    textAlign: 'center',
-    fontFamily: 'Helvetica',
-  },
-  reportOptionsCont: {
-    width: '100%',
-    padding: 5,
-    borderRadius: 10,
-  },
-  reportOptionText: {
-    color: 'black',
-    marginBottom: 15,
-    fontSize: 16,
-    fontWeight: '600',
-    fontFamily: 'Helvetica',
-  },
-  reportHr: {
-    width: '100%',
-    borderBottomWidth: 1,
-    borderColor: 'black',
-    opacity: 0.2,
-  },
-
-  addProductModal: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'transparent',
-  },
-  addProductModalClosingTransparent: {
-    height: '15%',
-    backgroundColor: 'transparent',
-    width: '100%',
-  },
-
-  addProductRow: {
-    width: '100%',
-    marginBottom: 20,
-  },
-  productRowNotify: {
-    textAlign: 'center',
-    fontFamily: 'Helvetica',
-  },
-  addProductRowShort: {
-    width: '100%',
-    marginBottom: 20,
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-  },
-  addProductRowShortLeft: {
-    width: '45%',
-  },
-  addProductRowShortRight: {
-    width: '45%',
-  },
-  inputWrapper: {
-    position: 'relative',
-    borderWidth: 1,
-    borderColor: '#000',
-    borderRadius: 10,
-    paddingTop: 2,
-    paddingHorizontal: 10,
-    height: 50,
-  },
-  label: {
-    position: 'absolute',
-    top: -10,
-    left: 15,
-    backgroundColor: '#F0E3CA',
-    paddingHorizontal: 5,
-    fontSize: 14,
-    color: '#000',
-  },
-  input: {
-    flex: 1,
-    height: 40,
-    paddingHorizontal: 5,
-    fontSize: 16,
-    color: '#000',
-  },
-  addProductConfirmButton: {     
-    width: '100%', 
-    height: 50,          
-    backgroundColor: '#FF8303',
-    justifyContent: 'center',
-    alignItems: 'center',   
-    borderRadius: 10,   
-},
-addProductBtnText: {
-  fontSize: 18,
-  fontFamily: 'Helvetica',
-},
-
-elGatoAddOverlay: {
-  flex: 1,
-  backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  position: 'relative',
-},
-elGatoAddBubbleContainer: {
-  width: '100%',
-  height: '20%',
-},
-elGatoAddMainContainer: {
-  width: '100%',
-  height: '80%',
-  backgroundColor: 'transparent',
-},
-elGatoAddConfirm: {
-  width: '50%',
-  position: 'absolute',
-  height: 50,
-  bottom: 20,
-  borderRadius: 25,
-  marginLeft: '25%',
-  backgroundColor: '#FF8303',
-  justifyContent: 'center',  
-  alignItems: 'center',      
-},
-elGatoConfirmText: {
-  color: 'white',          
-  fontSize: 16,           
-  fontWeight: '600',
-  fontFamily: 'Helvetica', 
-},
-elGatoBubbleImage: {
-  width: '90%',
-  marginLeft: '5%',
-  marginTop: '5%',
-  height: '80%',
-},
-});
 
 export default AddIngredient;

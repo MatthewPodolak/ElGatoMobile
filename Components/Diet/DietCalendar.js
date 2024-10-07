@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { View, StyleSheet, SafeAreaView, Text, TouchableOpacity, StatusBar } from 'react-native';
 
+import { DietCalendarStyles } from '../../Styles/Components/DietCalendarStyles.js';
+
+
 function DietCalendar({ onDateSelect }) {
     const [days, setDays] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
@@ -51,34 +54,34 @@ function DietCalendar({ onDateSelect }) {
     };
 
     return (
-        <SafeAreaView style={styles.mainCalendarContainer}>
+        <SafeAreaView style={DietCalendarStyles.mainCalendarContainer}>
             <StatusBar backgroundColor="#FF8303" barStyle="light-content" />          
-            <View style={styles.monthContainer}>
+            <View style={DietCalendarStyles.monthContainer}>
             </View>
-            <View style={styles.daysWrapper}>
+            <View style={DietCalendarStyles.daysWrapper}>
                 {days.map((dayItem, index) => (
                     <TouchableOpacity
                         key={index}
                         style={[
-                            styles.calendarItem,
-                            dayItem.fullDate === selectedDate ? styles.selectedBlock : null
+                            DietCalendarStyles.calendarItem,
+                            dayItem.fullDate === selectedDate ? DietCalendarStyles.selectedBlock : null
                         ]}
                         onPress={() => handleDateSelect(dayItem)}
                     >
-                        <View style={styles.calendarDayCont}>
+                        <View style={DietCalendarStyles.calendarDayCont}>
                             <Text
                                 style={[
-                                    styles.boldText,
-                                    dayItem.fullDate === selectedDate ? styles.selectedText : null
+                                    DietCalendarStyles.boldText,
+                                    dayItem.fullDate === selectedDate ? DietCalendarStyles.selectedText : null
                                 ]}
                             >
                                 {dayItem.day}
                             </Text>
                         </View>
-                        <View style={styles.calendarDayNumberCont}>
+                        <View style={DietCalendarStyles.calendarDayNumberCont}>
                             <Text
                                 style={[
-                                    dayItem.fullDate === selectedDate ? styles.selectedText : null
+                                    dayItem.fullDate === selectedDate ? DietCalendarStyles.selectedText : null
                                 ]}
                             >
                                 {dayItem.date < 10 ? `0${dayItem.date}` : dayItem.date}
@@ -91,45 +94,5 @@ function DietCalendar({ onDateSelect }) {
     );
 }
 
-
-const styles = StyleSheet.create({
-    mainCalendarContainer: {
-        flexDirection: 'column',
-        width: '100%',
-        height: '9%',
-        backgroundColor: '#FF8303',
-    },
-    monthContainer:{
-        marginTop: 15,
-    },
-    daysWrapper: {
-        flexDirection: 'row',
-        height: '65%',
-    },
-    calendarItem: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: 10,
-    },
-    selectedBlock: {
-        backgroundColor: '#1B1A17',
-        borderRadius: 5,
-    },
-    calendarDayCont: {
-        marginBottom: 5,
-    },
-    calendarDayNumberCont: {
-        fontSize: 18,
-        fontWeight: 'bold',
-    },
-    selectedText: {
-        fontWeight: 'bold',
-        color: '#FFFFFF',
-    },
-    boldText: {
-        fontWeight: 'bold',
-    },
-});
 
 export default DietCalendar;
