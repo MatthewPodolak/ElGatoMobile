@@ -30,5 +30,15 @@ export const GlobalStyles = StyleSheet.create({
         opacity: 0.6,
         marginTop: 2,
         borderBottomWidth: 1,
+    },
+    center: {
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
+    centerLeft: {
+        justifyContent: 'center',
+        alignItems: 'flex-start', 
+        paddingLeft: 10,        
     }
+
 });

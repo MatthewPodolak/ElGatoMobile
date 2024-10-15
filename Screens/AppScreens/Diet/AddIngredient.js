@@ -443,7 +443,7 @@ const AddIngredient = ({ route, navigation }) => {
           </View>
         ) : (
           //xdd
-          <ScrollView>
+          <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
             {searchedData.map((item, index) => (
               <View key={item.id || index} style={AddIngredientStyles.contentRow}>
                 <TouchableOpacity
