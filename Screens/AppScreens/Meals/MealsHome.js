@@ -1,34 +1,139 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+
 
 import MealDisplay from '../../../Components/Meals/MealDisplay.js';
 
 const screenHeight = Dimensions.get('window').height;
 
 function MealsHome({ navigation }) {
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
 
+  const [allMealsData, setAllMealsData] = useState(null);
 
+  const fetchAllMealsData = async () => {
+    try {
+      const token = await AsyncStorage.getItem('jwtToken');
+      const res = await fetchWithTimeout(
+        `http://192.168.0.143:5094/api/Meal/GetStarters`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        5000
+      );
+
+      if(!res.ok){
+        //return no
+        console.log('error while fetching meal main page');
+      }
+
+      const data = await res.json();
+      setAllMealsData(data);
+      setIsLoading(false);
+    } catch (error) {
+       //error - display.
+    } 
+  };
+
+  useEffect(() => {
+    fetchAllMealsData();
+  }, []);
 
   const renderContent = () => {
     switch (activeTab) {
       case 'All':
         return (
           <>
-            <View style={styles.rowTitle}>
+            <View style={[styles.rowTitle, { marginTop: 20 }]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Most liked</Text>
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              <MealDisplay />
-              <MealDisplay />
-              <MealDisplay />
-              <MealDisplay />
+              {allMealsData?.mostLiked?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
             </ScrollView>
-
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>All</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.all?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Breakfast</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.breakfast?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Side dish</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.sideDish?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Main dish</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.mainDish?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>High protein</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.highProtein?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Low carbs</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.lowCarbs?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>High carb</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.highCarb?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
+            <View style={GlobalStyles.paddedHr}></View>
+            <View style={[styles.rowTitle]}>
+              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft]}>Low fat</Text>
+            </View>
+            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              {allMealsData?.lowFats?.map((item, index) => (
+                <MealDisplay key={index} meal={item} />
+              ))}
+            </ScrollView>
           </>
         );
       case 'Search':
@@ -108,12 +213,14 @@ const styles = StyleSheet.create({
     flex: 1,    
   },
   row: {
-    height: screenHeight * 0.35, 
+    minHeight: screenHeight * 0.32,
+    height: 'auto',
+    //backgroundColor: 'red', //here is the problem
     marginVertical: 10,     
   },
   rowTitle: {
-    marginTop: 20,
     flex: 1,
+    marginTop: 6,
   },
   item: {
     width: 300,                

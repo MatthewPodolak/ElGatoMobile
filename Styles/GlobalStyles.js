@@ -31,6 +31,14 @@ export const GlobalStyles = StyleSheet.create({
         marginTop: 2,
         borderBottomWidth: 1,
     },
+    paddedHr: {
+        borderBottomColor: 'black',
+        opacity: 0.2,
+        marginTop: 2,
+        borderBottomWidth: 1,
+        width: '95%',
+        marginLeft: '2.5%',
+    },
     center: {
         justifyContent: 'center',
         alignItems: 'center',
