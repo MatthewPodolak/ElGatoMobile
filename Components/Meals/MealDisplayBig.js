@@ -11,7 +11,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
 
 
-function MealDisplay({meal}) {
+function MealDisplayBig({meal}) {
   const imageSource = meal.img ? { uri: `http://192.168.0.143:5094${meal.img}` } : require('../../assets/recepieBaseImage.png');
   const userPfp = meal.creatorPfp? {uri: `http://192.168.0.143:5094${meal.creatorPfp}`} : require('../../assets/userPfpBase.png');
   const [isLiked, setIsLiked] = useState(false);
@@ -132,7 +132,8 @@ function MealDisplay({meal}) {
 
 const styles = StyleSheet.create({
   itemContainer: {
-    width: 300,                
+    width: '95%',
+    marginLeft: '2.5%',                
     height: '80%',            
     backgroundColor: 'transparent',
     justifyContent: 'center',
@@ -143,13 +144,14 @@ const styles = StyleSheet.create({
     overflow: 'hidden',
   },
   imgFill:{
-    width: 300,                
+    width: '100%',                
     height: '100%',
     position: 'relative',
     overflow: 'hidden',
   },
   itemData: {
-    width: 300,
+    width: '95%',
+    marginLeft: '2.5%',  
     height: '20%',
     overflow: 'hidden',
     marginHorizontal: 5,  
@@ -201,4 +203,4 @@ const styles = StyleSheet.create({
   }
 });
 
-export default MealDisplay;
+export default MealDisplayBig;

@@ -47,6 +47,9 @@ export const GlobalStyles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'flex-start', 
         paddingLeft: 10,        
-    }
+    },
 
+    orange: {
+        color: '#FF8303',
+    }
 });
