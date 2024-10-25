@@ -27,20 +27,50 @@ function MealsHome({ navigation }) {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
   //searching
+  const [typingTimeout, setTypingTimeout] = useState(null);
+
   const [searchedPhrase, setSearchedPhrase] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [currentQty, setCurrentQty] = useState(100);
+  const [currentSorting, setCurrentSorting] = useState(0);
+  const [currentNutris, setCurrentNutris] = useState(null);
+  const [currentTime, setCurrentTime] = useState(null);
+
+  const applyFilters = (filterModel) => {
+    if (filterModel && filterModel.currentNutris) {
+       setCurrentNutris(filterModel.currentNutris);
+    }
+    if (filterModel && filterModel.currentTime){
+       setCurrentTime(filterModel.currentTime);
+    }
+    if(filterModel && filterModel.sorting){
+      setCurrentSorting(filterModel.sorting);
+    }
+  };
 
   const getSearchedPhrase = (phrase) => {
-    console.log('searched phrase::: -> :::: ' + phrase);
+    setSearchedPhrase(phrase);
+
+    if (typingTimeout) {
+      clearTimeout(typingTimeout);
+    }
+
+    setTypingTimeout(
+      setTimeout(() => {
+        setSearchedPhrase(phrase);
+      }, 1000)
+    );
   };
+
   const closeFilterModal = () => {
     setFilterModalVisible(false);
   };
+
 
   const setActiveTabFun = async (tab) => {
     setActiveTab(tab);
     switch(tab){
       case "Search":
-        console.log("Search call");
         await fetchSearchData();
         break;
       case "Favourites":
@@ -53,9 +83,36 @@ function MealsHome({ navigation }) {
   };
 
   const fetchSearchData = async () => {
+    setIsLoadingSearch(true);
     try{
       const token = await AsyncStorage.getItem('jwtToken');
 
+      let requestBody = {
+        qty: currentQty,
+        pageNumber: currentPage,
+        phrase: searchedPhrase ?? "",
+        sortValue: currentSorting,
+      };
+  
+      if (currentNutris) {
+        requestBody.nutritions = {
+          minimalCalories: currentNutris.minCalorie ?? 1,
+          maximalCalories: currentNutris.maxCalorie ?? 9999,
+          minimalProtein: currentNutris.minProtein ?? 1,
+          maximalProtein: currentNutris.maxProtein ?? 9999,
+          minimumCarbs: currentNutris.minCarbs ?? 1,
+          maximalCarbs: currentNutris.maxCarbs ?? 9999,
+          minimumFats: currentNutris.minFats ?? 1,
+          maximalFats: currentNutris.maxFats ?? 9999,
+        };
+      }
+
+      if (currentTime) {
+        requestBody.searchTimeRange = {
+          minimalTime: currentTime.minTime ?? 1,
+          maximumTime: currentTime.maxTime ?? 999999,
+        };
+      }
 
       const res = await fetchWithTimeout(
         `http://192.168.0.143:5094/api/Meal/Search`,
@@ -65,11 +122,7 @@ function MealsHome({ navigation }) {
             'Authorization': `Bearer ${token}`,
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            qty: 50,
-            pageNumber: 1,
-            phrase: "",
-          }),
+          body: JSON.stringify(requestBody),       
         },
         5000
       );
@@ -80,12 +133,13 @@ function MealsHome({ navigation }) {
       }
       
       const data = await res.json();
-
       setSearchedMealsData(data);
-      setIsLoadingSearch(false);
+
     }catch(error){
       //error
       console.log('internal while fetching search ress');
+    }finally{
+      setIsLoadingSearch(false);
     }
   };
 
@@ -120,6 +174,13 @@ function MealsHome({ navigation }) {
   useEffect(() => {
     fetchAllMealsData();
   }, []);
+
+  useEffect(() => {
+    if (currentNutris || currentTime || currentSorting || searchedPhrase) {
+      fetchSearchData();
+    }
+  }, [currentNutris, currentTime, currentSorting, searchedPhrase]);
+  
 
   const renderContent = () => {
     switch (activeTab) {
@@ -236,7 +297,7 @@ function MealsHome({ navigation }) {
                 </View>
             </View>
 
-             {searchedMealsData == null && isLoadingSearch == false ? (
+            {(!searchedMealsData || searchedMealsData.length === 0) && !isLoadingSearch ? (
               <View style={styles.emptySearchContainer}>
                 <View style = {styles.emptySearchGatoLottie}>
                    {/*ELGATO*/}
@@ -327,7 +388,11 @@ function MealsHome({ navigation }) {
 
       <FilterModal
         visible={filterModalVisible}
-        closeFilterModal= {closeFilterModal}       
+        closeFilterModal= {closeFilterModal}
+        applyFilters={applyFilters}
+        currentNutris={currentNutris}
+        currentTime={currentTime}
+        currentSorting = {currentSorting}       
       >
       </FilterModal>
 
