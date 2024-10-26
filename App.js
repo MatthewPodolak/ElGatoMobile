@@ -32,7 +32,6 @@ import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
 import * as Font from 'expo-font';
-import { populateDb } from './Services/Database/populateDatabase';
 
 const Stack = createNativeStackNavigator();
 
@@ -47,8 +46,6 @@ function App() {
           Helvetica: require('./assets/fonts/Helvetica.ttf'),
           HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
         });
-
-        await populateDb();
         
         setIsReady(true);
       } catch (error) {

@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, View, StyleSheet, SafeAreaView, Text } from 'react-native';
-import * as SQLite from 'expo-sqlite';
 
 import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
-import { calorieInsertion } from '../../Services/Database/calorieInsertion';
 import { MakroMenuStyles } from '../../Styles/Components/MakroMenuStyles.js';
 
 
@@ -23,25 +21,7 @@ function MakroMenu({ CalorieCounter }) {
 
     const [loading, setLoading] = useState(true);
 
-    useEffect(() => {
-        const fetchFromLiteSql = async () => {
-            const db = await SQLite.openDatabaseAsync('ElGatoDbLite');
-    
-            try {
-                const userCalories = await db.getFirstAsync('SELECT * FROM user');
-                setKcal(userCalories.calories);
-                setCarbs(userCalories.carbs);
-                setFat(userCalories.fat);
-                setProtein(userCalories.protein);
-    
-                setLoading(false);
-            } catch (error) {
-                console.error(error);
-                setLoading(true);
-                throw error;
-            }
-        };
-    
+    useEffect(() => {         
         const fetchFromApi = async () => {
             try{
                 const token = await AsyncStorage.getItem('jwtToken');
@@ -67,21 +47,6 @@ function MakroMenu({ CalorieCounter }) {
                     setProtein(data.protein);
 
                     setLoading(false);
-
-                    try{
-                        const calories = {
-                            kcal: data.kcal,
-                            fat: data.fat,
-                            protein: data.protein,
-                            carbs: data.carbs,
-                        };
-                        const caloriesJSON = JSON.stringify(calories);
-                        calorieInsertion(caloriesJSON);
-                    }catch(error){
-                        setLoading(true);
-                        throw "Could'nt connect to the database, try again later.";
-                    }
-
                   }else{
                     setLoading(true);
                     throw "Could'nt connect to the database, try again later.";
@@ -95,10 +60,10 @@ function MakroMenu({ CalorieCounter }) {
     
         const fetchData = async () => {
             try {
-                await fetchFromLiteSql();
-            } catch (error) {
-                console.log('Failed from SQLite...');
                 await fetchFromApi();
+            } catch (error) {
+                //error
+                console.log('Failed ...');
             }
         };
     

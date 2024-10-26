@@ -9,8 +9,6 @@ import GatoQuestLoad from '../../assets/Questionary/carLoad.png';
 import { Dimensions } from 'react-native';
 import ErrorPopup from '../../Components/Error/ErrorPopup';
 
-import { calorieInsertion } from '../../Services/Database/calorieInsertion';
-
 import { AuthContext } from '../../Services/Auth/AuthContext';
 
 const screenWidth = Dimensions.get('window').width;
@@ -116,15 +114,6 @@ function FinalQuestScreen({navigation}) {
             
             const data = await response.json();
             await AsyncStorage.setItem('jwtToken', data.jwt);
-            await AsyncStorage.setItem('calorieInfo', JSON.stringify(data.calorieIntake));
-
-            try{
-              await calorieInsertion(JSON.stringify(data.calorieIntake));
-            }catch(error){
-              setErrorMessage('Database error. Try restarting the app.');
-              setErrorView(true);
-              setIsErrorVisible(true);
-            }
        
             setLoading(false);
             setRegComplete(true);
