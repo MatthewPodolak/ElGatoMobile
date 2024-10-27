@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -13,10 +13,14 @@ import MealDisplay from '../../../Components/Meals/MealDisplay.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 
 import { AllRecepies } from '../../../Styles/Meals/AllRecepies.js';
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import AuthService from '../../../Services/Auth/AuthService.js';
 
 const screenHeight = Dimensions.get('window').height;
 
 function MealsHome({ navigation }) {
+  const { setIsAuthenticated } = useContext(AuthContext);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
@@ -145,7 +149,15 @@ function MealsHome({ navigation }) {
 
   const fetchAllMealsData = async () => {
     try {
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        console.log('Token expired or invalid, logging out.');
+        await AuthService.logout(setIsAuthenticated, navigation);
+        //here remove console log ++ display throw message for user.
+        return;
+      }
+ 
       const res = await fetchWithTimeout(
         `http://192.168.0.143:5094/api/Meal/GetStarters`,
         {

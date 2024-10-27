@@ -1,8 +1,6 @@
 import React, { createContext, useState, useEffect } from 'react';
 import { ActivityIndicator, View } from 'react-native';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import JWT from 'expo-jwt';
-import secrets from '../../secrets.json';
+import AuthService from '../../Services/Auth/AuthService.js';
 
 export const AuthContext = createContext();
 
@@ -10,37 +8,24 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null); 
   const [isLoading, setIsLoading] = useState(true);
 
-  const secretKey = secrets.AuthKey;
-
-  const isTokenExpired = (token) => {
-    try {
-      const decodedToken = JWT.decode(token, secretKey); 
-      const currentTime = Date.now() / 1000;
-      return decodedToken.exp < currentTime;
-    } catch (error) {
-      return true; //ret as expired as error handling ;p.
-    }
-  };
-
   useEffect(() => {
-    const checkToken = async () => {
+    const initializeAuth = async () => {
       try {
-        const token = await AsyncStorage.getItem('jwtToken');
-        if (token && !isTokenExpired(token)) {
-          setIsAuthenticated(true); 
+        const token = await AuthService.getToken();
+        if (token && !AuthService.isTokenExpired(token)) {
+          setIsAuthenticated(true);
         } else {
-          setIsAuthenticated(false); 
-          await AsyncStorage.removeItem('jwtToken');
+          await AuthService.logout(setIsAuthenticated);
         }
       } catch (error) {
-        console.error('Error checking token:', error);
+        console.error('Error initializing auth:', error);
         setIsAuthenticated(false);
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkToken();
+    initializeAuth();
   }, []);
 
   if (isLoading) {
