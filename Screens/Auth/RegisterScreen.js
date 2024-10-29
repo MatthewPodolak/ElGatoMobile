@@ -5,7 +5,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 import { questStyles } from '../../Styles/QuestionaryStyles.js';
 
-
 function RegisterScreen({navigation}) {
   const [answer, setAnswer] = useState('');
 

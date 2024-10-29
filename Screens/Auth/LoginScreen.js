@@ -6,6 +6,8 @@ import { questStyles } from '../../Styles/QuestionaryStyles.js';
 import BackArrow from '../../assets/Questionary/arrow-left.png';
 
 import { AuthContext } from '../../Services/Auth/AuthContext';
+import config from '../../Config.js';
+
 
 function LoginScreen({ navigation }) {
   const [email, setEmail] = useState('');
@@ -41,7 +43,7 @@ function LoginScreen({ navigation }) {
 
     try {
       const response = await Promise.race([
-        fetch('http://192.168.0.143:5094/api/Account/Login', {
+        fetch(`${config.ipAddress}/api/Account/Login`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -51,7 +53,7 @@ function LoginScreen({ navigation }) {
             password: password,
           }),
         }),
-        timeout(10000),
+        timeout(config.timeout),
       ]);
   
       if (response.ok) {

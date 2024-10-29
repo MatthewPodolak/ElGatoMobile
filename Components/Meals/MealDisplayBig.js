@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { View, Pressable, StyleSheet, SafeAreaView, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 
@@ -9,9 +9,13 @@ import HeartFull from '../../assets/main/Diet/heartFull.svg'
 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
-
+import { AuthContext } from '../../Services/Auth/AuthContext.js';
+import AuthService from '../../Services/Auth/AuthService.js';
+import config from '../../Config.js';
 
 function MealDisplayBig({meal}) {
+  const { setIsAuthenticated } = useContext(AuthContext);
+
   const imageSource = meal.img ? { uri: `http://192.168.0.143:5094${meal.img}` } : require('../../assets/recepieBaseImage.png');
   const userPfp = meal.creatorPfp? {uri: `http://192.168.0.143:5094${meal.creatorPfp}`} : require('../../assets/userPfpBase.png');
   const [isLiked, setIsLiked] = useState(false);
@@ -25,10 +29,15 @@ function MealDisplayBig({meal}) {
 
   const likeMeal = async (id) => {
     try{
-      const token = await AsyncStorage.getItem('jwtToken');    
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }   
 
       const res = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Meal/LikeMeal?mealId=${id}`,
+        `${config.ipAddress}/api/Meal/LikeMeal?mealId=${id}`,
         {
           method: 'POST',
           headers: {
@@ -36,7 +45,7 @@ function MealDisplayBig({meal}) {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!res.ok){
@@ -59,10 +68,15 @@ function MealDisplayBig({meal}) {
 
   const saveMeal = async (id) => {
     try{
-    const token = await AsyncStorage.getItem('jwtToken');    
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }  
 
       const res = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Meal/SaveMeal?mealId=${id}`,
+        `${config.ipAddress}/api/Meal/SaveMeal?mealId=${id}`,
         {
           method: 'POST',
           headers: {
@@ -70,7 +84,7 @@ function MealDisplayBig({meal}) {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!res.ok){

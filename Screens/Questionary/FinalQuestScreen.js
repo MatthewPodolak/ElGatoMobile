@@ -8,7 +8,7 @@ import GatoQuestError from '../../assets/Questionary/carCrash.png';
 import GatoQuestLoad from '../../assets/Questionary/carLoad.png';
 import { Dimensions } from 'react-native';
 import ErrorPopup from '../../Components/Error/ErrorPopup';
-
+import config from '../../Config.js';
 import { AuthContext } from '../../Services/Auth/AuthContext';
 
 const screenWidth = Dimensions.get('window').width;
@@ -100,14 +100,14 @@ function FinalQuestScreen({navigation}) {
             );    
     
           const response = await Promise.race([
-            fetch('http://192.168.0.143:5094/api/Account/RegisterWithQuestionary', {
+            fetch(`${config.ipAddress}/api/Account/RegisterWithQuestionary`, {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify(registerPost),
             }),
-            timeout(10000),
+            timeout(config.timeout),
           ]);
     
           if (response.ok) {

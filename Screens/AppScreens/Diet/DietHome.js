@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -11,11 +11,17 @@ import { useRoute } from '@react-navigation/native';
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
 import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import AuthService from '../../../Services/Auth/AuthService.js';
 
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import { TouchableOpacity } from 'react-native';
 
+import config from '../../../Config.js';
+
 function DietHome({ navigation }) {
+  const { setIsAuthenticated } = useContext(AuthContext);
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
@@ -52,7 +58,13 @@ function DietHome({ navigation }) {
             addIngredientToMeal(mealId, ingredient);
           });
   
-          const token = await AsyncStorage.getItem('jwtToken');
+          const token = await AuthService.getToken();
+      
+          if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return;
+          }
+
           const mealDate = selectedDate + 'T00:00:00Z';
   
           const ingredientsToSend = selectedItemsData.map((ingredient) => ({
@@ -73,7 +85,7 @@ function DietHome({ navigation }) {
           });
 
           const pushIngRes = await fetchWithTimeout(
-            `http://192.168.0.143:5094/api/Diet/AddIngriedientsToMeal`,
+            `${config.ipAddress}/api/Diet/AddIngriedientsToMeal`,
             {
               method: 'POST',
               headers: {
@@ -86,7 +98,7 @@ function DietHome({ navigation }) {
                 ingridient: ingredientsToSend,
               }),
             },
-            10000
+            config.timeout
           );
   
           if (!pushIngRes.ok) {
@@ -165,11 +177,17 @@ function DietHome({ navigation }) {
 
     //API CALL!
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
       const mealDate = selectedDate + 'T00:00:00Z';
 
       const removeIngredientFromMeal = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/RemoveIngridientFromMeal`,
+        `${config.ipAddress}/api/Diet/RemoveIngridientFromMeal`,
         {
           method: 'DELETE',
           headers: {
@@ -184,7 +202,7 @@ function DietHome({ navigation }) {
             date: mealDate          
           }),
         },
-        10000
+        config.timeout
       );
 
       if(!removeIngredientFromMeal.ok){
@@ -270,11 +288,17 @@ function DietHome({ navigation }) {
   
     //API
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
       const mealDate = selectedDate + 'T00:00:00Z';
 
       const patchIngredientWeight = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/UpdateIngridientWeightValue`,
+        `${config.ipAddress}/api/Diet/UpdateIngridientWeightValue`,
         {
           method: 'PATCH',
           headers: {
@@ -290,7 +314,7 @@ function DietHome({ navigation }) {
             date: mealDate          
           }),
         },
-        10000
+        config.timeout
       );
 
       if(!patchIngredientWeight.ok){
@@ -345,11 +369,16 @@ function DietHome({ navigation }) {
     }));
 
     const changeMealDate = selectedDate + 'T00:00:00Z';
-    const token = await AsyncStorage.getItem('jwtToken');
+    const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
     try{
       const mealChangeRes = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/UpdateMealName`,
+        `${config.ipAddress}/api/Diet/UpdateMealName`,
         {
           method: 'PATCH',
           headers: {
@@ -362,7 +391,7 @@ function DietHome({ navigation }) {
             date: changeMealDate,
           }),
         },
-        5000
+        config.timeout
       );
 
       if(!mealChangeRes.ok){
@@ -405,11 +434,16 @@ function DietHome({ navigation }) {
     });
 
     const delMealDate = selectedDate + 'T00:00:00Z';
-    const token = await AsyncStorage.getItem('jwtToken');
+    const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
     try{
       const mealRemoveRes = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/DeleteMeal?publicId=${mealId}&date=${delMealDate}`,
+        `${config.ipAddress}/api/Diet/DeleteMeal?publicId=${mealId}&date=${delMealDate}`,
         {
           method: 'DELETE',
           headers: {
@@ -417,7 +451,7 @@ function DietHome({ navigation }) {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!mealRemoveRes.ok){
@@ -434,7 +468,12 @@ function DietHome({ navigation }) {
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
     const counter = getIdCounter(); //id counter
-    const token = await AsyncStorage.getItem('jwtToken');
+    const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
     const newMeal = {
       name: `Meal${counter}`,
@@ -451,7 +490,7 @@ function DietHome({ navigation }) {
 
     try {
       const mealAddRes = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/AddNewMeal?mealName=${newMeal.name}&date=${newMealDate}`,
+        `${config.ipAddress}/api/Diet/AddNewMeal?mealName=${newMeal.name}&date=${newMealDate}`,
         {
           method: 'POST',
           headers: {
@@ -459,7 +498,7 @@ function DietHome({ navigation }) {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
       if(!mealAddRes.ok){
         //set error popup no internet - meal could not be saved.
@@ -477,13 +516,16 @@ function DietHome({ navigation }) {
 
     try {
       setDietData(null);
-      const token = await AsyncStorage.getItem('jwtToken');
-      console.log(token);
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
       date = date + 'T00:00:00Z';
-      console.log(date);
 
       const response = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/GetUserDietDay?date=${date}`,
+        `${config.ipAddress}/api/Diet/GetUserDietDay?date=${date}`,
         {
           method: 'GET',
           headers: {
@@ -491,7 +533,7 @@ function DietHome({ navigation }) {
             'Content-Type': 'application/json',
           },
         },
-        10000
+        config.timeout
       );
 
       if (!response.ok) {
@@ -532,7 +574,7 @@ function DietHome({ navigation }) {
             console.log(date);
             console.log(dietDayVMO.date);
             const mealAddRes = await fetchWithTimeout(
-              `http://192.168.0.143:5094/api/Diet/AddNewMeal?mealName=${meal.name}&date=${date}`,
+              `${config.ipAddress}/api/Diet/AddNewMeal?mealName=${meal.name}&date=${date}`,
               {
                 method: 'POST',
                 headers: {
@@ -540,7 +582,7 @@ function DietHome({ navigation }) {
                   'Content-Type': 'application/json',
                 },
               },
-              5000
+              config.timeout
             );
             
 
@@ -594,8 +636,6 @@ function DietHome({ navigation }) {
 
     return (
       <SafeAreaView>
-        {/*<Text>SELECTED DATE : {dietData.date}</Text>
-        <Text>Water Intake: {dietData.water} ml</Text> */}
         <View style = {DietHomeStyles.topMargin}></View>
         {dietData.meals.map((meal, index) => (
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}

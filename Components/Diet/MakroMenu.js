@@ -1,13 +1,17 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useContext } from 'react';
 import { ActivityIndicator, View, StyleSheet, SafeAreaView, Text } from 'react-native';
 
 import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { MakroMenuStyles } from '../../Styles/Components/MakroMenuStyles.js';
+import { AuthContext } from '../../Services/Auth/AuthContext.js';
+import AuthService from '../../Services/Auth/AuthService.js';
 
+import config from '../../Config.js';
 
 function MakroMenu({ CalorieCounter }) {
+    const { setIsAuthenticated } = useContext(AuthContext);
 
     const [kcal, setKcal] = useState(0);
     const [protein, setProtein] = useState(0);
@@ -24,10 +28,15 @@ function MakroMenu({ CalorieCounter }) {
     useEffect(() => {         
         const fetchFromApi = async () => {
             try{
-                const token = await AsyncStorage.getItem('jwtToken');
+                const token = await AuthService.getToken();
+      
+                if (!token || AuthService.isTokenExpired(token)) {
+                    await AuthService.logout(setIsAuthenticated, navigation);
+                    return;
+                }
 
                 const response = await fetchWithTimeout(
-                    `http://192.168.0.143:5094/api/UserData/GetUserCaloriesIntake`,
+                    `${config.ipAddress}/api/UserData/GetUserCaloriesIntake`,
                     {
                       method: 'GET',
                       headers: {
@@ -35,7 +44,7 @@ function MakroMenu({ CalorieCounter }) {
                         'Content-Type': 'application/json',
                       },
                     },
-                    5000
+                    config.timeout
                   );
 
                   if(response.ok){

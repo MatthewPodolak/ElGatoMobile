@@ -4,7 +4,6 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import FilterModal from '../../../Components/Meals/FilterModal.js';
 
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
@@ -13,8 +12,11 @@ import MealDisplay from '../../../Components/Meals/MealDisplay.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 
 import { AllRecepies } from '../../../Styles/Meals/AllRecepies.js';
+
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import AuthService from '../../../Services/Auth/AuthService.js';
+
+import config from '../../../Config.js';
 
 const screenHeight = Dimensions.get('window').height;
 
@@ -89,7 +91,12 @@ function MealsHome({ navigation }) {
   const fetchSearchData = async () => {
     setIsLoadingSearch(true);
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
       let requestBody = {
         qty: currentQty,
@@ -119,7 +126,7 @@ function MealsHome({ navigation }) {
       }
 
       const res = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Meal/Search`,
+        `${config.ipAddress}/api/Meal/Search`,
         {
           method: 'POST',
           headers: {
@@ -128,7 +135,7 @@ function MealsHome({ navigation }) {
           },
           body: JSON.stringify(requestBody),       
         },
-        5000
+        config.timeout
       );
 
       if(!res.ok){
@@ -152,14 +159,12 @@ function MealsHome({ navigation }) {
       const token = await AuthService.getToken();
       
       if (!token || AuthService.isTokenExpired(token)) {
-        console.log('Token expired or invalid, logging out.');
         await AuthService.logout(setIsAuthenticated, navigation);
-        //here remove console log ++ display throw message for user.
         return;
       }
  
       const res = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Meal/GetStarters`,
+        `${config.ipAddress}/api/Meal/GetStarters`,
         {
           method: 'GET',
           headers: {
@@ -167,7 +172,7 @@ function MealsHome({ navigation }) {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!res.ok){

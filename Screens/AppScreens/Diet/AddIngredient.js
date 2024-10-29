@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect,useContext } from 'react';
 import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Image  } from 'react-native';
 import { ScrollView,View, Text, TextInput, StyleSheet, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -16,9 +16,14 @@ import ReportIcon from '../../../assets/main/Diet/flag-fill.svg';
 
 import GatoRightModal from '../../../Components/ElGato/GatoRightModal';
 import { AddIngredientStyles } from '../../../Styles/Diet/AddIngredientStyles.js';
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import AuthService from '../../../Services/Auth/AuthService.js';
 
+import config from '../../../Config.js';
 
 const AddIngredient = ({ route, navigation }) => {
+  const { setIsAuthenticated } = useContext(AuthContext);
+  
   const [ingredientName, setIngredientName] = useState('');
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -65,9 +70,15 @@ const AddIngredient = ({ route, navigation }) => {
     }
 
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
       const requestAddProduct = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/UserRequest/AddIngredientRequest`,
+        `${config.ipAddress}/api/UserRequest/AddIngredientRequest`,
         {
           method: 'POST',
           headers: {
@@ -84,7 +95,7 @@ const AddIngredient = ({ route, navigation }) => {
               energyKcal: kcal 
           }),
         },
-        5000
+        config.timeout
       );
 
     }catch(error){
@@ -124,9 +135,15 @@ const AddIngredient = ({ route, navigation }) => {
 
   const sendReport = async (sendingCase) => {
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
       const requestReport = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/UserRequest/ReportIngredientRequest`,
+        `${config.ipAdress}/api/UserRequest/ReportIngredientRequest`,
         {
           method: 'POST',
           headers: {
@@ -139,7 +156,7 @@ const AddIngredient = ({ route, navigation }) => {
                 cause: sendingCase
           }),
         },
-        5000
+        config.timeout
       );
 
     }catch(error){
@@ -275,10 +292,15 @@ const AddIngredient = ({ route, navigation }) => {
     setScanned(true);
     //api call 
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
       const scannedIngredient = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/GetIngridientByEan?ean=${data}`,
+        `${config.ipAddress}/api/Diet/GetIngridientByEan?ean=${data}`,
         {
           method: 'GET',
           headers: {
@@ -286,7 +308,7 @@ const AddIngredient = ({ route, navigation }) => {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!scannedIngredient.ok){
@@ -324,10 +346,15 @@ const AddIngredient = ({ route, navigation }) => {
 
   const fetchIngredientData = async (ingredient) => {
     try{
-      const token = await AsyncStorage.getItem('jwtToken');
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
 
       const ingredientListRes = await fetchWithTimeout(
-        `http://192.168.0.143:5094/api/Diet/GetListOfCorrelatedItemByName?name=${ingredient}`,
+        `${config.ipAddress}/api/Diet/GetListOfCorrelatedItemByName?name=${ingredient}`,
         {
           method: 'GET',
           headers: {
@@ -335,7 +362,7 @@ const AddIngredient = ({ route, navigation }) => {
             'Content-Type': 'application/json',
           },
         },
-        5000
+        config.timeout
       );
 
       if(!ingredientListRes.ok){
