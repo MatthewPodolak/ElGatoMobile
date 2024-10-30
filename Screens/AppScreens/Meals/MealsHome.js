@@ -5,6 +5,7 @@ import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import FilterModal from '../../../Components/Meals/FilterModal.js';
+import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 
@@ -34,6 +35,10 @@ function MealsHome({ navigation }) {
   const [filteredLikedMealsData, setFilteredLikedMealsData] = useState([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
+  const [inspectModalVisible, setInspectModalVisible] = useState(false);
+
+  //inspect
+  const [currentlyInspectedItem, setCurrentlyInspectedItem] = useState(null);
 
   //searching
   const [typingTimeout, setTypingTimeout] = useState(null);
@@ -56,6 +61,11 @@ function MealsHome({ navigation }) {
       setCurrentSorting(filterModel.sorting);
     }
   };
+
+  const inspectModal = (item) => {
+    setCurrentlyInspectedItem(item);
+    setInspectModalVisible(true);
+  }
 
   const setLikedRecepieSearch = (phrase) => {
     setFilteredLikedMealsData(
@@ -83,6 +93,9 @@ function MealsHome({ navigation }) {
     setFilterModalVisible(false);
   };
 
+  const closeInspectModal = () => {
+    setInspectModalVisible(false);
+  };
 
   const setActiveTabFun = async (tab) => {
     setActiveTab(tab);
@@ -257,7 +270,13 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.mostLiked?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay meal={item} />
+                </TouchableOpacity>
+                
               ))}
             </ScrollView>
             
@@ -266,7 +285,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.all?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -275,7 +299,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.breakfast?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -284,7 +313,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.sideDish?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -293,7 +327,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.mainDish?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -302,7 +341,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.highProtein?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -311,7 +355,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.lowCarbs?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -320,7 +369,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.highCarb?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
 
@@ -329,7 +383,12 @@ function MealsHome({ navigation }) {
             </View>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.lowFats?.map((item, index) => (
-                <MealDisplay key={item.stringId} meal={item} />
+                <TouchableOpacity
+                  key={item.stringId}
+                  onPress={() => inspectModal(item)}
+                >
+                  <MealDisplay key={item.stringId} meal={item} />
+                </TouchableOpacity>
               ))}
             </ScrollView>
           </>
@@ -382,9 +441,15 @@ function MealsHome({ navigation }) {
                 showsHorizontalScrollIndicator={false}
               >
                 {searchedMealsData?.map((item, index) => (
-                  <View style={styles.searchedRow} key={item.stringId ? item.stringId : `item-${index}`}>
-                    <MealDisplayBig meal={item} />
-                  </View>
+                  <TouchableOpacity
+                    style={styles.searchedRow} key={item.stringId ? item.stringId : `item-${index}`}
+                    onPress={() => inspectModal(item)}
+                  >
+                    <View>
+                      <MealDisplayBig meal={item} />
+                    </View>
+                  </TouchableOpacity>
+
                 ))}
               </ScrollView>
             )}
@@ -430,12 +495,16 @@ function MealsHome({ navigation }) {
                 showsHorizontalScrollIndicator={false}
               >
                 {filteredLikedMealsData?.map((item, index) => (
-                  <View
+                  <TouchableOpacity 
                     style={styles.searchedRow}
                     key={`${item.stringId || 'item'}-${index}`}
-                  >
-                    <MealDisplayBig meal={item} />
-                  </View>
+                    onPress={() => inspectModal(item)}
+                    >
+                    <View>
+                      <MealDisplayBig meal={item} />
+                    </View>
+                  </TouchableOpacity>
+                  
                 ))}
 
               </ScrollView>
@@ -505,6 +574,12 @@ function MealsHome({ navigation }) {
         currentSorting = {currentSorting}       
       >
       </FilterModal>
+      <InspectMealModal
+        visible={inspectModalVisible}
+        closeInspectModal={closeInspectModal}
+        item={currentlyInspectedItem}
+      >
+      </InspectMealModal>
 
       <NavigationMenu navigation={navigation} currentScreen="MealsHome" />
     </SafeAreaView>

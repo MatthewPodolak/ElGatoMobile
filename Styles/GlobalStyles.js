@@ -21,6 +21,10 @@ export const GlobalStyles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontSize: 22,
     },
+    text24: {
+        fontFamily: 'Helvetica',
+        fontSize: 24,
+    },
     bold: {
         fontWeight: '700',
     },
