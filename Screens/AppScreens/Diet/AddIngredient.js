@@ -308,7 +308,7 @@ const AddIngredient = ({ route, navigation }) => {
             'Content-Type': 'application/json',
           },
         },
-        config.timeout
+        (config.timeout + 5000)
       );
 
       if(!scannedIngredient.ok){
@@ -324,6 +324,7 @@ const AddIngredient = ({ route, navigation }) => {
       }
     }catch(error){
       //error getting
+      console.log(error);
     }
 
     setModalVisible(false);

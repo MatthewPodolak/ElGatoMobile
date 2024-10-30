@@ -25,10 +25,12 @@ function MealsHome({ navigation }) {
 
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
+  const [isLoadingLikedAndSaved, setIsLoadingLikedAndSaved] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
 
   const [allMealsData, setAllMealsData] = useState(null);
   const [searchedMealsData, setSearchedMealsData] = useState([]);
+  const [likedMealsData, setLikedMealsData] = useState([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -80,11 +82,47 @@ function MealsHome({ navigation }) {
         await fetchSearchData();
         break;
       case "Favourites":
-        console.log("Favourites tab is active");
+        await fetchUserLikedAndSavedMeals();
       break;
       case "Own":
         console.log("Own tab is active");
       break;
+    }
+  };
+
+  const fetchUserLikedAndSavedMeals = async () => {
+    setIsLoadingLikedAndSaved(true);
+    try{
+      const token = await AuthService.getToken();   
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+ 
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Meal/GetLikedMeals`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //return no
+        console.log('error while fetching liked meals main page');
+      }
+
+      const data = await res.json();
+      setLikedMealsData(data);
+
+    }catch(error){
+      console.log('error');
+    }finally{
+      setIsLoadingLikedAndSaved(false);
     }
   };
 
@@ -341,15 +379,59 @@ function MealsHome({ navigation }) {
               </ScrollView>
             )}
           </View>
-
-         
-                    
+                  
           </>
         );
       case 'Favourites':
         return (
           <>
+            <View style = {styles.container}>
+            <View style = {styles.containerSearchBar}>
+                <View style = {styles.searchBarContainer}>
+                  <View style={styles.barContainer}>
+                    <TextInput
+                      style={styles.searchInput}
+                      selectionColor="#FF8303"
+                      placeholder="Search in liked ..."
+                      placeholderTextColor="#999"
+                    />
+                  </View>
+                </View>
+            </View>
 
+            {(!likedMealsData || likedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
+              <View style={styles.emptySearchContainer}>
+                <View style = {styles.emptySearchGatoLottie}>
+                   {/*ELGATO*/}
+                </View>
+                <View style = {styles.emptySearchText}>
+                  <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Nothing? </Text>You need to keep up with liking all the good stuff out there.</Text>
+                </View>
+              </View>
+              ) : isLoadingLikedAndSaved == true ? (
+                <View style = {styles.loadingSearchContainer}>
+                  <ActivityIndicator size="large" color="#FF8303" />
+                </View>
+              ) : (
+              <ScrollView
+                style={styles.searchedContentContainer}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+              >
+                {likedMealsData?.map((item, index) => (
+                  <View
+                    style={styles.searchedRow}
+                    key={`${item.stringId || 'item'}-${index}`}
+                  >
+                    <MealDisplayBig meal={item} />
+                  </View>
+                ))}
+
+              </ScrollView>
+            )}
+
+
+            </View>
           </>
         );
       case 'Own':
