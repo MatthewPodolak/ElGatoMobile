@@ -31,6 +31,7 @@ function MealsHome({ navigation }) {
   const [allMealsData, setAllMealsData] = useState(null);
   const [searchedMealsData, setSearchedMealsData] = useState([]);
   const [likedMealsData, setLikedMealsData] = useState([]);
+  const [filteredLikedMealsData, setFilteredLikedMealsData] = useState([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
 
@@ -54,6 +55,14 @@ function MealsHome({ navigation }) {
     if(filterModel && filterModel.sorting){
       setCurrentSorting(filterModel.sorting);
     }
+  };
+
+  const setLikedRecepieSearch = (phrase) => {
+    setFilteredLikedMealsData(
+      likedMealsData.filter((item) =>
+        item.name.toLowerCase().includes(phrase.toLowerCase())
+      )
+    );
   };
 
   const getSearchedPhrase = (phrase) => {
@@ -118,6 +127,7 @@ function MealsHome({ navigation }) {
 
       const data = await res.json();
       setLikedMealsData(data);
+      setFilteredLikedMealsData(data);
 
     }catch(error){
       console.log('error');
@@ -394,12 +404,13 @@ function MealsHome({ navigation }) {
                       selectionColor="#FF8303"
                       placeholder="Search in liked ..."
                       placeholderTextColor="#999"
+                      onChangeText={setLikedRecepieSearch}
                     />
                   </View>
                 </View>
             </View>
 
-            {(!likedMealsData || likedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
+            {(!filteredLikedMealsData || filteredLikedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
               <View style={styles.emptySearchContainer}>
                 <View style = {styles.emptySearchGatoLottie}>
                    {/*ELGATO*/}
@@ -418,7 +429,7 @@ function MealsHome({ navigation }) {
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
               >
-                {likedMealsData?.map((item, index) => (
+                {filteredLikedMealsData?.map((item, index) => (
                   <View
                     style={styles.searchedRow}
                     key={`${item.stringId || 'item'}-${index}`}
