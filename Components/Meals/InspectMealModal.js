@@ -3,6 +3,7 @@ import React, { useState } from 'react';
 import { Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, ActivityIndicator, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 import NutriCircle from '../../Components/Main/NutriCircle.js';
+import ReportMealModal from './ReportMealModal.js';
 
 import ChevUp from '../../assets/main/Diet/chevron-up.svg';
 import ChevDown from '../../assets/main/Diet/chevron-down.svg';
@@ -24,6 +25,15 @@ const InspectMealModal = ({
     const [isStepsExpanded, setIsStepsExpanded] = useState(true);
     const [isIngridientsExpanded, setIsIngridientsExpanded] = useState(true);
 
+    const [reportModalVisible, setReportModalVisible] = useState(false);
+
+    const closeReportModal = () => {
+        setReportModalVisible(false);
+    };
+    const openReportModal = () => {
+        setReportModalVisible(true);
+    };
+
     return (
         item != null ? (
             <Modal
@@ -42,7 +52,7 @@ const InspectMealModal = ({
                                 @{item.creatorName ?? "Unknown"}
                             </Text>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.titleRight}>
+                        <TouchableOpacity style={styles.titleRight} onPress={() => openReportModal()}>
                             <ReportIcon width={26} height={26} fill={"#fff"}/>
                         </TouchableOpacity>
                     </View>
@@ -153,6 +163,11 @@ const InspectMealModal = ({
                         <View style = {styles.expander}></View>
                     </ScrollView>                  
                 </View>
+                <ReportMealModal 
+                    visible={reportModalVisible}
+                    closeReportModal={closeReportModal}
+                    item={item}
+                />
             </Modal>
         ) : (
             <Modal
@@ -165,7 +180,7 @@ const InspectMealModal = ({
                     <ActivityIndicator size="large" color="#FF8303" />
                 </View>
             </Modal>
-        )
+        )       
     );    
 };
 
