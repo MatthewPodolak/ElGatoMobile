@@ -8,6 +8,7 @@ import FilterModal from '../../../Components/Meals/FilterModal.js';
 import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
+import ChevronRight from '../../../assets/main/Diet/chevron-right.svg';
 
 import MealDisplay from '../../../Components/Meals/MealDisplay.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
@@ -49,6 +50,10 @@ function MealsHome({ navigation }) {
   const [currentSorting, setCurrentSorting] = useState(0);
   const [currentNutris, setCurrentNutris] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
+
+  const starterPress = (requestType) => {
+    navigation.navigate('StartersDisplay', { requestType });
+  };
 
   const applyFilters = (filterModel) => {
     if (filterModel && filterModel.currentNutris) {
@@ -265,9 +270,10 @@ function MealsHome({ navigation }) {
       case 'All':
         return (
           <>
-            <View style={[AllRecepies.rowTitle, { marginTop: 20 }]}>
+            <TouchableOpacity onPress={() => starterPress("Most Liked")} style={[AllRecepies.rowTitle, { marginTop: 20 }]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Most liked</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.mostLiked?.map((item, index) => (
                 <TouchableOpacity
@@ -280,9 +286,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
             
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("All")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>All</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.all?.map((item, index) => (
                 <TouchableOpacity
@@ -294,9 +301,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("Breakfast")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Breakfast</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.breakfast?.map((item, index) => (
                 <TouchableOpacity
@@ -308,9 +316,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("Side Dish")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Side dish</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.sideDish?.map((item, index) => (
                 <TouchableOpacity
@@ -322,9 +331,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("Main Dish")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Main dish</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.mainDish?.map((item, index) => (
                 <TouchableOpacity
@@ -336,9 +346,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("High Protein")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High protein</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.highProtein?.map((item, index) => (
                 <TouchableOpacity
@@ -350,9 +361,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("Low Carbs")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low carbs</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.lowCarbs?.map((item, index) => (
                 <TouchableOpacity
@@ -364,9 +376,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("High Carbs")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High carb</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.highCarb?.map((item, index) => (
                 <TouchableOpacity
@@ -378,9 +391,10 @@ function MealsHome({ navigation }) {
               ))}
             </ScrollView>
 
-            <View style={[AllRecepies.rowTitle]}>
+            <TouchableOpacity onPress={() => starterPress("Low Fat")} style={[AllRecepies.rowTitle]}>
               <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low fat</Text>
-            </View>
+              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
+            </TouchableOpacity>
             <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {allMealsData?.lowFats?.map((item, index) => (
                 <TouchableOpacity
@@ -672,6 +686,9 @@ const styles = StyleSheet.create({
   searchedRow: {
     height: 300,
     marginBottom: 20,
+  },
+  chevronRight: {
+    marginRight: 5,
   }
 });
 

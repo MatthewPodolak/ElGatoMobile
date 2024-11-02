@@ -11,6 +11,8 @@ export const AllRecepies = StyleSheet.create({
       rowTitle: {
         flex: 1,
         marginTop: 6,
+        justifyContent: 'space-between',
+        flexDirection: 'row',
       },
       item: {
         width: 300,                

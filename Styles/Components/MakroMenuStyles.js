@@ -12,6 +12,11 @@ export const MakroMenuStyles = StyleSheet.create({
     makroMenuItem: {
         flex: 1,
     },
+    makroMenuItemLoad: {
+        justifyContent: 'center',
+        alignItems: 'center',
+        flex: 1,
+    },
     progressBarContainer: {
         width: '80%',
         height: '60%',

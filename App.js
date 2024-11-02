@@ -26,6 +26,7 @@ import AccountScreenMain from './Screens/AppScreens/Account/AccountHome';
 import DietScreenMain from './Screens/AppScreens/Diet/DietHome';
 import TrainingScreenMain from './Screens/AppScreens/Training/TrainingHome';
 import MealsScreenMain from './Screens/AppScreens/Meals/MealsHome';
+import StartersDisplayScreen from './Screens/AppScreens/Meals/StartersDisplay';
 
 import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
 
@@ -102,6 +103,7 @@ function App() {
             <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
             <Stack.Screen name="MealsHome" component={MealsScreenMain} />
             <Stack.Screen name="AddIngredient" component={AddIngredientScreen} />
+            <Stack.Screen name="StartersDisplay" component={StartersDisplayScreen}/>
           </>
         )}
       </Stack.Navigator>

@@ -99,16 +99,16 @@ function MakroMenu({ CalorieCounter }) {
     if(loading){
         return (
         <SafeAreaView style={MakroMenuStyles.makroMenuContainer}>
-            <View style={MakroMenuStyles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItemLoad}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={MakroMenuStyles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItemLoad}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={MakroMenuStyles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItemLoad}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
-            <View style={MakroMenuStyles.makroMenuItem}>
+            <View style={MakroMenuStyles.makroMenuItemLoad}>
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
         </SafeAreaView>

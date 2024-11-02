@@ -34,7 +34,7 @@ const InspectMealModal = ({
             > 
                 <View style={styles.container}>
                     <View style={styles.titleCont}>
-                        <TouchableOpacity style = {styles.titleLeft}>
+                        <TouchableOpacity style = {styles.titleLeft} onPress={() => closeInspectModal()}>
                             <ChevronLeft width={28} height={28} fill={"#fff"}/>
                         </TouchableOpacity>
                         <TouchableOpacity style={styles.titleMid}>
