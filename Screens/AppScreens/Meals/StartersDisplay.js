@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, StatusBar, ScrollView, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, FlatList  } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -20,9 +20,13 @@ function StartersDisplay({ navigation, route }) {
 
     const [isLoading, setIsLoading] = useState(true);
     const [mealData, setMealData] = useState([]);
+    const [currentPage, setCurrentPage] = useState(1);
+    const [pageSize, setPageSize] = useState(50);
 
     const [inspectModalVisible, setInspectModalVisible] = useState(false);
     const [currentlyInspectedItem, setCurrentlyInspectedItem] = useState(null);
+
+    const [isFetchingMore, setIsFetchingMore] = useState(false);
 
     const NavigateBack = () => {
         navigation.goBack();
@@ -37,14 +41,17 @@ function StartersDisplay({ navigation, route }) {
         setInspectModalVisible(false);
     };
 
-    useEffect(() => {
-        if (!requestType) {
-            //throw error passed value not here.
-            //navigate back with an error.
-            return;
+    const handleScrollEnd = () => {
+        if (!isFetchingMore) {
+            const nextPage = currentPage + 1;
+            setIsFetchingMore(true);
+            setCurrentPage(nextPage);
+            fetchData(nextPage);
         }
+    };
+    
 
-        const fetchData = async () => {
+    const fetchData = async (nextPage) => {
         try{
             const token = await AuthService.getToken();
       
@@ -55,8 +62,8 @@ function StartersDisplay({ navigation, route }) {
 
             let requestBody = {
                 type: requestType,
-                page: 1,
-                pageSize: 50,
+                page: nextPage,
+                pageSize: pageSize,
             };
 
             const res = await fetchWithTimeout(
@@ -77,8 +84,11 @@ function StartersDisplay({ navigation, route }) {
                 console.log('error while fetching meals data');
                 return;
               }
-              setMealData(await res.json());
+              
+              const newItems = await res.json();
+              setMealData((prevItems) => [...prevItems, ...newItems]);
               setIsLoading(false);
+              setIsFetchingMore(false);
         }
         catch(error){
             //error
@@ -86,7 +96,14 @@ function StartersDisplay({ navigation, route }) {
         }
     };
 
-        fetchData();
+    useEffect(() => {
+        if (!requestType) {
+            //throw error passed value not here.
+            //navigate back with an error.
+            return;
+        }    
+
+        fetchData(1);
     }, [requestType]);
 
     return (
@@ -111,18 +128,28 @@ function StartersDisplay({ navigation, route }) {
                 <ActivityIndicator size="large" color="#FF8303" />
             </View>
             ) : (
-            <ScrollView style = {styles.mainCont} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {mealData?.map((item) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  style={styles.searchedRow}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplayBig meal={item} />
-                </TouchableOpacity>
-                
-              ))}
-            </ScrollView>
+                <FlatList
+                style={styles.mainCont}
+                data={mealData}
+                renderItem={({ item, index }) => (
+                    <TouchableOpacity
+                        style={[styles.searchedRow, index === 0 && { marginTop: 10 }]}
+                        onPress={() => inspectModal(item)}
+                    >
+                        <MealDisplayBig meal={item} />
+                    </TouchableOpacity>
+                )}
+                keyExtractor={(item) => item.stringId}
+                onEndReached={() => handleScrollEnd()}
+                onEndReachedThreshold={0.7}
+                ListFooterComponent={isFetchingMore && (
+                    <View style={[styles.fetchMoreContainer, GlobalStyles.center]}>
+                        <ActivityIndicator size="small" color="#FF8303" />
+                    </View>
+                )}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+            />
             )} 
             <InspectMealModal
                 visible={inspectModalVisible}
@@ -165,12 +192,14 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
       },
       mainCont: {
-        marginTop: 10,
         flex: 1,
       },
       searchedRow: {
         height: 300,
         marginBottom: 20,
+      },
+      fetchMoreContainer: {
+        minHeight: 100,
       },
 });
 
