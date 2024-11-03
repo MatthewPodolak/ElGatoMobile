@@ -5,6 +5,7 @@ export const DietCalendarStyles = StyleSheet.create({
         flexDirection: 'column',
         width: '100%',
         height: '9%',
+        paddingHorizontal: 5,
         backgroundColor: '#FF8303',
     },
     monthContainer:{

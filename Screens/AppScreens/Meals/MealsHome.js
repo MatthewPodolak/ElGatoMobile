@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useContext } from 'react';
-import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator, TextInput } from 'react-native';
+import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator, TextInput, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -50,6 +50,7 @@ function MealsHome({ navigation }) {
   const [currentSorting, setCurrentSorting] = useState(0);
   const [currentNutris, setCurrentNutris] = useState(null);
   const [currentTime, setCurrentTime] = useState(null);
+  const [isFetchingMore, setIsFetchingMore] = useState(false);
 
   const starterPress = (requestType) => {
     navigation.navigate('StartersDisplay', { requestType });
@@ -79,6 +80,16 @@ function MealsHome({ navigation }) {
       )
     );
   };
+
+  const handleScrollEnd = () => {
+    if (!isFetchingMore) {
+        console.log("here");
+        const nextPage = currentPage + 1;
+        setIsFetchingMore(true);
+        setCurrentPage(nextPage);
+        fetchMoreSearchedData(nextPage);
+    }
+};
 
   const getSearchedPhrase = (phrase) => {
     setSearchedPhrase(phrase);
@@ -154,7 +165,70 @@ function MealsHome({ navigation }) {
     }
   };
 
-  const fetchSearchData = async () => {
+  const fetchMoreSearchedData = async (page) => {
+    try{
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
+      let requestBody = {
+        qty: currentQty,
+        pageNumber: page,
+        phrase: searchedPhrase ?? "",
+        sortValue: currentSorting,
+      };
+  
+      if (currentNutris) {
+        requestBody.nutritions = {
+          minimalCalories: currentNutris.minCalorie ?? 1,
+          maximalCalories: currentNutris.maxCalorie ?? 9999,
+          minimalProtein: currentNutris.minProtein ?? 1,
+          maximalProtein: currentNutris.maxProtein ?? 9999,
+          minimumCarbs: currentNutris.minCarbs ?? 1,
+          maximalCarbs: currentNutris.maxCarbs ?? 9999,
+          minimumFats: currentNutris.minFats ?? 1,
+          maximalFats: currentNutris.maxFats ?? 9999,
+        };
+      }
+
+      if (currentTime) {
+        requestBody.searchTimeRange = {
+          minimalTime: currentTime.minTime ?? 1,
+          maximumTime: currentTime.maxTime ?? 999999,
+        };
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Meal/Search`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),       
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //error
+        console.log("search pagination req error");
+      }
+      
+      const data = await res.json();
+      setSearchedMealsData((prevItems) => [...prevItems, ...data]);
+      setIsFetchingMore(false);
+
+    }catch(error){
+      console.log(error);
+    }
+  };
+
+  const fetchSearchData = async (page) => {
     setIsLoadingSearch(true);
     try{
       const token = await AuthService.getToken();
@@ -166,7 +240,7 @@ function MealsHome({ navigation }) {
 
       let requestBody = {
         qty: currentQty,
-        pageNumber: currentPage,
+        pageNumber: page??currentPage,
         phrase: searchedPhrase ?? "",
         sortValue: currentSorting,
       };
@@ -260,7 +334,8 @@ function MealsHome({ navigation }) {
 
   useEffect(() => {
     if (currentNutris || currentTime || currentSorting || searchedPhrase) {
-      fetchSearchData();
+      setCurrentPage(1);
+      fetchSearchData(1);
     }
   }, [currentNutris, currentTime, currentSorting, searchedPhrase]);
   
@@ -449,23 +524,28 @@ function MealsHome({ navigation }) {
                   <ActivityIndicator size="large" color="#FF8303" />
                 </View>
               ) : (
-              <ScrollView
-                style={styles.searchedContentContainer}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-              >
-                {searchedMealsData?.map((item, index) => (
-                  <TouchableOpacity
-                    style={styles.searchedRow} key={item.stringId ? item.stringId : `item-${index}`}
-                    onPress={() => inspectModal(item)}
-                  >
-                    <View>
-                      <MealDisplayBig meal={item} />
-                    </View>
-                  </TouchableOpacity>
-
-                ))}
-              </ScrollView>
+                <FlatList
+                  style={styles.searchedContentContainer}
+                  data={searchedMealsData}
+                  renderItem={({ item }) => (
+                      <TouchableOpacity
+                          style={[styles.searchedRow]}
+                          onPress={() => inspectModal(item)}
+                      >
+                          <MealDisplayBig meal={item} />
+                      </TouchableOpacity>
+                  )}
+                  keyExtractor={(item) => item.stringId}
+                  onEndReached={() => handleScrollEnd()}
+                  onEndReachedThreshold={0.7}
+                  ListFooterComponent={isFetchingMore && (
+                      <View style={[styles.fetchMoreContainer, GlobalStyles.center]}>
+                          <ActivityIndicator size="small" color="#FF8303" />
+                      </View>
+                  )}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+              />              
             )}
           </View>
                   
@@ -559,25 +639,31 @@ function MealsHome({ navigation }) {
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
       <View style={AllRecepies.titleCont}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recepies</Text></View>
 
-      <ScrollView style={AllRecepies.content} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-        <View style={AllRecepies.topMenu}>
-          <TouchableOpacity onPress={() => setActiveTabFun('All')} style={AllRecepies.option}>
-            <Text style={[AllRecepies.optionText, activeTab === 'All' && AllRecepies.activeTab]}>All</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setActiveTabFun('Search')} style={AllRecepies.option}>
-            <Text style={[AllRecepies.optionText, activeTab === 'Search' && AllRecepies.activeTab]}>Search</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setActiveTabFun('Favourites')} style={AllRecepies.option}>
-            <Text style={[AllRecepies.optionText, activeTab === 'Favourites' && AllRecepies.activeTab]}>Favourites</Text>
-          </TouchableOpacity>
-          <TouchableOpacity onPress={() => setActiveTabFun('Own')} style={AllRecepies.option}>
-            <Text style={[AllRecepies.optionText, activeTab === 'Own' && AllRecepies.activeTab]}>Own</Text>
-          </TouchableOpacity>
-        </View>
+      <FlatList
+          style={AllRecepies.content}
+          data={[]}
+          ListHeaderComponent={() => (
+            <View style={AllRecepies.topMenu}>
+              <TouchableOpacity onPress={() => setActiveTabFun('All')} style={AllRecepies.option}>
+                <Text style={[AllRecepies.optionText, activeTab === 'All' && AllRecepies.activeTab]}>All</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setActiveTabFun('Search')} style={AllRecepies.option}>
+                <Text style={[AllRecepies.optionText, activeTab === 'Search' && AllRecepies.activeTab]}>Search</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setActiveTabFun('Favourites')} style={AllRecepies.option}>
+                <Text style={[AllRecepies.optionText, activeTab === 'Favourites' && AllRecepies.activeTab]}>Favourites</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => setActiveTabFun('Own')} style={AllRecepies.option}>
+                <Text style={[AllRecepies.optionText, activeTab === 'Own' && AllRecepies.activeTab]}>Own</Text>
+              </TouchableOpacity>
+            </View>
+          )}
+          renderItem={null}
+          ListEmptyComponent={renderContent}
+          showsVerticalScrollIndicator={false}
+          showsHorizontalScrollIndicator={false}
+      />
 
-        {renderContent()}
-
-      </ScrollView>
 
       <FilterModal
         visible={filterModalVisible}
@@ -689,7 +775,10 @@ const styles = StyleSheet.create({
   },
   chevronRight: {
     marginRight: 5,
-  }
+  },
+  fetchMoreContainer: {
+    minHeight: 100,
+  },
 });
 
 export default MealsHome;
