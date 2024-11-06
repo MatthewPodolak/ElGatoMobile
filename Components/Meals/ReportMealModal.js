@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useContext } from 'react';
 
 import { Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, TouchableWithoutFeedback, ImageBackground } from 'react-native';
 import { AddIngredientStyles } from '../../Styles/Diet/AddIngredientStyles';

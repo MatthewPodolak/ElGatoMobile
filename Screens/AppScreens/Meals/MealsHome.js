@@ -9,6 +9,8 @@ import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 import ChevronRight from '../../../assets/main/Diet/chevron-right.svg';
+import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
+import AddMeal from '../../../assets/main/Diet/addFile.svg';
 
 import MealDisplay from '../../../Components/Meals/MealDisplay.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
@@ -54,6 +56,10 @@ function MealsHome({ navigation }) {
 
   const starterPress = (requestType) => {
     navigation.navigate('StartersDisplay', { requestType });
+  };
+
+  const addMealClicked = () => {
+    navigation.navigate('AddMeal');
   };
 
   const applyFilters = (filterModel) => {
@@ -478,8 +484,8 @@ function MealsHome({ navigation }) {
                 >
                   <MealDisplay key={item.stringId} meal={item} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+              ))}              
+            </ScrollView>            
           </>
         );
       case 'Search':
@@ -623,7 +629,13 @@ function MealsHome({ navigation }) {
     return (
       <SafeAreaView style={AllRecepies.container}>
         <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
-        <View style={AllRecepies.titleCont}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recepies</Text></View>
+        <View style={AllRecepies.titleCont}>
+          <View style = {AllRecepies.titleLeft}></View>
+          <View style = {AllRecepies.titleMid}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recipes</Text></View>
+          <TouchableOpacity style = {AllRecepies.titleRight} onPress={() => addMealClicked()}>
+            <AddMeal width={28} height={28} fill={"#fff"} />
+          </TouchableOpacity>
+        </View>
 
         <View style={[AllRecepies.content, GlobalStyles.center]}>
           <ActivityIndicator size="large" color="#FF8303" />
@@ -637,7 +649,13 @@ function MealsHome({ navigation }) {
   return (
     <SafeAreaView style={AllRecepies.container}>
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
-      <View style={AllRecepies.titleCont}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recepies</Text></View>
+      <View style={AllRecepies.titleCont}>
+        <View style = {AllRecepies.titleLeft}></View>
+        <View style = {AllRecepies.titleMid}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recipes</Text></View>
+        <TouchableOpacity style = {AllRecepies.titleRight} onPress={() => addMealClicked()}>
+          <AddMeal width={28} height={28} fill={"#fff"} />
+        </TouchableOpacity>
+      </View>
 
       <FlatList
           style={AllRecepies.content}
@@ -680,6 +698,12 @@ function MealsHome({ navigation }) {
         item={currentlyInspectedItem}
       >
       </InspectMealModal>
+
+      {activeTab === "Own" && (
+        <TouchableOpacity style={[styles.hoverButton, GlobalStyles.center]} onPress={() => addMealClicked()}>
+          <PlusIcon style={styles.plusText} fill={'#fff'} width={27} height={27} />
+        </TouchableOpacity>
+      )}
 
       <NavigationMenu navigation={navigation} currentScreen="MealsHome" />
     </SafeAreaView>
@@ -778,6 +802,16 @@ const styles = StyleSheet.create({
   },
   fetchMoreContainer: {
     minHeight: 100,
+  },
+
+  hoverButton: {
+    width: 60,
+    height: 60,
+    bottom: 65,
+    right: 5,
+    position: 'absolute',
+    borderRadius: 30,
+    backgroundColor: '#FF8303',
   },
 });
 

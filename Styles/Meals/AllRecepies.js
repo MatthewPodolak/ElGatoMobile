@@ -31,6 +31,21 @@ export const AllRecepies = StyleSheet.create({
         justifyContent: 'center',
         position: 'relative',
       },
+      titleLeft: {
+        width: '12.5%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      titleRight: {
+        width: '12.5%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+      titleMid: {
+        width: '75%',
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
       topMenu: {
         marginTop: 15,
         width: '100%',
