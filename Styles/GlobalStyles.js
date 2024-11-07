@@ -55,5 +55,8 @@ export const GlobalStyles = StyleSheet.create({
 
     orange: {
         color: '#FF8303',
+    },
+    red: {
+        color: "red",
     }
 });

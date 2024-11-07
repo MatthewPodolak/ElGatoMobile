@@ -15,7 +15,7 @@ import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import AuthService from '../../../Services/Auth/AuthService.js';
 import config from '../../../Config.js';
 
-
+import { doubleValidator, intValidator } from '../../../Services/Conversion/NumberValidators.js';
 
 function AddMealForm({ navigation }) {
     const [recipeName, setRecipeName] = useState(null);
@@ -28,6 +28,34 @@ function AddMealForm({ navigation }) {
 
     const [isSwitchOn, setIsSwitchOn] = useState(true);
     const [isMakroSwitchOn, setIsMakroSwitchOn] = useState(true);
+
+    const [nameError, setNameError] = useState(null);
+    const [ingridientError, setIngridientError] = useState(null);
+    const [stepsError, setStepsError] = useState(null);
+    const calorieInformationErrorModel = {
+        type: null,
+        msg: null
+    };
+    const [calorieInformationError, setCalorieInformationError] = useState(calorieInformationErrorModel);
+
+    const publish = () => {
+        let errorCounter = 0;
+
+        if(recipeName == null){ setNameError("Please let us know the name!"); errorCounter++; }
+        if(ingridientList == null){ setIngridientError("Please fill those up!"); errorCounter++; }
+        if(ingridientList.length === 0 || !ingridientList[0].name){ setIngridientError("Please fill those."); errorCounter++; }
+        if(isSwitchOn && ingridientList.some(item => !item.value)){ setIngridientError("Please fill in values"); }
+        if(stepList.length === 0 || !stepList[0]){ setStepsError("Please fill those."); errorCounter++; }
+        if(errorCounter != 0){ errorCounter = 0; return; }
+
+        if(calories == null){ const error = {type: "kcal", msg: "please fill calories."}; setCalorieInformationError(error); return; }
+        if(proteins == null){ const error = {type: "protein", msg: "please fill proteins."}; setCalorieInformationError(error); return; }
+        if(fats == null){ const error = {type: "fats", msg: "please fill fats."}; setCalorieInformationError(error); return; }
+        if(carbs == null){ const error = {type: "carbs", msg: "please fill carbs."}; setCalorieInformationError(error); return; }
+        if(servings == null && !isMakroSwitchOn) { const error = {type: "servings", msg: "please fill servings."}; setCalorieInformationError(error); return; }
+
+        //req build
+    };
 
     const ingPlaceHolders = [
         'Chicken breasts',
@@ -103,39 +131,59 @@ function AddMealForm({ navigation }) {
         const updatedList = [...ingridientList];
         updatedList[key].name = value;
         setIngridientList(updatedList);
+        setIngridientError(null);
     };
 
     const handleStepsChange = (value, key) => {
         const updatedList = [...stepList];
         updatedList[key] = value;
         setStepList(updatedList);
+        setStepsError(null);
     };
+
 
     const handleMakroChange = (text, type) => {
         switch(type){
             case "kcal":
-
+                const calorieValue = doubleValidator(text);
+                setCalories(calorieValue);
                 break;
             case "protein":
-
+                const proteinValue = doubleValidator(text);
+                setProteins(proteinValue);
                 break;
             case "fats":
-
+                const fatsValue = doubleValidator(text);
+                setFats(fatsValue);
                 break;
             case "carbs":
-
+                const carbsValue = doubleValidator(text);
+                setCarbs(carbsValue);
                 break;
             case "servings":
-
+                const servingsValue = intValidator(text);
+                setServings(servingsValue);
+                console.log(servingsValue);
                 break;
         }
+        setCalorieInformationError(calorieInformationErrorModel);
     };
 
     const handleIngredientRemove = (index) => {
+        if(index === 0 && ingridientList.length === 1){
+            setIngridientError("Please don't remove all of them ;/");
+            return;
+        }
+
         setIngridientList(ingridientList.filter((_, i) => i !== index));
     };
 
     const handleStepRemove = (index) => {
+        if(index === 0 && stepList.length === 1){
+            setStepsError("Please let us know how to do it ;c");
+            return;
+        }
+
         setStepList(stepList.filter((_, i) => i !== index));
     };
 
@@ -143,7 +191,13 @@ function AddMealForm({ navigation }) {
         const updatedList = [...ingridientList];
         updatedList[key].value = value;
         setIngridientList(updatedList);
+        setIngridientError(null);
     }
+
+    const handleRecipeNameChange = (value) => {
+        setRecipeName(value);
+        setNameError(null);
+    };
 
     const addNewIngridientField = () => {
         const newIngredient = {
@@ -154,19 +208,23 @@ function AddMealForm({ navigation }) {
             fullPlaceholder: getRndIngPlaceHolderFull()
         };
         setIngridientList([...ingridientList, newIngredient]);
+        setIngridientError(null);
     };
     
     const addNewStepField = () => {
         setStepList([...stepList, '']);
+        setStepsError(null);
     };
 
     const handleIngSwitch = () => {
         setIngridientList([starterIng]);
         setIsSwitchOn(!isSwitchOn);
+        setIngridientError(null);
     };
 
     const handleMakroSwitch = () => {
         setIsMakroSwitchOn(!isMakroSwitchOn);
+        setCalorieInformationError(calorieInformationErrorModel);
     };
 
     return (
@@ -194,7 +252,7 @@ function AddMealForm({ navigation }) {
                 </TouchableOpacity>
 
                 <View style = {[styles.row]}>
-                    <View style={styles.inputWrapper}>
+                    <View style={nameError ? styles.errorWrapper :styles.inputWrapper}>
                     <Text style={styles.label}>Recipe name</Text>
                     <TextInput
                         style={styles.input}
@@ -202,10 +260,15 @@ function AddMealForm({ navigation }) {
                         placeholderTextColor="#888"
                         selectionColor="#FF8303"
                         value={recipeName}
-                        onChangeText={(text) => setRecipeName(text)}
+                        onChangeText={(text) => handleRecipeNameChange(text)}
                     />
                     </View>
                 </View>
+                {nameError != null &&
+                <View style = {[styles.errorRow, GlobalStyles.center]}>
+                    <Text style = {[GlobalStyles.red]}>{nameError}</Text>
+                </View>
+                }
                 <View style = {[styles.row]}>
                     <View style={styles.largeWrapper}>
                     <Text style={styles.label}>Description</Text>
@@ -233,7 +296,7 @@ function AddMealForm({ navigation }) {
                 {isSwitchOn ? (
                     ingridientList.map((item, index) => (
                         <View key={index} style={[ index === 0 ? styles.ingRow : styles.row, styles.flexRow]}>
-                            <View style={styles.inputWrapperIng}>
+                            <View style={ingridientError? styles.errorInputWrapperIng : styles.inputWrapperIng}>
                                 <Text style={styles.label}>Ingredient {index + 1}</Text>
                                 <TextInput
                                     style={styles.input}
@@ -244,7 +307,7 @@ function AddMealForm({ navigation }) {
                                     onChangeText={(text) => handleIngridientChange(text, index)}
                                 />
                             </View>
-                            <View style = {styles.inputWrapperIngValue}>
+                            <View style = {ingridientError? styles.errorInputWrapperIngValue : styles.inputWrapperIngValue}>
                                 <Text style={styles.label}>Value</Text>
                                 <TextInput
                                     style={styles.input}
@@ -263,7 +326,7 @@ function AddMealForm({ navigation }) {
                 ) : (
                     ingridientList.map((item, index) => (
                         <View key={index} style={[ index === 0 ? styles.ingRow : styles.row, styles.flexRow]}>
-                            <View style={styles.inputWrapperIngOn}>
+                            <View style={ingridientError? styles.errorInputWrapperIngOn : styles.inputWrapperIngOn}>
                                 <Text style={styles.label}>Ingredient {index + 1}</Text>
                                 <TextInput
                                     style={styles.input}
@@ -279,7 +342,12 @@ function AddMealForm({ navigation }) {
                             </TouchableOpacity>                       
                         </View>
                     ))
-                )}             
+                )}
+                {ingridientError != null &&
+                <View style = {[styles.errorRow, GlobalStyles.center]}>
+                    <Text style = {[GlobalStyles.red]}>{ingridientError}</Text>
+                </View>
+                }             
                 <View style = {styles.row}>
                     <TouchableOpacity>
                         <Plus width = {28} height = {28} fill={"#FF8303"} onPress={() => addNewIngridientField()}/>
@@ -291,7 +359,7 @@ function AddMealForm({ navigation }) {
                 </View>
                 {stepList.map((item, index) => (
                 <View key={index} style={[ index === 0 ? styles.ingRow : styles.row, styles.flexRow]}>
-                    <View style={styles.inputWrapperIngOn}>
+                    <View style={stepsError? styles.errorInputWrapperStep : styles.inputWrapperStep}>
                         <Text style={styles.label}>Step {index + 1}</Text>
                         <TextInput
                             style={styles.input}
@@ -299,6 +367,7 @@ function AddMealForm({ navigation }) {
                             placeholderTextColor="#888"
                             selectionColor="#FF8303"
                             value={item}
+                            multiline={true}
                             onChangeText={(text) => handleStepsChange(text, index)}
                         />
                     </View>
@@ -307,6 +376,11 @@ function AddMealForm({ navigation }) {
                     </TouchableOpacity>                       
                 </View>
                 ))}
+                {stepsError != null &&
+                <View style = {[styles.errorRow, GlobalStyles.center]}>
+                    <Text style = {[GlobalStyles.red]}>{stepsError}</Text>
+                </View>
+                }    
                 <View style = {styles.row}>
                     <TouchableOpacity>
                         <Plus width = {28} height = {28} fill={"#FF8303"} onPress={() => addNewStepField()}/>
@@ -331,13 +405,14 @@ function AddMealForm({ navigation }) {
                     <View style={[styles.makroNameCont, GlobalStyles.center]}>
                         <Text>Calories</Text>
                     </View>
-                    <View style={styles.makroFieldCont}>
+                    <View style={calorieInformationError.type == "kcal" ? styles.errorMakroFieldCont : styles.makroFieldCont}>
                         <TextInput
                             style={styles.input}
                             placeholder=""
                             placeholderTextColor="#888"
                             selectionColor="#FF8303"
                             value={calories}
+                            keyboardType='numeric'
                             onChangeText={(text) => handleMakroChange(text, "kcal")}
                         />
                     </View>
@@ -349,13 +424,14 @@ function AddMealForm({ navigation }) {
                     <View style={[styles.makroNameCont, GlobalStyles.center]}>
                         <Text>Proteins</Text>
                     </View>
-                    <View style={styles.makroFieldCont}>
+                    <View style={calorieInformationError.type == "protein" ? styles.errorMakroFieldCont : styles.makroFieldCont}>
                         <TextInput
                             style={styles.input}
                             placeholder=""
                             placeholderTextColor="#888"
                             selectionColor="#FF8303"
-                            value={calories}
+                            value={proteins}
+                            keyboardType='numeric'
                             onChangeText={(text) => handleMakroChange(text, "protein")}
                         />
                     </View>
@@ -367,13 +443,14 @@ function AddMealForm({ navigation }) {
                     <View style={[styles.makroNameCont, GlobalStyles.center]}>
                         <Text>Fats</Text>
                     </View>
-                    <View style={styles.makroFieldCont}>
+                    <View style={calorieInformationError.type == "fats" ? styles.errorMakroFieldCont : styles.makroFieldCont}>
                         <TextInput
                             style={styles.input}
                             placeholder=""
                             placeholderTextColor="#888"
                             selectionColor="#FF8303"
-                            value={calories}
+                            value={fats}
+                            keyboardType='numeric'
                             onChangeText={(text) => handleMakroChange(text, "fats")}
                         />
                     </View>
@@ -385,13 +462,14 @@ function AddMealForm({ navigation }) {
                     <View style={[styles.makroNameCont, GlobalStyles.center]}>
                         <Text>Carbs</Text>
                     </View>
-                    <View style={styles.makroFieldCont}>
+                    <View style={calorieInformationError.type == "carbs" ? styles.errorMakroFieldCont : styles.makroFieldCont}>
                         <TextInput
                             style={styles.input}
                             placeholder=""
                             placeholderTextColor="#888"
                             selectionColor="#FF8303"
-                            value={calories}
+                            value={carbs}
+                            keyboardType='numeric'
                             onChangeText={(text) => handleMakroChange(text, "carbs")}
                         />
                     </View>
@@ -403,10 +481,11 @@ function AddMealForm({ navigation }) {
                 <View style = {[styles.makroRow, GlobalStyles.center]}>
                     <View style = {styles.servLeft}><Text>Recipe is prepered per </Text></View>
                     <View style = {styles.servMid}>
-                        <View style = {styles.fieldCont}>
+                        <View style={calorieInformationError.type == "servings" ? styles.errorFieldCont : styles.fieldCont}>
                             <TextInput
                                 style={styles.input}
                                 placeholder="12"
+                                keyboardType='numeric'
                                 placeholderTextColor="#888"
                                 selectionColor="#FF8303"
                                 value={servings}
@@ -419,12 +498,17 @@ function AddMealForm({ navigation }) {
                     </View>
                 </View>
                 )}
+                {calorieInformationError.msg != null &&
+                <View style = {[styles.errorRow, GlobalStyles.center]}>
+                    <Text style = {[GlobalStyles.red]}>{calorieInformationError.msg}</Text>
+                </View>
+                }    
 
                 
                 <View style={styles.essentialMargin}></View>
             </ScrollView>
 
-            <TouchableOpacity>
+            <TouchableOpacity onPress={() => publish()}>
                 <View style={[styles.hoverButton, GlobalStyles.center]}>
                     <Text style = {[styles.hoverButtonText, GlobalStyles.text16]}>Publish</Text>
                 </View>
@@ -553,6 +637,17 @@ const styles = StyleSheet.create({
         paddingHorizontal: 10,
         height: 50,
       },
+      inputWrapperStep: {
+        position: 'relative',
+        borderWidth: 1,
+        borderColor: '#000',
+        borderRadius: 10,
+        width: '85%',
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 'auto',
+        minHeight: 50,
+      },
       inputWrapperIngValue: {
         position: 'relative',
         borderWidth: 1,
@@ -636,6 +731,79 @@ const styles = StyleSheet.create({
       },
       hoverButtonText: {
         color: '#fff',
+      },
+
+      errorRow: {
+        marginTop: 5,
+      },
+      errorWrapper: {
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+      },
+      errorInputWrapperIngValue: {
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        width: '25%',
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+        marginLeft: 10,
+      },
+      errorInputWrapperIng: {
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        width: '60%',
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+      },
+      errorInputWrapperIngOn: {
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        width: '85%',
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+      },
+      errorInputWrapperStep: {
+        position: 'relative',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        width: '85%',
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 'auto',
+        minHeight: 50,
+      },
+      errorMakroFieldCont: {
+        width: '50%',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+      },
+      errorFieldCont: {
+        width: '80%',
+        borderWidth: 2,
+        borderColor: 'red',
+        borderRadius: 10,
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
       }
 });
 
