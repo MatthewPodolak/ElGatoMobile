@@ -25,9 +25,28 @@ function AddMealForm({ navigation }) {
     const [fats, setFats] = useState(null);
     const [servings, setServings] = useState(null);
     const [calories, setCalories] = useState(null);
+    const [estTime, setEstTime] = useState(null);
+    const breakfastTagObj = {
+        id: 1, 
+        label: 'Breakfast', 
+        active: false 
+    };
+    const mainDishTagObj = {
+        id: 2, 
+        label: 'Side Dish', 
+        active: false 
+    };
+    const sideDishTagObj = {
+        id: 3, 
+        label: 'Main Dish', 
+        active: true,
+    };
+
+    const [tags, setTags] = useState([breakfastTagObj, mainDishTagObj,sideDishTagObj]);
 
     const [isSwitchOn, setIsSwitchOn] = useState(true);
     const [isMakroSwitchOn, setIsMakroSwitchOn] = useState(true);
+    const [tagText, setTagText] = useState(null);
 
     const [nameError, setNameError] = useState(null);
     const [ingridientError, setIngridientError] = useState(null);
@@ -37,6 +56,7 @@ function AddMealForm({ navigation }) {
         msg: null
     };
     const [calorieInformationError, setCalorieInformationError] = useState(calorieInformationErrorModel);
+    const [estTimeError, setEstTimeError] = useState(null);
 
     const publish = () => {
         let errorCounter = 0;
@@ -46,6 +66,7 @@ function AddMealForm({ navigation }) {
         if(ingridientList.length === 0 || !ingridientList[0].name){ setIngridientError("Please fill those."); errorCounter++; }
         if(isSwitchOn && ingridientList.some(item => !item.value)){ setIngridientError("Please fill in values"); }
         if(stepList.length === 0 || !stepList[0]){ setStepsError("Please fill those."); errorCounter++; }
+        if(estTime == null){setEstTimeError("It is kinda important."); errorCounter++; }
         if(errorCounter != 0){ errorCounter = 0; return; }
 
         if(calories == null){ const error = {type: "kcal", msg: "please fill calories."}; setCalorieInformationError(error); return; }
@@ -163,10 +184,14 @@ function AddMealForm({ navigation }) {
             case "servings":
                 const servingsValue = intValidator(text);
                 setServings(servingsValue);
-                console.log(servingsValue);
+                break;
+            case "time":
+                const timeValue = intValidator(text);
+                setEstTimeError(null);
+                setEstTime(timeValue);
                 break;
         }
-        setCalorieInformationError(calorieInformationErrorModel);
+        setCalorieInformationError(calorieInformationErrorModel);    
     };
 
     const handleIngredientRemove = (index) => {
@@ -198,6 +223,33 @@ function AddMealForm({ navigation }) {
         setRecipeName(value);
         setNameError(null);
     };
+
+    const handleTagPress = (tagId) => {
+        setTags(tags.map((tag) => 
+          tag.id === tagId ? { ...tag, active: !tag.active } : tag
+        ));
+    };
+
+    const handleOwnTagsAdding = (text) => {
+        const firstSpaceIndex = text.indexOf(" ");
+     
+        if (firstSpaceIndex === -1) {
+            setTagText(text);
+        } else {
+            let tagBeforeSpace = text.slice(0, firstSpaceIndex);
+            tagBeforeSpace = tagBeforeSpace.replace(/[^a-zA-Z]/g, "");
+            
+            const newTag = {
+                id: (tags.length + 1),
+                label: tagBeforeSpace,
+                active: true
+            };
+    
+           setTags(prevTags => [...prevTags, newTag]);
+           setTagText(null);
+        }
+    };
+    
 
     const addNewIngridientField = () => {
         const newIngredient = {
@@ -503,8 +555,63 @@ function AddMealForm({ navigation }) {
                     <Text style = {[GlobalStyles.red]}>{calorieInformationError.msg}</Text>
                 </View>
                 }    
-
                 
+                <View style = {[styles.titleRow]}>
+                    <Text style={[GlobalStyles.bold]}>Est time:</Text>
+                </View>
+                <View style = {[styles.makroRow, GlobalStyles.center]}>
+                    <View style = {[styles.timeLeft, GlobalStyles.center]}><Text>How much time do we need to prepare this masterpiece? </Text></View>
+                    <View style = {styles.timeMid}>
+                        <View style={estTimeError != null ? styles.errorFieldCont : styles.fieldCont}>
+                            <TextInput
+                                style={styles.input}
+                                placeholder="12"
+                                keyboardType='numeric'
+                                placeholderTextColor="#888"
+                                selectionColor="#FF8303"
+                                value={servings}
+                                onChangeText={(text) => handleMakroChange(text, "time")}
+                            />
+                        </View>
+                    </View>
+                    <View style = {styles.timeRight}>
+                        <Text>(minutes)</Text>
+                    </View>
+                </View>
+                {estTimeError != null &&
+                <View style = {[styles.errorRow, GlobalStyles.center]}>
+                    <Text style = {[GlobalStyles.red]}>{estTimeError}</Text>
+                </View>
+                }
+
+                <View style = {[styles.titleRow]}>
+                    <Text style={[GlobalStyles.bold]}>Categories & tags:</Text>
+                </View>
+                <View style = {styles.sortingContainer}>
+                        {tags.map((tag) => (
+                          <TouchableOpacity
+                            key={tag.id}
+                            style={[
+                                styles.option,
+                                tag.active && styles.selectedOption,
+                            ]}
+                            onPress={() => handleTagPress(tag.id)}
+                          >
+                            <Text style={GlobalStyles.text14}>{tag.label}</Text>
+                          </TouchableOpacity>
+                        ))}
+                </View>  
+                <View style = {styles.ownTagContainer}>
+                    <TextInput
+                        style={styles.input}
+                        placeholder="write ur own tags here :)"
+                        placeholderTextColor="#888"
+                        selectionColor="#FF8303"
+                        value={tagText}
+                        onChangeText={(text) => handleOwnTagsAdding(text)}
+                    />
+                </View>
+
                 <View style={styles.essentialMargin}></View>
             </ScrollView>
 
@@ -700,8 +807,15 @@ const styles = StyleSheet.create({
         width: '42%',
         marginLeft: '7%',
       },
+      timeLeft: {
+        width: '50%',
+      },
       servMid: {
         width: '30%',     
+      },
+      timeMid: {
+        width: '25%',
+        marginLeft: '5%',
       },
       fieldCont: {
         width: '80%',
@@ -718,7 +832,11 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         alignItems: 'flex-end',
       },
-
+      timeRight: {
+        justifyContent: 'center',
+        alignItems: 'flex-end',
+        width: '20%',
+      },
       hoverButton: {
         width: '50%',
         height: 50,
@@ -801,6 +919,41 @@ const styles = StyleSheet.create({
         borderWidth: 2,
         borderColor: 'red',
         borderRadius: 10,
+        paddingTop: 10,
+        paddingHorizontal: 10,
+        height: 50,
+      },
+
+
+      sortingContainer: {
+        marginTop: 10,
+        width: '100%',
+        height: 'auto',
+        justifyContent: 'flex-start',
+        flexDirection: 'row',
+        flexWrap: 'wrap',
+      },
+      option: {
+        borderColor: '#1B1A17',
+        borderWidth: 1,
+        alignSelf: 'flex-start',
+        paddingHorizontal: 10,
+        borderRadius: 15,
+        marginLeft: 5,
+        marginRight: 5,
+        marginTop: 5,
+      },
+      selectedOption: {
+        backgroundColor: '#FF8303',
+        borderColor: '#1B1A17',
+      },
+      ownTagContainer: {
+        marginTop: 10,
+        position: 'relative',
+        borderWidth: 1,
+        borderColor: '#000',
+        borderRadius: 10,
+        width: '100%',
         paddingTop: 10,
         paddingHorizontal: 10,
         height: 50,
