@@ -19,6 +19,7 @@ import { doubleValidator, intValidator } from '../../../Services/Conversion/Numb
 
 function AddMealForm({ navigation }) {
     const [recipeName, setRecipeName] = useState(null);
+    const [description, setDescription] = useState(null);
     const [mainImage, setMainImage] = useState(null);
     const [proteins, setProteins] = useState(null);
     const [carbs, setCarbs] = useState(null);
@@ -58,7 +59,7 @@ function AddMealForm({ navigation }) {
     const [calorieInformationError, setCalorieInformationError] = useState(calorieInformationErrorModel);
     const [estTimeError, setEstTimeError] = useState(null);
 
-    const publish = () => {
+    const publish = async () => {
         let errorCounter = 0;
 
         if(recipeName == null){ setNameError("Please let us know the name!"); errorCounter++; }
@@ -75,7 +76,88 @@ function AddMealForm({ navigation }) {
         if(carbs == null){ const error = {type: "carbs", msg: "please fill carbs."}; setCalorieInformationError(error); return; }
         if(servings == null && !isMakroSwitchOn) { const error = {type: "servings", msg: "please fill servings."}; setCalorieInformationError(error); return; }
 
-        //req build
+        const formData = new FormData();
+        formData.append("Name", recipeName);
+        formData.append("Desc", description??"");
+        formData.append("Time", estTime);
+    
+        if (mainImage) {
+            const response = await fetch(mainImage);
+            const blob = await response.blob();
+            formData.append("Image", {
+                uri: mainImage,
+                name: "meal-image.jpg",
+                type: "image/jpeg"
+            });
+        } 
+
+        if(isSwitchOn){
+            formData.append("Ingridients", JSON.stringify(ingridientList.map(i=>i.value) + " " + ingridientList.map(i => i.name)));
+        }else{
+            formData.append("Ingridients", JSON.stringify(ingridientList.map(i => i.name)));
+        }
+
+        formData.append("Steps", JSON.stringify(stepList));
+
+        const activeTags = tags.filter(tag => tag.active) .map(tag => tag.label);
+        activeTags.forEach(label => {
+            formData.append("Tags", label);
+        });
+        
+        let makro = {
+            kcal: calories,
+            proteins: proteins,
+            carbs: carbs,
+            fats: fats,
+            preperedPer: 0,
+        };
+
+        if(isMakroSwitchOn == true){
+            //per 100g.
+            makro.preperedPer = 100;
+        }else{
+            makro.servings = servings;
+        }
+
+        formData.append("Makro.Kcal", makro.kcal);
+        formData.append("Makro.Protein", makro.proteins);
+        formData.append("Makro.Carbs", makro.carbs);
+        formData.append("Makro.Fats", makro.fats);
+        formData.append("Makro.PreperedPer", makro.preperedPer);
+        if (!isMakroSwitchOn) {
+            formData.append("Makro.Servings", makro.servings);
+        }
+
+        const token = await AuthService.getToken();   
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return;
+        }
+
+        try{
+            const res = await fetchWithTimeout(
+                `${config.ipAddress}/api/meal/publishMeal`,
+                {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${token}`,
+                  },
+                  body: formData
+                },
+                config.longTimeout
+            );
+
+            if(!res.ok){
+                console.log(res);
+            }
+
+            //TODO
+            //check for achievment too.
+            //error handling
+
+        }catch(error){
+            console.log(error);
+        }
     };
 
     const ingPlaceHolders = [
@@ -329,7 +411,8 @@ function AddMealForm({ navigation }) {
                         placeholder="Enter description"
                         placeholderTextColor="#888"
                         selectionColor="#FF8303"
-                        multiline={true} 
+                        multiline={true}
+                        onChangeText={(text) => setDescription(text)} 
                     />
                     </View>
                 </View>

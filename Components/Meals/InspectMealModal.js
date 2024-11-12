@@ -18,7 +18,6 @@ const InspectMealModal = ({
 
     const mainDishImage = item && item.img ? { uri: `http://192.168.0.143:5094${item.img}` } : require('../../assets/recepieBaseImage.png');
     const userPfp = item && item.creatorPfp ? { uri: `http://192.168.0.143:5094${item.creatorPfp}` } : require('../../assets/userPfpBase.png');
-    const diffic = "HARD";
 
     const [isNutriExpanded, setIsNutriExpanded] = useState(true);
     const [isDescExpanded, setIsDescExpanded] = useState(false);
@@ -74,8 +73,8 @@ const InspectMealModal = ({
                             </View>
                             <View style = {styles.svgRow}>
                                 <Text style={[GlobalStyles.text18]}>Difficulty: </Text>
-                                <Text style={[GlobalStyles.text18, { color: diffic === "EASY" ? "#8BFF03" : diffic === "MEDIUM" ? "#FF8303" : "red" }]}>
-                                    {diffic}
+                                <Text style={[GlobalStyles.text18, { color: item.difficulty === "Easy" ? "#8BFF03" : item.difficulty === "Medium" ? "#FF8303" : "red" }]}>
+                                    {item.difficulty}
                                 </Text>
                             </View>
                         </View>
