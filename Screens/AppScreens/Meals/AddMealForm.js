@@ -5,6 +5,7 @@ import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import * as ImagePicker from 'expo-image-picker';
+import ErrorPopup from '../../../Components/Error/ErrorPopup';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import AddImage from '../../../assets/main/Photos/add-image.png';
@@ -16,6 +17,7 @@ import AuthService from '../../../Services/Auth/AuthService.js';
 import config from '../../../Config.js';
 
 import { doubleValidator, intValidator } from '../../../Services/Conversion/NumberValidators.js';
+import AchievmentModal from '../../../Components/ElGato/AchievmentModal.js';
 
 function AddMealForm({ navigation }) {
     const [recipeName, setRecipeName] = useState(null);
@@ -59,6 +61,20 @@ function AddMealForm({ navigation }) {
     const [calorieInformationError, setCalorieInformationError] = useState(calorieInformationErrorModel);
     const [estTimeError, setEstTimeError] = useState(null);
 
+    const [isAchievmentModalVisible, setIsAchievmentModalVisible] = useState(false);
+    const [achModalData, setAchievmentModalData] = useState(null);
+    const closeAchievment = () => {
+        navigation.goBack();
+        setAchievmentModalData(null);
+        setIsAchievmentModalVisible(false);       
+    };
+
+    const [errorMsg, setErrorMsg] = useState("Something went wrong, please check your internet connection.");
+    const [isErrorModalVibile, setIsErrorModalVisible] = useState(false);
+    const closeErrorPopup = () => {
+        setIsErrorModalVisible(false);
+    };
+
     const publish = async () => {
         let errorCounter = 0;
 
@@ -82,8 +98,6 @@ function AddMealForm({ navigation }) {
         formData.append("Time", estTime);
     
         if (mainImage) {
-            const response = await fetch(mainImage);
-            const blob = await response.blob();
             formData.append("Image", {
                 uri: mainImage,
                 name: "meal-image.jpg",
@@ -113,7 +127,6 @@ function AddMealForm({ navigation }) {
         };
 
         if(isMakroSwitchOn == true){
-            //per 100g.
             makro.preperedPer = 100;
         }else{
             makro.servings = servings;
@@ -148,16 +161,23 @@ function AddMealForm({ navigation }) {
             );
 
             if(!res.ok){
-                console.log(res);
+                setErrorMsg("Upss... We couldn't add your recipe, please try again later.");
+                setIsErrorModalVisible(true);
+                return;
             }
 
-            //TODO
-            //check for achievment too.
-            //error handling
+            if(res.ach != null){
+                setAchievmentModalData(res.ach)
+                setIsAchievmentModalVisible(true);
+            }
+
+            navigation.goBack();            
 
         }catch(error){
-            console.log(error);
-        }
+            setErrorMsg("We couldn't connect you to the server, please check your internet connection.");
+            setIsErrorModalVisible(true);
+        }    
+
     };
 
     const ingPlaceHolders = [
@@ -704,6 +724,16 @@ function AddMealForm({ navigation }) {
                 </View>
             </TouchableOpacity>
 
+            <AchievmentModal
+                visible={isAchievmentModalVisible}
+                onRequestClose={closeAchievment}
+                data={achModalData}
+            />
+            <ErrorPopup
+                visible={isErrorModalVibile}
+                message={errorMsg}
+                onClose={closeErrorPopup}
+            />
             <NavigationMenu navigation={navigation} />
         </SafeAreaView>
     );

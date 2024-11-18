@@ -25,6 +25,10 @@ export const GlobalStyles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontSize: 24,
     },
+    textAchievment: {
+        fontFamily: 'Helvetica',
+        fontSize: 32,
+    },
     bold: {
         fontWeight: '700',
     },
@@ -58,5 +62,8 @@ export const GlobalStyles = StyleSheet.create({
     },
     red: {
         color: "red",
+    },
+    white: {
+        color: 'whitesmoke',
     }
 });
