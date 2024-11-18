@@ -105,13 +105,20 @@ function AddMealForm({ navigation }) {
             });
         } 
 
-        if(isSwitchOn){
-            formData.append("Ingridients", JSON.stringify(ingridientList.map(i=>i.value) + " " + ingridientList.map(i => i.name)));
-        }else{
-            formData.append("Ingridients", JSON.stringify(ingridientList.map(i => i.name)));
+        if (isSwitchOn) {
+            ingridientList.forEach(i => {
+                formData.append("Ingridients", `${i.value} ${i.name}`);
+            });
+        } else {
+            ingridientList.forEach(i => {
+                formData.append("Ingridients", i.name);
+            });
         }
-
-        formData.append("Steps", JSON.stringify(stepList));
+        
+        stepList.forEach(step => {
+            formData.append("Steps", step);
+        });
+        
 
         const activeTags = tags.filter(tag => tag.active) .map(tag => tag.label);
         activeTags.forEach(label => {
