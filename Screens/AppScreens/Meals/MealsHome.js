@@ -30,12 +30,14 @@ function MealsHome({ navigation }) {
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingLikedAndSaved, setIsLoadingLikedAndSaved] = useState(true);
+  const [isLoadingOwn, setIsLoadingOwn] = useState(true);
   const [activeTab, setActiveTab] = useState('All');
 
   const [allMealsData, setAllMealsData] = useState(null);
   const [searchedMealsData, setSearchedMealsData] = useState([]);
   const [likedMealsData, setLikedMealsData] = useState([]);
   const [filteredLikedMealsData, setFilteredLikedMealsData] = useState([]);
+  const [ownMealsData, setOwnMealsData] = useState([]);
 
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [inspectModalVisible, setInspectModalVisible] = useState(false);
@@ -129,8 +131,46 @@ function MealsHome({ navigation }) {
         await fetchUserLikedAndSavedMeals();
       break;
       case "Own":
-        console.log("Own tab is active");
+        await fetchOwnData();
       break;
+    }
+  };
+
+  const fetchOwnData = async () => {
+    setIsLoadingOwn(true);
+
+    try{
+      const token = await AuthService.getToken();   
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Meal/GetOwnRecipes`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        console.log(res.error);
+        console.log("error");
+        //error
+        return;
+      }
+
+      const data = await res.json();
+      setOwnMealsData(data);
+      setIsLoadingOwn(false);
+
+    }catch(error){
+      console.log(error);
     }
   };
 
@@ -617,7 +657,38 @@ function MealsHome({ navigation }) {
       case 'Own':
         return (
           <>
+            <View style={styles.container}>
+              {isLoadingOwn ? (
+                <View style = {styles.loadingSearchContainer}>
+                  <ActivityIndicator size="large" color="#FF8303" />
+                </View>
+              ) : (!ownMealsData || ownMealsData.length === 0) && isLoadingOwn == false ? (
+                <View>
+                    <View style={styles.ownGatoCont}>
 
+                    </View>
+                    <View style={[styles.ownGatoTextCont, GlobalStyles.center]}>
+                      <Text style={[GlobalStyles.text18]}><Text style={GlobalStyles.orange}>Oh no!</Text> There is nothing here!</Text>
+                      <Text style={[GlobalStyles.text16]}>Show off ur cooking abilities, just saying.</Text>
+                    </View>
+                </View>
+              ) : (
+                <View style={styles.ownTopCont}>
+                  {ownMealsData?.map((item, index) => (
+                    <TouchableOpacity 
+                      style={styles.searchedRow}
+                      key={`${item.stringId || 'item'}-${index}`}
+                      onPress={() => inspectModal(item)}
+                      >
+                      <View>
+                        <MealDisplayBig meal={item} />
+                      </View>
+                    </TouchableOpacity>         
+                  ))}
+                </View>
+              )}
+
+            </View>
           </>
         );
       default:
@@ -812,6 +883,15 @@ const styles = StyleSheet.create({
     position: 'absolute',
     borderRadius: 30,
     backgroundColor: '#FF8303',
+  },
+
+  ownTopCont: {
+    marginTop: 20,
+  },
+  ownGatoCont: {
+    height: '85%',
+  },
+  ownGatoTextCont: {
   },
 });
 

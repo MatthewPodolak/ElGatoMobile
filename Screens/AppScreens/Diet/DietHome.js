@@ -637,7 +637,7 @@ function DietHome({ navigation }) {
     return (
       <SafeAreaView>
         <View style = {DietHomeStyles.topMargin}></View>
-        {dietData.meals.map((meal, index) => (
+        {dietData.meals.map((meal, index) => (      
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
             addIngredientToMeal={addIngredientToMeal}
             onRemoveIngredientFromMeal = {removeIngredientFromMeal}
