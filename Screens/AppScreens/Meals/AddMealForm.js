@@ -166,15 +166,18 @@ function AddMealForm({ navigation }) {
                 return;
             }
 
-            if(res.ach != null){
-                setAchievmentModalData(res.ach)
+            try{
+                const resData = await res.json();
+                setAchievmentModalData(resData);
                 setIsAchievmentModalVisible(true);
-            }
 
-            navigation.goBack();            
+            }catch(error){
+                navigation.goBack();
+            }
 
         }catch(error){
             setErrorMsg("We couldn't connect you to the server, please check your internet connection.");
+            console.log(error);
             setIsErrorModalVisible(true);
         }    
 
