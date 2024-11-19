@@ -551,6 +551,9 @@ export const AddIngredientStyles = StyleSheet.create({
       height: 300,
       marginBottom: 20,
     },
+    underGatoEmptyContainer: {
+      height: '85%',
+    },
     /*Own*/
 
     /*Meals*/

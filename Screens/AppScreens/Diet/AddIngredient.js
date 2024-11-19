@@ -32,8 +32,10 @@ const AddIngredient = ({ route, navigation }) => {
   const [isMealLoading, setIsMealLoading] = useState(false);
 
   const [favError, setFavError] = useState(null);
+  const [ownError, setOwnError] = useState(null);
   
   const [likedMealsData, setLikedMealsData] = useState([]);
+  const [ownMealsData, setOwnMealsData] = useState([]);
 
   const [ingredientName, setIngredientName] = useState('');
   const [scanned, setScanned] = useState(false);
@@ -86,12 +88,52 @@ const AddIngredient = ({ route, navigation }) => {
         await fetchUserLikedAndSavedMeals();
         break;
       case "Own":
-        console.log("Own clicked");
+        await fetchOwnMeals();
         break;
       case "Meals":
         console.log("Meals clicked");
       break;
     }
+  };
+
+  const fetchOwnMeals = async () => {
+    setIsOwnLoading(true);
+    setOwnError(null);
+    try{
+      const token = await AuthService.getToken();   
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Meal/GetOwnRecipes`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //Error
+        setOwnError("Error");
+        return;
+      }
+
+      const data = await res.json();
+      setOwnMealsData(data);
+
+    }catch(error){
+      //error
+      setOwnError("Error");
+    }finally{
+      setIsOwnLoading(false);
+    }
+
   };
 
   const fetchUserLikedAndSavedMeals = async () => {
@@ -213,7 +255,7 @@ const AddIngredient = ({ route, navigation }) => {
   const closeInspectModal = () => {
     setInspectModalVisible(false);
   };
-  
+
   const sendReport = async (sendingCase) => {
     try{
       const token = await AuthService.getToken();
@@ -586,7 +628,7 @@ const AddIngredient = ({ route, navigation }) => {
                 <View style={[AddIngredientStyles.RestCont, GlobalStyles.center]}>
                   <ActivityIndicator size="large" color="#FF8303" />
                 </View> 
-              ): !isFavLoading && favError == null ? (
+              ): !isFavLoading && favError == null && (likedMealsData.length != 0) ? (
                 <ScrollView
                     style={AddIngredientStyles.favContentContainer}
                     showsVerticalScrollIndicator={false}
@@ -602,7 +644,17 @@ const AddIngredient = ({ route, navigation }) => {
                       </TouchableOpacity>
                   ))}
                 </ScrollView>
-              ) : (
+              ) : (!likedMealsData || likedMealsData.length === 0) && !isFavLoading && favError == null ? (
+                <View style={[AddIngredientStyles.RestCont]}>
+                  <View style={[AddIngredientStyles.underGatoEmptyContainer]}>
+                    {/*ELGATO*/}
+                  </View>
+                  <View style={[AddIngredientStyles.underGatoEmptyContainerText, GlobalStyles.center]}>
+                    <Text style={[GlobalStyles.text18]}><Text style={GlobalStyles.orange}>Oh no!</Text> Looks like there is nothing here!</Text>
+                    <Text style={[GlobalStyles.text16]}>You should appreciate some more!</Text>
+                  </View>
+                </View>
+              ): (
                 <View>
                   <Text>Error view</Text>
                 </View>
@@ -611,7 +663,43 @@ const AddIngredient = ({ route, navigation }) => {
           );
         case 'Own':
           return (
-            <View style={AddIngredientStyles.RestCont}></View>
+            <View style={AddIngredientStyles.RestCont}>
+            {isOwnLoading ? (
+              <View style={[AddIngredientStyles.RestCont, GlobalStyles.center]}>
+                <ActivityIndicator size="large" color="#FF8303" />
+              </View> 
+            ): !isOwnLoading && ownError == null && (ownMealsData.length != 0) ? (
+              <ScrollView
+                  style={AddIngredientStyles.favContentContainer}
+                  showsVerticalScrollIndicator={false}
+                  showsHorizontalScrollIndicator={false}
+                >
+                {ownMealsData?.map((item, index) => (
+                    <TouchableOpacity 
+                      style={AddIngredientStyles.searchedRow}
+                      key={`${item.stringId || 'item'}-${index}`}
+                      onPress={() => inspectModal(item)}
+                    >
+                    <MealDisplayBig meal={item} />
+                    </TouchableOpacity>
+                ))}
+              </ScrollView>
+            ) : (!ownMealsData || ownMealsData.length === 0) && !isOwnLoading && ownError == null ? (
+              <View style={[AddIngredientStyles.RestCont]}>
+                <View style={[AddIngredientStyles.underGatoEmptyContainer]}>
+                  {/*ELGATO*/}
+                </View>
+                <View style={[AddIngredientStyles.underGatoEmptyContainerText, GlobalStyles.center]}>
+                  <Text style={[GlobalStyles.text18]}><Text style={GlobalStyles.orange}>Oh no!</Text> Looks like there is nothing here!</Text>
+                  <Text style={[GlobalStyles.text16]}>Show off those recipes ❤️</Text>
+                </View>
+              </View>
+            ): (
+              <View>
+                <Text>Error view</Text>
+              </View>
+            )}
+          </View>
           );
         case 'Meals':
           return (
