@@ -540,5 +540,18 @@ export const AddIngredientStyles = StyleSheet.create({
 
     RestCont: {
       flex: 1,
-    }
+    },
+
+    /*FAV*/
+    favContentContainer: {
+      marginTop: 10,
+      flex: 1,
+    },
+    searchedRow: {
+      height: 300,
+      marginBottom: 20,
+    },
+    /*Own*/
+
+    /*Meals*/
  });

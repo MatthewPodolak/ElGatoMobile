@@ -1,9 +1,8 @@
 import React, { useState, useEffect,useContext } from 'react';
-import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback, Image  } from 'react-native';
-import { ScrollView,View, Text, TextInput, StyleSheet, StatusBar } from 'react-native';
+import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback  } from 'react-native';
+import { ScrollView,View, Text, TextInput, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 
@@ -15,16 +14,27 @@ import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ReportIcon from '../../../assets/main/Diet/flag-fill.svg';
 
 import GatoRightModal from '../../../Components/ElGato/GatoRightModal';
+import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 import { AddIngredientStyles } from '../../../Styles/Diet/AddIngredientStyles.js';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import AuthService from '../../../Services/Auth/AuthService.js';
 
 import config from '../../../Config.js';
+import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 
 const AddIngredient = ({ route, navigation }) => {
   const { setIsAuthenticated } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('Search');
+
+  const [isFavLoading, setIsFavLoading] = useState(false);
+  const [isOwnLoading, setIsOwnLoading] = useState(false);
+  const [isMealLoading, setIsMealLoading] = useState(false);
+
+  const [favError, setFavError] = useState(null);
   
+  const [likedMealsData, setLikedMealsData] = useState([]);
+
   const [ingredientName, setIngredientName] = useState('');
   const [scanned, setScanned] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
@@ -32,6 +42,9 @@ const AddIngredient = ({ route, navigation }) => {
   
   const [reportModalVisible, setReportModalVisible] = useState(false);
   const [reportedItem, setReportedItem] = useState(null);
+
+  const [inspectModalVisible, setInspectModalVisible] = useState(false);
+  const [currentlyInspectedItem, setCurrentlyInspectedItem] = useState(null);
 
   const [addProductModalVisible, setAddProductModalVisible] = useState(false);
 
@@ -68,16 +81,57 @@ const AddIngredient = ({ route, navigation }) => {
     setActiveTab(tab);
     switch(tab){
       case "Search":
-        console.log("Search clicked");
         break;
       case "Favs":
-        console.log("Favs clicked");
-      break;
+        await fetchUserLikedAndSavedMeals();
+        break;
       case "Own":
         console.log("Own clicked");
+        break;
       case "Meals":
         console.log("Meals clicked");
       break;
+    }
+  };
+
+  const fetchUserLikedAndSavedMeals = async () => {
+    setIsFavLoading(true);
+    setFavError(null);
+    try{
+      const token = await AuthService.getToken();   
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Meal/GetLikedMeals`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //Error throw popup
+        console.log('error while fetching liked meals');
+        setFavError("error");
+        return;
+      }
+
+      const data = await res.json();
+      setLikedMealsData(data);
+
+    }catch(error){
+      //ERROR
+      console.log('error while fetching liked meals' + error);
+      setFavError("error");
+    }finally{
+      setIsFavLoading(false);
     }
   };
 
@@ -151,6 +205,15 @@ const AddIngredient = ({ route, navigation }) => {
     setElGatoAddModalVisible(false);
   };
 
+  const inspectModal = (item) => {
+    setCurrentlyInspectedItem(item);
+    setInspectModalVisible(true);
+  }
+
+  const closeInspectModal = () => {
+    setInspectModalVisible(false);
+  };
+  
   const sendReport = async (sendingCase) => {
     try{
       const token = await AuthService.getToken();
@@ -518,7 +581,33 @@ const AddIngredient = ({ route, navigation }) => {
           );
         case 'Favs':
           return (
-            <View style={AddIngredientStyles.RestCont}></View>
+            <View style={AddIngredientStyles.RestCont}>
+              {isFavLoading ? (
+                <View style={[AddIngredientStyles.RestCont, GlobalStyles.center]}>
+                  <ActivityIndicator size="large" color="#FF8303" />
+                </View> 
+              ): !isFavLoading && favError == null ? (
+                <ScrollView
+                    style={AddIngredientStyles.favContentContainer}
+                    showsVerticalScrollIndicator={false}
+                    showsHorizontalScrollIndicator={false}
+                  >
+                  {likedMealsData?.map((item, index) => (
+                      <TouchableOpacity 
+                        style={AddIngredientStyles.searchedRow}
+                        key={`${item.stringId || 'item'}-${index}`}
+                        onPress={() => inspectModal(item)}
+                      >
+                      <MealDisplayBig meal={item} />
+                      </TouchableOpacity>
+                  ))}
+                </ScrollView>
+              ) : (
+                <View>
+                  <Text>Error view</Text>
+                </View>
+              )}
+            </View>
           );
         case 'Own':
           return (
@@ -1053,7 +1142,12 @@ const AddIngredient = ({ route, navigation }) => {
           </View>
         </Modal>
       )}
-
+      <InspectMealModal
+        visible={inspectModalVisible}
+        closeInspectModal={closeInspectModal}
+        item={currentlyInspectedItem}
+      >
+      </InspectMealModal>
     </SafeAreaView>
   );
 };

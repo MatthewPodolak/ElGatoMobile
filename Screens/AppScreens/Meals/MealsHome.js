@@ -198,6 +198,7 @@ function MealsHome({ navigation }) {
       if(!res.ok){
         //return no
         console.log('error while fetching liked meals main page');
+        return;
       }
 
       const data = await res.json();
