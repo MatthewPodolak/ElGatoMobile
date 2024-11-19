@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 
-import { Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, ActivityIndicator, ImageBackground } from 'react-native';
+import { Alert, Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, ActivityIndicator, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 import NutriCircle from '../../Components/Main/NutriCircle.js';
 import ReportMealModal from './ReportMealModal.js';
@@ -9,6 +9,12 @@ import ChevUp from '../../assets/main/Diet/chevron-up.svg';
 import ChevDown from '../../assets/main/Diet/chevron-down.svg';
 import ReportIcon from '../../assets/main/Diet/flag-fill.svg';
 import ChevronLeft from '../../assets/main/Diet/chevron-left.svg';
+import Trash from '../../assets/main/Diet/trash3.svg'
+import EditIcon from '../../assets/main/Diet/pencil-square.svg';
+
+import AuthService from '../../Services/Auth/AuthService.js';
+import config from '../../Config.js';
+import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
 
 const InspectMealModal = ({
     visible,
@@ -33,6 +39,61 @@ const InspectMealModal = ({
         setReportModalVisible(true);
     };
 
+    const deleteRequest = () => {
+        Alert.alert(
+            "Are you sure you want to delete?",
+            "We will lose access to this masterpiece :c",
+            [
+                {
+                    text: "Cancel",
+                    style: "cancel",
+                },
+                {
+                    text: "Yes",
+                    onPress: async () => {
+                        try {
+                            await sendDeleteRequest();
+                        } catch (error) {
+                            console.error("Error sending delete request:", error);
+                        }
+                    },
+                },
+            ],
+            { cancelable: true }
+        );
+    };
+    
+    const sendDeleteRequest = async () => {
+        const token = await AuthService.getToken();   
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return;
+        }
+
+        try{
+             const res = await fetchWithTimeout(
+                 `${config.ipAddress}/api/Meal/DeleteMeal?mealId=${item.stringId}`,
+                 {
+                   method: 'DELETE',
+                   headers: {
+                     'Authorization': `Bearer ${token}`,
+                   },
+                 },
+                 config.longTimeout
+             );
+
+             if(!res.ok){
+                //error show 
+                return;
+             }
+
+             closeInspectModal();
+        }catch(error){
+            console.log("Error" + error);
+            //Error
+        }
+    };
+
     return (
         item != null ? (
             <Modal
@@ -51,9 +112,20 @@ const InspectMealModal = ({
                                 @{item.creatorName ?? "Unknown"}
                             </Text>
                         </TouchableOpacity>
+                        {item.own ? (
+                            <View style={[styles.titleRight, styles.columnFlex]}>
+                                <TouchableOpacity style={styles.extLeft}>
+                                    <EditIcon width={28} height={28} fill={"#fff"}/>
+                                </TouchableOpacity>
+                                <TouchableOpacity style={styles.extRight} onPress={() => deleteRequest()}>
+                                    <Trash width={26} height={26} fill={"#fff"}/>
+                                </TouchableOpacity>
+                            </View>
+                        ):(
                         <TouchableOpacity style={styles.titleRight} onPress={() => openReportModal()}>
                             <ReportIcon width={26} height={26} fill={"#fff"}/>
                         </TouchableOpacity>
+                        )}
                     </View>
                     <ScrollView style={styles.mainContentContainer} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
                         <View style={styles.imgContainer}>
@@ -213,6 +285,19 @@ const styles = StyleSheet.create({
         width: '12.5%',
         alignItems: 'center',
         justifyContent: 'center',
+      },
+      extLeft: {
+        width: '50%',
+        position: 'absolute',
+        right: 50,
+      },
+      extRight: {
+        width: '50%',
+        position: 'absolute',
+      },
+      columnFlex: {
+        flexDirection: 'row',
+        position: 'relative',
       },
     mainContentContainer: {
         flex: 1,
