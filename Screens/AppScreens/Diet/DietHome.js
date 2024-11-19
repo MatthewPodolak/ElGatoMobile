@@ -21,7 +21,7 @@ import config from '../../../Config.js';
 
 function DietHome({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
-
+  
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);

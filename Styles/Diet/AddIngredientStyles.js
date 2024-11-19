@@ -66,6 +66,12 @@ export const AddIngredientStyles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'Helvetica',
       },
+      activeTab: {
+        color: '#FF8303',
+        borderBottomColor: '#FF8303', 
+        borderBottomWidth: 2,
+        paddingBottom: 5,
+      },
     
       searchContainer: {
         marginTop: 10,
@@ -531,4 +537,8 @@ export const AddIngredientStyles = StyleSheet.create({
       fontFamily: 'Helvetica',
     },
 
+
+    RestCont: {
+      flex: 1,
+    }
  });

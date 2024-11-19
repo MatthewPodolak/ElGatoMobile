@@ -23,6 +23,7 @@ import config from '../../../Config.js';
 
 const AddIngredient = ({ route, navigation }) => {
   const { setIsAuthenticated } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState('Search');
   
   const [ingredientName, setIngredientName] = useState('');
   const [scanned, setScanned] = useState(false);
@@ -62,6 +63,23 @@ const AddIngredient = ({ route, navigation }) => {
 
   const { mealId } = route.params;
   const { mealName } = route.params;
+
+  const setActiveTabFun = async (tab) => {
+    setActiveTab(tab);
+    switch(tab){
+      case "Search":
+        console.log("Search clicked");
+        break;
+      case "Favs":
+        console.log("Favs clicked");
+      break;
+      case "Own":
+        console.log("Own clicked");
+      case "Meals":
+        console.log("Meals clicked");
+      break;
+    }
+  };
 
   const addProductRequest = async () => {
     if (productName == null || brandName  == null || ean  == null || kcal  == null || protein  == null || fat  == null || carbs  == null) {
@@ -395,6 +413,127 @@ const AddIngredient = ({ route, navigation }) => {
     return () => clearTimeout(newTimeout);
   }, [ingredientName]);
 
+  const renderContent = () => {
+    switch (activeTab) {
+        case 'Search':
+          return (
+            <View style={AddIngredientStyles.RestCont}>
+            <View style={AddIngredientStyles.searchContainer}>
+              <View style={AddIngredientStyles.barContainer}>
+                <TextInput
+                  style={AddIngredientStyles.searchInput}
+                  selectionColor="#FF8303"
+                  placeholder="Enter ingredient name"
+                  placeholderTextColor="#999"
+                  value={ingredientName}
+                  onChangeText={setIngredientName}
+                />
+              </View>
+              <View style={AddIngredientStyles.codeContainer}>
+                <TouchableOpacity onPress={openScanner}>
+                  <BarCodeIcon width={34} height={48} />
+                </TouchableOpacity>
+              </View>
+            </View>
+
+            <View style={AddIngredientStyles.contentContainer}>
+              {scannedData == null || scannedData.length === 0 ? (
+                <Text></Text>
+              ) : (
+                scannedData.map((item, index) => (
+                  <View key={`${item.id}-${index}`} style={AddIngredientStyles.scannedContentRow}>
+                    <TouchableOpacity onPress={() => removeScannedItem(item)}>
+                      <View style = {AddIngredientStyles.scannedRowLeft}>
+                          <Text style={AddIngredientStyles.itemName}>{item.name}</Text>
+                      </View>
+                      <View style = {AddIngredientStyles.scannedRowRight}>
+                        <CloseIcon width={22} height={22} />
+                      </View>
+                    </TouchableOpacity>
+                  </View>
+                ))
+              )}
+
+              {searchedData == null ? (
+                <View style={AddIngredientStyles.contentError}>
+                  <View style = {AddIngredientStyles.errorLottieContainer}>
+                    <Text>EL GATO LOTTIE HERE</Text>
+                  </View>
+                  <View style = {AddIngredientStyles.errorAddingContainer}>
+                    <Text style = {AddIngredientStyles.errorAddNormal}>Couldn't find what you are looking for?</Text>
+                    <TouchableOpacity onPress={() => addProduct()}>
+                      <Text style={AddIngredientStyles.errorAddOrange}>Add product<Text style = {AddIngredientStyles.errorAddNormal}>.</Text></Text>
+                    </TouchableOpacity>
+                  </View>
+                </View>
+              ) : (
+                <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {searchedData.map((item, index) => (
+                    <View key={item.id || index} style={AddIngredientStyles.contentRow}>
+                      <TouchableOpacity
+                        key={item.id || index}
+                        onPress={() => handleItemPress(item)}
+                      >
+                      <View style = {AddIngredientStyles.contentRowListTop}>
+                        <View style = {AddIngredientStyles.ListContentRowLeft}>
+                          <View style = {AddIngredientStyles.ListLeftNameRow}>
+                            <Text
+                                style={[
+                                  AddIngredientStyles.itemName,
+                                  selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
+                                ]}
+                                >
+                              {item.name}
+                            </Text>
+                          </View>
+                          <View style = {AddIngredientStyles.ListLeftBrandRow}>
+                            <Text style = {AddIngredientStyles.brandName}>{item.brand}</Text>
+                          </View>
+                        </View>
+                        <View style = {AddIngredientStyles.ListContentRowRight}>
+                          <View style = {AddIngredientStyles.ListCheckContainer}>
+                            {selectedItems.some(selected => selected.id === item.id) && (
+                              <CheckIcon style={AddIngredientStyles.check} width={46} height={46} fill={'#FF8303'} />
+                            )}    
+                            <View style = {AddIngredientStyles.checkBox}></View>
+                          </View>
+                        </View>
+                      </View>
+                      <View style = {AddIngredientStyles.contentRowListBottom}>
+                          <Text style={AddIngredientStyles.nutrientText}>P: {item.proteins}g</Text>
+                          <Text style={AddIngredientStyles.nutrientText}>C: {item.carbs}g</Text>
+                          <Text style={AddIngredientStyles.nutrientText}>F: {item.fats}g</Text>
+                          <View style={AddIngredientStyles.kcalContainer}>
+                            <Text style={AddIngredientStyles.kcalText}>Kcal: {item.kcal}</Text>
+                          </View>
+                      </View>                  
+                      </TouchableOpacity>
+                      <View style={AddIngredientStyles.hr}></View>
+                    </View>
+                  ))}
+                </ScrollView>
+              )}
+              </View>
+            </View>
+          );
+        case 'Favs':
+          return (
+            <View style={AddIngredientStyles.RestCont}></View>
+          );
+        case 'Own':
+          return (
+            <View style={AddIngredientStyles.RestCont}></View>
+          );
+        case 'Meals':
+          return (
+            <View style={AddIngredientStyles.RestCont}></View>
+          );
+          default:
+            return null;
+        }
+    };
+
+
   return (
     <SafeAreaView style={AddIngredientStyles.container}>
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
@@ -415,110 +554,13 @@ const AddIngredient = ({ route, navigation }) => {
       </View>
 
       <View style={AddIngredientStyles.categoryContainer}>
-        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Search</Text></TouchableOpacity>
-        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Favs</Text></TouchableOpacity>
-        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Own</Text></TouchableOpacity>
-        <TouchableOpacity style={AddIngredientStyles.option}><Text style={AddIngredientStyles.optionText}>Meals</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Search")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Search" && AddIngredientStyles.activeTab]}>Search</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Favs")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Favs" && AddIngredientStyles.activeTab]}>Favs</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Own")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Own" && AddIngredientStyles.activeTab]}>Own</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Meals")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Meals" && AddIngredientStyles.activeTab]}>Meals</Text></TouchableOpacity>
       </View>
 
-      <View style={AddIngredientStyles.searchContainer}>
-        <View style={AddIngredientStyles.barContainer}>
-          <TextInput
-            style={AddIngredientStyles.searchInput}
-            selectionColor="#FF8303"
-            placeholder="Enter ingredient name"
-            placeholderTextColor="#999"
-            value={ingredientName}
-            onChangeText={setIngredientName}
-          />
-        </View>
-        <View style={AddIngredientStyles.codeContainer}>
-          <TouchableOpacity onPress={openScanner}>
-            <BarCodeIcon width={34} height={48} />
-          </TouchableOpacity>
-        </View>
-      </View>
-
-      <View style={AddIngredientStyles.contentContainer}>
-        {scannedData == null || scannedData.length === 0 ? (
-          <Text></Text>
-        ) : (
-          scannedData.map((item, index) => (
-            <View key={`${item.id}-${index}`} style={AddIngredientStyles.scannedContentRow}>
-              <TouchableOpacity onPress={() => removeScannedItem(item)}>
-                <View style = {AddIngredientStyles.scannedRowLeft}>
-                    <Text style={AddIngredientStyles.itemName}>{item.name}</Text>
-                </View>
-                <View style = {AddIngredientStyles.scannedRowRight}>
-                  <CloseIcon width={22} height={22} />
-                </View>
-              </TouchableOpacity>
-            </View>
-          ))
-        )}
-
-        {searchedData == null ? (
-          <View style={AddIngredientStyles.contentError}>
-            <View style = {AddIngredientStyles.errorLottieContainer}>
-              <Text>EL GATO LOTTIE HERE</Text>
-            </View>
-            <View style = {AddIngredientStyles.errorAddingContainer}>
-              <Text style = {AddIngredientStyles.errorAddNormal}>Couldn't find what you are looking for?</Text>
-              <TouchableOpacity onPress={() => addProduct()}>
-                <Text style={AddIngredientStyles.errorAddOrange}>Add product<Text style = {AddIngredientStyles.errorAddNormal}>.</Text></Text>
-              </TouchableOpacity>
-            </View>
-          </View>
-        ) : (
-          //xdd
-          <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-            {searchedData.map((item, index) => (
-              <View key={item.id || index} style={AddIngredientStyles.contentRow}>
-                <TouchableOpacity
-                  key={item.id || index}
-                  onPress={() => handleItemPress(item)}
-                >
-                <View style = {AddIngredientStyles.contentRowListTop}>
-                  <View style = {AddIngredientStyles.ListContentRowLeft}>
-                    <View style = {AddIngredientStyles.ListLeftNameRow}>
-                      <Text
-                          style={[
-                            AddIngredientStyles.itemName,
-                            selectedItems.some(selected => selected.id === item.id) ? { color: '#FF8303' } : null,
-                          ]}
-                          >
-                        {item.name}
-                      </Text>
-                    </View>
-                    <View style = {AddIngredientStyles.ListLeftBrandRow}>
-                      <Text style = {AddIngredientStyles.brandName}>{item.brand}</Text>
-                    </View>
-                  </View>
-                  <View style = {AddIngredientStyles.ListContentRowRight}>
-                    <View style = {AddIngredientStyles.ListCheckContainer}>
-                      {selectedItems.some(selected => selected.id === item.id) && (
-                        <CheckIcon style={AddIngredientStyles.check} width={46} height={46} fill={'#FF8303'} />
-                      )}    
-                      <View style = {AddIngredientStyles.checkBox}></View>
-                    </View>
-                  </View>
-                </View>
-                <View style = {AddIngredientStyles.contentRowListBottom}>
-                    <Text style={AddIngredientStyles.nutrientText}>P: {item.proteins}g</Text>
-                    <Text style={AddIngredientStyles.nutrientText}>C: {item.carbs}g</Text>
-                    <Text style={AddIngredientStyles.nutrientText}>F: {item.fats}g</Text>
-                    <View style={AddIngredientStyles.kcalContainer}>
-                      <Text style={AddIngredientStyles.kcalText}>Kcal: {item.kcal}</Text>
-                    </View>
-                </View>                  
-                </TouchableOpacity>
-                <View style={AddIngredientStyles.hr}></View>
-              </View>
-            ))}
-          </ScrollView>
-        )}
-      </View>
-
+      {renderContent()}
 
       <Modal
         visible={modalVisible}
