@@ -79,6 +79,41 @@ const AddIngredient = ({ route, navigation }) => {
   const { mealId } = route.params;
   const { mealName } = route.params;
 
+  const closeInspectModalAndAddMeal = (data) => {
+    setInspectModalVisible(false);
+    if(data.servings != 0){
+      const ingModel = {
+        id: "0101010100101",
+        name: data.name,
+        prep_For: 0,
+        weightValue: 0,
+        kcal: data.kcal,
+        energyKj: 2,
+        proteins: data.protein,
+        carbs: data.carbs,
+        fats: data.fats,
+        servings: true,
+      };
+      setSelectedItem(ingModel);
+      setIngModalVisible(true);
+    }else{
+      const ingModel = {
+        id: "0000001010100101",
+        name: data.name,
+        prep_For: 100,
+        weightValue: 0,
+        kcal: data.kcal,
+        energyKj: 2,
+        proteins: data.protein,
+        carbs: data.carbs,
+        fats: data.fats,
+        servings: false,
+      };
+      setSelectedItem(ingModel);
+      setIngModalVisible(true);
+    }
+  };
+
   const setActiveTabFun = async (tab) => {
     setActiveTab(tab);
     switch(tab){
@@ -370,7 +405,8 @@ const AddIngredient = ({ route, navigation }) => {
       fats: selectedItem.fats,
       carbs: selectedItem.carbs,
       id: selectedItem.id,
-      prep_for: selectedItem.prep_For
+      prep_for: selectedItem.prep_For,
+      servings: selectedItem.servings,
     };
 
     setSelectedItemsData((prevItems) => [...prevItems, newIngredient]);
@@ -993,7 +1029,11 @@ const AddIngredient = ({ route, navigation }) => {
               <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
-                  <Text style={AddIngredientStyles.gramsTextModal}>10 g</Text>
+                  {selectedItem.servings ? (
+                    <Text style={AddIngredientStyles.gramsTextModal}>0.1 s</Text>
+                  ): (
+                    <Text style={AddIngredientStyles.gramsTextModal}>10 g</Text>
+                  )}
                 </View>
                 <View style = {AddIngredientStyles.ingContentRowMakro}>
                   <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
@@ -1028,7 +1068,11 @@ const AddIngredient = ({ route, navigation }) => {
               <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
-                  <Text style={AddIngredientStyles.gramsTextModal}>50 g</Text>
+                {selectedItem.servings ? (
+                    <Text style={AddIngredientStyles.gramsTextModal}>0.5 s</Text>
+                  ): (
+                    <Text style={AddIngredientStyles.gramsTextModal}>50 g</Text>
+                  )}
                 </View>
                 <View style = {AddIngredientStyles.ingContentRowMakro}>
                   <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
@@ -1063,7 +1107,11 @@ const AddIngredient = ({ route, navigation }) => {
               <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
-                  <Text style={AddIngredientStyles.gramsTextModal}>100 g</Text>
+                {selectedItem.servings ? (
+                    <Text style={AddIngredientStyles.gramsTextModal}>1 s</Text>
+                  ): (
+                    <Text style={AddIngredientStyles.gramsTextModal}>100 g</Text>
+                  )}
                 </View>
                 <View style = {AddIngredientStyles.ingContentRowMakro}>
                   <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
@@ -1098,7 +1146,11 @@ const AddIngredient = ({ route, navigation }) => {
               <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
-                  <Text style={AddIngredientStyles.gramsTextModal}>150 g</Text>
+                  {selectedItem.servings ? (
+                    <Text style={AddIngredientStyles.gramsTextModal}>1.5 s</Text>
+                  ): (
+                    <Text style={AddIngredientStyles.gramsTextModal}>150 g</Text>
+                  )}
                 </View>
                 <View style = {AddIngredientStyles.ingContentRowMakro}>
                   <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
@@ -1133,7 +1185,11 @@ const AddIngredient = ({ route, navigation }) => {
               <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
-                  <Text style={AddIngredientStyles.gramsTextModal}>200 g</Text>
+                  {selectedItem.servings ? (
+                    <Text style={AddIngredientStyles.gramsTextModal}>2 s</Text>
+                  ): (
+                    <Text style={AddIngredientStyles.gramsTextModal}>200 g</Text>
+                  )}
                 </View>
                 <View style = {AddIngredientStyles.ingContentRowMakro}>
                   <Text style={[AddIngredientStyles.nutrientTextModal, {fontWeight: 'bold'}]}>P:</Text>
@@ -1163,8 +1219,12 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
               <View style={AddIngredientStyles.hr}></View>
-              <View style = {AddIngredientStyles.ingModalContentRow}>
+              {selectedItem.servings ? (
+                    <View></View>
+              ): (
+                <View style = {AddIngredientStyles.ingModalContentRow}>
                 <View style = {AddIngredientStyles.ingContentRowContent}>
+
                 <View style = {AddIngredientStyles.ingContentRowGrams}>
                   <TextInput
                     style={AddIngredientStyles.inputBorder}
@@ -1210,10 +1270,19 @@ const AddIngredient = ({ route, navigation }) => {
                   </TouchableOpacity>
                 </View>
               </View>
-              <View style={AddIngredientStyles.hr}></View>
+              )}
+              {selectedItem.servings ? (
+                  <View></View>
+              ): (
+                <View style={AddIngredientStyles.hr}></View>
+              )}              
               <View style={AddIngredientStyles.ingModalContentSummaryRow}>
                   <View style = {AddIngredientStyles.summaryTopRow}>
+                  {selectedItem.servings ? (
+                      <Text style = {AddIngredientStyles.summaryText}> {gramsCounter/100} servings</Text>
+                    ): (
                       <Text style = {AddIngredientStyles.summaryText}> {gramsCounter} g</Text>
+                    )}                   
                   </View>
                   <View style = {AddIngredientStyles.summaryBottomRow}>
                       <Text style = { { textAlign: 'center' }}>P: {selectedItem.proteins * (gramsCounter / 100)} C: {selectedItem.carbs * (gramsCounter / 100)} F: {selectedItem.fats * (gramsCounter / 100)} KCAL: {selectedItem.kcal * (gramsCounter / 100)}</Text>
@@ -1234,6 +1303,7 @@ const AddIngredient = ({ route, navigation }) => {
         visible={inspectModalVisible}
         closeInspectModal={closeInspectModal}
         item={currentlyInspectedItem}
+        specialClose={closeInspectModalAndAddMeal}
       >
       </InspectMealModal>
     </SafeAreaView>

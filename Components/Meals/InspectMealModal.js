@@ -20,6 +20,7 @@ const InspectMealModal = ({
     visible,
     closeInspectModal,
     item,
+    specialClose
   }) => {
 
     const mainDishImage = item && item.img ? { uri: `http://192.168.0.143:5094${item.img}` } : require('../../assets/recepieBaseImage.png');
@@ -31,6 +32,10 @@ const InspectMealModal = ({
     const [isIngridientsExpanded, setIsIngridientsExpanded] = useState(true);
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
+
+    const addToMeal = () => {
+        specialClose(item);
+    };
 
     const closeReportModal = () => {
         setReportModalVisible(false);
@@ -231,7 +236,16 @@ const InspectMealModal = ({
                             )}
                         </View>
 
-                        <View style = {styles.expander}></View>
+                            {specialClose ? (
+                                <View>
+                                    <View style = {styles.expander}></View>
+                                    <TouchableOpacity style={styles.hoverButton} onPress={() => addToMeal()} >
+                                        <Text style={[GlobalStyles.text16, GlobalStyles.white]}>Add to meal</Text>
+                                    </TouchableOpacity>
+                                </View>
+                            ):(
+                                <View style = {styles.expanderMini}></View>
+                            )}
                     </ScrollView>                  
                 </View>
                 <ReportMealModal 
@@ -258,6 +272,9 @@ const InspectMealModal = ({
 const styles = StyleSheet.create({ 
     expander: {
         height: 100,
+    },
+    expanderMini: {
+        height: 50,
     },
     container: {
         flex: 1,
@@ -368,7 +385,20 @@ const styles = StyleSheet.create({
     },
     marginLeft: {
         marginLeft: 10,
-    }
+    },
+
+    hoverButton: {
+        width: '50%',
+        marginLeft: '25%',
+        height: 60,
+        position: 'absolute',
+        backgroundColor: '#FF8303',
+        bottom: 35,
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+    },    
+
 });
 
 export default InspectMealModal;

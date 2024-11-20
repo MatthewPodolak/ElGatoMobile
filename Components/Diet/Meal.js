@@ -17,6 +17,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
   const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
   const [newMealName, setNewMealName] = useState(meal.name);
   const [newWeightValue, setNewWeightValue] = useState('');
+  const [newWeightValueServings, setNewWeightValueServings] = useState('');
 
   const totalSummary = meal.ingridient.reduce(
     (totals, ingredient) => {
@@ -44,9 +45,26 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
     onChangeMealName(meal.publicId, newMealName);
   };
 
-  const handleWeightSubmit = (ingredientId, mealId, publicId, name, oldWeight) => {
-    const parsedNewWeight = parseInt(newWeightValue, 10);
+  const handleWeightSubmitServings = (mealId, publicId, name, oldWeight) => {
+    const weightRegex = /^\d+([.,]\d+)?$/;
 
+    if (!weightRegex.test(newWeightValueServings)) {
+        //error
+        setEditingIngredientIndex(null);
+        return;
+    }
+
+    const standardizedWeight = parseFloat(newWeightValueServings.replace(',', '.'));
+    const kcalRef = standardizedWeight * 100;
+
+    onChangeIngredientWeightValue(mealId, publicId, name, oldWeight, kcalRef);
+    setEditingIngredientIndex(null);
+  }
+
+  const handleWeightSubmit = (mealId, publicId, name, oldWeight) => {
+
+    const parsedNewWeight = parseInt(newWeightValue, 10);
+    
     if(parsedNewWeight === 0 || parsedNewWeight === undefined || isNaN(parsedNewWeight)|| parsedNewWeight === oldWeight){
       //handle double
       setEditingIngredientIndex(null);
@@ -96,16 +114,35 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
                 </View>
                 <View style = {MealStyles.ingWeightCont}>
                   {editingIngredientIndex === index ? (
-                    <TextInput
-                      style={MealStyles.input}
-                      value={newWeightValue}
-                      onChangeText={setNewWeightValue}
-                      keyboardType="numeric"
-                      onBlur={() => handleWeightSubmit(index, meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}
-                      autoFocus
-                    />
+                    <View>
+                      {ingredient.servings ? (
+                        <TextInput
+                          style={MealStyles.input}
+                          value={newWeightValueServings}
+                          onChangeText={setNewWeightValueServings}
+                          keyboardType="numeric"
+                          onBlur={() => handleWeightSubmitServings(meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}
+                          autoFocus
+                        />
+                      ): (
+                        <TextInput
+                          style={MealStyles.input}
+                          value={newWeightValue}
+                          onChangeText={setNewWeightValue}
+                          keyboardType="numeric"
+                          onBlur={() => handleWeightSubmit(meal.publicId, ingredient.publicId, ingredient.name, ingredient.weightValue)}
+                          autoFocus
+                        />
+                      )}
+                    </View>                  
                   ) : (
-                    <Text style={MealStyles.ingredientName}>{ingredient.weightValue} g</Text>
+                    <View>
+                      {ingredient.servings ? (
+                        <Text style={MealStyles.ingredientName}>{ingredient.weightValue / 100} s.</Text>
+                      ) : (
+                        <Text style={MealStyles.ingredientName}>{ingredient.weightValue} g</Text>
+                      )}
+                    </View>
                   )}
                 </View>
                 <View style = {MealStyles.ingOptionsCont}>

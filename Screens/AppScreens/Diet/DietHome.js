@@ -73,6 +73,7 @@ function DietHome({ navigation }) {
             proteins: ingredient.proteins,
             weightValue : ingredient.weightValue,
             fats: ingredient.fats,
+            servings: ingredient.servings,
             kcal: ingredient.energyKcal,
             prep_For: ingredient.prep_For || 100,
             id: String(ingredient.id) || "123"
