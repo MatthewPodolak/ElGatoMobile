@@ -1,14 +1,16 @@
-import React, { useState, useEffect,useContext } from 'react';
-import { View, Text, StyleSheet, ScrollView, ActivityIndicator } from 'react-native';
+import React, { useState, useEffect,useContext, useRef } from 'react';
+import { Animated, View, Text, ScrollView, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import MakroMenu from '../../../Components/Diet/MakroMenu';
 import Calendar from '../../../Components/Diet/DietCalendar';
 import Meal from '../../../Components/Diet/Meal';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useRoute } from '@react-navigation/native';
 
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
+import AddIcon from '../../../assets/main/Diet/plus-square.svg';
+import LoadIcon from '../../../assets/main/Diet/load.svg';
+
 import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
@@ -18,10 +20,15 @@ import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import { TouchableOpacity } from 'react-native';
 
 import config from '../../../Config.js';
+import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 
 function DietHome({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
   
+  const [optionsVisible, setOptionsVisible] = useState(false);
+  const optionsAnimation = useRef(new Animated.Value(0)).current;
+  const iconAnimation = useRef(new Animated.Value(0)).current;
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(null);
@@ -465,7 +472,46 @@ function DietHome({ navigation }) {
 
   };
 
+  const closeOptionsAnimation = () => {
+    Animated.parallel([
+      Animated.timing(optionsAnimation, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+      Animated.timing(iconAnimation, {
+        toValue: 0,
+        duration: 300,
+        useNativeDriver: true,
+      }),
+    ]).start(() => setOptionsVisible(false));
+  };
+  const showOptionsAnimation = () => {
+    setOptionsVisible(true);
+      Animated.parallel([
+        Animated.timing(optionsAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+        Animated.timing(iconAnimation, {
+          toValue: 1,
+          duration: 300,
+          useNativeDriver: true,
+        }),
+      ]).start();
+  };
+
+  const optionButtonPressed = () => {
+    if (optionsVisible) {
+      closeOptionsAnimation();
+    } else {
+      showOptionsAnimation();
+    }
+  };
+
   const newMealPress = async () => {
+    closeOptionsAnimation();
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
     const counter = getIdCounter(); //id counter
@@ -636,7 +682,7 @@ function DietHome({ navigation }) {
     }
 
     return (
-      <SafeAreaView>
+      <SafeAreaView>       
         <View style = {DietHomeStyles.topMargin}></View>
         {dietData.meals.map((meal, index) => (      
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
@@ -660,9 +706,40 @@ function DietHome({ navigation }) {
       >
         {selectedDate ? generateContentForDate() : <Text>Select a date to see meals.</Text>}
       </ScrollView>
-      <TouchableOpacity style={DietHomeStyles.addMealButton} onPress={newMealPress}>
-        <PlusIcon style={DietHomeStyles.plusText} fill={'#fff'} width={27} height={27} />
+
+      <Animated.View
+          style={[
+            DietHomeStyles.buttonOptionContainer,
+            { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
+          ]}
+        >
+          <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={newMealPress}>
+            <Text style={[GlobalStyles.text16]}>Add new</Text>
+            <AddIcon fill={'#000'} width={14} height={14}  style={[DietHomeStyles.iconSpacing, DietHomeStyles.rightMarginIcon]}/>
+          </TouchableOpacity>
+          <TouchableOpacity style={DietHomeStyles.expOptionRow}>
+            <Text style={[GlobalStyles.text16]}>Load saved</Text>
+            <LoadIcon fill={'#000'} width={18} height={18} style={DietHomeStyles.iconSpacing} />
+          </TouchableOpacity>
+      </Animated.View>
+
+      <TouchableOpacity style={DietHomeStyles.addMealButton} onPress={optionButtonPressed}>
+        <Animated.View
+          style={{
+            transform: [
+              {
+                rotate: iconAnimation.interpolate({
+                  inputRange: [0, 1],
+                  outputRange: ['0deg', '135deg'],
+                }),
+              },
+            ],
+          }}
+        >
+          <PlusIcon fill={'#fff'} width={27} height={27} />
+        </Animated.View>
       </TouchableOpacity>
+
       <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />
     </SafeAreaView>

@@ -79,11 +79,14 @@ const AddIngredient = ({ route, navigation }) => {
   const { mealId } = route.params;
   const { mealName } = route.params;
 
+  const generateRandomId = () => {
+    return `${Date.now()}-${Math.floor(Math.random() * 1000000)}`;
+  };
   const closeInspectModalAndAddMeal = (data) => {
     setInspectModalVisible(false);
     if(data.servings != 0){
       const ingModel = {
-        id: "0101010100101",
+        id: generateRandomId(),
         name: data.name,
         prep_For: 0,
         weightValue: 0,
@@ -98,7 +101,7 @@ const AddIngredient = ({ route, navigation }) => {
       setIngModalVisible(true);
     }else{
       const ingModel = {
-        id: "0000001010100101",
+        id: generateRandomId(),
         name: data.name,
         prep_For: 100,
         weightValue: 0,
@@ -127,6 +130,9 @@ const AddIngredient = ({ route, navigation }) => {
         break;
       case "Meals":
         console.log("Meals clicked");
+        break;
+      case "New":
+        console.log("New Clicked");
       break;
     }
   };
@@ -741,6 +747,12 @@ const AddIngredient = ({ route, navigation }) => {
           return (
             <View style={AddIngredientStyles.RestCont}></View>
           );
+
+          case "New":
+            return(
+              <View style={AddIngredientStyles.RestCont}></View>
+            );
+        
           default:
             return null;
         }
@@ -771,6 +783,7 @@ const AddIngredient = ({ route, navigation }) => {
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Favs")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Favs" && AddIngredientStyles.activeTab]}>Favs</Text></TouchableOpacity>
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Own")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Own" && AddIngredientStyles.activeTab]}>Own</Text></TouchableOpacity>
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Meals")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Meals" && AddIngredientStyles.activeTab]}>Meals</Text></TouchableOpacity>
+        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("New")} ><Text style={[AddIngredientStyles.optionText, activeTab === "New" && AddIngredientStyles.activeTab]}>New</Text></TouchableOpacity>
       </View>
 
       {renderContent()}

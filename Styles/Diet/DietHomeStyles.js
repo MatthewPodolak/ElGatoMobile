@@ -15,6 +15,32 @@ export const DietHomeStyles = StyleSheet.create({
     backgroundColor: 'whitesmoke',
     flex: 1,
   },
+  buttonOptionContainer: {
+    height: 80,
+    position: 'absolute',
+    paddingLeft: 15,
+    paddingRight: 15,
+    bottom: 195,
+    right: 0,
+    justifyContent: 'space-around',
+    alignItems: 'flex-end',   
+  },
+  expOptionRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#FF8303',
+    borderRadius: 15,
+    paddingRight: 10,
+    paddingLeft: 10,
+    paddingTop: 2,
+    paddingBottom: 2,
+  },
+  iconSpacing: {
+    marginLeft: 8,
+  },
+  rightMarginIcon: {
+    marginRight: 2,
+  },
   addMealButton: {
     position: 'absolute',
     bottom: 130,
