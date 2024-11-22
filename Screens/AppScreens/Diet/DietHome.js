@@ -35,6 +35,10 @@ function DietHome({ navigation }) {
 
   const { params } = useRoute();
 
+  const addFromFavouritesClick = () => {
+    navigation.navigate('SavedMeals');
+  };
+
   const getIdCounter = () => {
     if (!dietData || !dietData.meals) {
       return 0;
@@ -717,7 +721,7 @@ function DietHome({ navigation }) {
             <Text style={[GlobalStyles.text16]}>Add new</Text>
             <AddIcon fill={'#000'} width={14} height={14}  style={[DietHomeStyles.iconSpacing, DietHomeStyles.rightMarginIcon]}/>
           </TouchableOpacity>
-          <TouchableOpacity style={DietHomeStyles.expOptionRow}>
+          <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={addFromFavouritesClick}>
             <Text style={[GlobalStyles.text16]}>Load saved</Text>
             <LoadIcon fill={'#000'} width={18} height={18} style={DietHomeStyles.iconSpacing} />
           </TouchableOpacity>
