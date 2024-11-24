@@ -1,23 +1,53 @@
-import React, { useState } from 'react';
-import { View, Text, TouchableOpacity, TextInput, StyleSheet } from 'react-native';
+import React, { useState, useRef } from 'react';
+import { View, Text, TouchableOpacity, TextInput, Animated  } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
+import { MealStyles } from '../../Styles/Components/MealStyles.js';
 
 import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 import EditIcon from '../../assets/main/Diet/pencil-square.svg';
 import TrashIcon from '../../assets/main/Diet/trash3.svg';
 import AddSquareIcon from '../../assets/main/Diet/plus-square.svg';
 import HeartIcon from '../../assets/main/Diet/heart.svg';
+import EmptyHeartIcon from '../../assets/main/Diet/heartEmpty.svg';
 
-import { MealStyles } from '../../Styles/Components/MealStyles.js';
 
-
-const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal, onChangeIngredientWeightValue  }) => {
+const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal, onChangeIngredientWeightValue, saveMeal  }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
   const [newMealName, setNewMealName] = useState(meal.name);
   const [newWeightValue, setNewWeightValue] = useState('');
   const [newWeightValueServings, setNewWeightValueServings] = useState('');
+
+  const [isLiked, setIsLiked] = useState(meal.isSaved??false);
+
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const mealSaveButtonClicked = async () => {
+    setIsLiked(true);
+    animateHeart();
+    const addIngredientToSavedModal = {
+      name: meal.name,
+      ingridients: meal.ingridient,
+    };
+
+    saveMeal(addIngredientToSavedModal);
+  };
+
+  const animateHeart = () => {
+    Animated.sequence([
+      Animated.timing(scaleValue, {
+        toValue: 1.5,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+      Animated.timing(scaleValue, {
+        toValue: 1,
+        duration: 150,
+        useNativeDriver: true,
+      }),
+    ]).start();
+  };
 
   const totalSummary = meal.ingridient.reduce(
     (totals, ingredient) => {
@@ -98,7 +128,13 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
             </View>
             <View style={MealStyles.headerClose}>
               <TouchableOpacity style={{ marginRight: 5 }}>
-                <HeartIcon fill={'#FF8303'} width={24} height={26} />
+                <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                  {isLiked ? (
+                    <HeartIcon fill={'#FF8303'} width={24} height={26} />
+                  ) : (
+                    <EmptyHeartIcon fill={'#FF8303'} width={24} height={26} onPress={() => mealSaveButtonClicked()}/>
+                  )}
+                </Animated.View>
               </TouchableOpacity>
               <TouchableOpacity onPress={() => onRemoveMeal(meal.publicId)}>
                 <TrashIcon fill={'#000'} width={22} height={26} />

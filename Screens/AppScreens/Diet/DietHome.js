@@ -1,11 +1,12 @@
 import React, { useState, useEffect,useContext, useRef } from 'react';
-import { Animated, View, Text, ScrollView, ActivityIndicator } from 'react-native';
+import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import MakroMenu from '../../../Components/Diet/MakroMenu';
 import Calendar from '../../../Components/Diet/DietCalendar';
 import Meal from '../../../Components/Diet/Meal';
 import { useRoute } from '@react-navigation/native';
+import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
 import AddIcon from '../../../assets/main/Diet/plus-square.svg';
@@ -15,12 +16,9 @@ import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import AuthService from '../../../Services/Auth/AuthService.js';
-
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
-import { TouchableOpacity } from 'react-native';
-
 import config from '../../../Config.js';
-import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import ErrorPopup from '../../../Components/Error/ErrorPopup';
+import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 
 function DietHome({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -35,8 +33,56 @@ function DietHome({ navigation }) {
 
   const { params } = useRoute();
 
+  const [errorMsg, setErrorMsg] = useState("Something went wrong, please check your internet connection.");
+  const [isErrorModalVibile, setIsErrorModalVisible] = useState(false);
+  const closeErrorPopup = () => {
+      setIsErrorModalVisible(false);
+  };
+
   const addFromFavouritesClick = () => {
     navigation.navigate('SavedMeals');
+  };
+
+  const saveMeal = async (addIngredientToSavedModal) => {
+    try{
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+         return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Diet/AddMealToSavedMeals`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(addIngredientToSavedModal),
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        const errorText = await res.text(); 
+        const errorResponse = JSON.parse(errorText); 
+
+        switch(errorResponse.errorCode){
+          case "AlreadyExists":
+            setErrorMsg("Meal with this name is already saved ;c");
+            setIsErrorModalVisible(true);
+            break;
+        }
+        return;
+      }
+
+      console.log("Added");
+
+    }catch(error){
+      console.log("Error while saving meals " + error);
+    }
   };
 
   const getIdCounter = () => {
@@ -693,6 +739,7 @@ function DietHome({ navigation }) {
             addIngredientToMeal={addIngredientToMeal}
             onRemoveIngredientFromMeal = {removeIngredientFromMeal}
             onChangeIngredientWeightValue = {changeIngredientWieghtValue}
+            saveMeal = {saveMeal}
             />
         ))}
         <View style={DietHomeStyles.bottomSpacing}></View>
@@ -743,6 +790,12 @@ function DietHome({ navigation }) {
           <PlusIcon fill={'#fff'} width={27} height={27} />
         </Animated.View>
       </TouchableOpacity>
+
+      <ErrorPopup
+        visible={isErrorModalVibile}
+        message={errorMsg}
+        onClose={closeErrorPopup}
+      />
 
       <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />

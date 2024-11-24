@@ -3,7 +3,7 @@ import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from 'react
 import { errorTrim } from '../../Services/Errors/ErrorTrimer.js';
 
 const ErrorPopup = ({ visible, message, onClose }) => {
-  const [progress, setProgress] = useState(new Animated.Value(0));
+  const [progress] = useState(new Animated.Value(0));
 
   useEffect(() => {
     if (visible) {
