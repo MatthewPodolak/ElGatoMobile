@@ -17,6 +17,10 @@ const NavigateBack = () => {
     navigation.goBack();
 };
 
+const addMealFromSaved = (savedMealToAdd) => {
+  navigation.navigate('DietHome', { savedMealToAdd });
+};
+
 useEffect(() => {
     const fetchSavedMeals = async () => {
         try {
@@ -46,7 +50,6 @@ useEffect(() => {
 
             const data = await res.json();
             setMealsData(data);
-            console.log(data);
 
         } catch (error) {
             console.error("Error", error);
@@ -94,6 +97,7 @@ useEffect(() => {
                          <SavedMeal
                             key={index}
                             meal={meal}
+                            addMeal={addMealFromSaved}
                          />
                         ))}
                     </ScrollView>

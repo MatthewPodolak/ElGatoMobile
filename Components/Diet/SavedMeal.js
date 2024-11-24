@@ -11,7 +11,7 @@ import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const SavedMeal = ({ meal }) => {
+const SavedMeal = ({ meal, addMeal }) => {
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const contentAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
@@ -28,6 +28,10 @@ const SavedMeal = ({ meal }) => {
     },
     { energyKcal: 0, proteins: 0, fats: 0, carbs: 0 }
   );
+
+  const addMealButtonClicked = (meal) => {
+    addMeal(meal);
+  };
 
   const toggleExpand = () => {
     if (isContentExpanded) {
@@ -69,7 +73,7 @@ const SavedMeal = ({ meal }) => {
               <Text style={GlobalStyles.text16}>{meal.name}</Text>
             </View>
             <View style={styles.headerClose}>
-              <TouchableOpacity style={{ marginRight: 5 }}>
+              <TouchableOpacity onPress={() => addMealButtonClicked(meal)} style={{ marginRight: 5 }}>
                 <AddIcon width={26} height={26} fill={'#FF8303'} />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleExpand}>

@@ -43,7 +43,48 @@ function DietHome({ navigation }) {
     navigation.navigate('SavedMeals');
   };
 
-  const removeMeal = async (name) => {
+  const addMealFromSaved = async (savedMealName) => {
+    try{
+      const token = await AuthService.getToken();
+      const date = selectedDate + 'T00:00:00Z';
+
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+         return;
+      }
+
+      const requestBody = {
+        date: date,
+        name: savedMealName,
+      };
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Diet/AddMealFromSaved`,
+        {
+          method: 'POST',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(requestBody),
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //ERROR
+        console.log("ERROR WHILE ADDING FROM SAVED");
+        return;
+      }
+
+      //Ok
+
+    }catch(error){
+      console.log("ERROR WHILE ADDING FROM SAVED -> " + error);
+    }
+  };
+
+  const removeMealSaved = async (name) => {
     try{
       const token = await AuthService.getToken();
       
@@ -74,9 +115,9 @@ function DietHome({ navigation }) {
     }catch(error){
       console.log("Error while removing meal " + error);
     }
-  }
+  };
 
-  const saveMeal = async (addIngredientToSavedModal) => {
+  const saveMealSaved = async (addIngredientToSavedModal) => {
     try{
       const token = await AuthService.getToken();
       
@@ -136,6 +177,43 @@ function DietHome({ navigation }) {
   
     return (highestNumber+1);
   };
+  
+
+  useEffect(() => {
+    if (params?.savedMealToAdd) {
+      const savedMeal = { ...params.savedMealToAdd, isSaved: true };
+  
+      setDietData((prevDietData) => {
+        const mealMacros = savedMeal.ingridient.reduce(
+          (acc, ingredient) => {
+            const weightRatio = ingredient.weightValue / ingredient.prepedFor;
+            acc.kcal += ingredient.energyKcal * weightRatio;
+            acc.protein += ingredient.proteins * weightRatio;
+            acc.fats += ingredient.fats * weightRatio;
+            acc.carbs += ingredient.carbs * weightRatio;
+            return acc;
+          },
+          { kcal: 0, protein: 0, fats: 0, carbs: 0 }
+        );
+  
+        const updatedCalorieCounter = {
+          kcal: prevDietData.calorieCounter.kcal + mealMacros.kcal,
+          protein: prevDietData.calorieCounter.protein + mealMacros.protein,
+          fats: prevDietData.calorieCounter.fats + mealMacros.fats,
+          carbs: prevDietData.calorieCounter.carbs + mealMacros.carbs,
+        };
+  
+        const updatedMeals = [...prevDietData.meals, savedMeal];
+  
+        return {
+          ...prevDietData,
+          meals: updatedMeals,
+          calorieCounter: updatedCalorieCounter,
+        };
+      });
+      addMealFromSaved(params.savedMealToAdd.name);
+    }
+  }, [params]);
   
 
   useEffect(() => {
@@ -772,8 +850,8 @@ function DietHome({ navigation }) {
             addIngredientToMeal={addIngredientToMeal}
             onRemoveIngredientFromMeal = {removeIngredientFromMeal}
             onChangeIngredientWeightValue = {changeIngredientWieghtValue}
-            saveMeal = {saveMeal}
-            removeMeal = {removeMeal}
+            saveMeal = {saveMealSaved}
+            removeMeal = {removeMealSaved}
             />
         ))}
         <View style={DietHomeStyles.bottomSpacing}></View>
