@@ -12,7 +12,7 @@ import HeartIcon from '../../assets/main/Diet/heart.svg';
 import EmptyHeartIcon from '../../assets/main/Diet/heartEmpty.svg';
 
 
-const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal, onChangeIngredientWeightValue, saveMeal  }) => {
+const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientToMeal, onRemoveIngredientFromMeal, onChangeIngredientWeightValue, saveMeal, removeMeal  }) => {
   const [isEditing, setIsEditing] = useState(false);
   const [editingIngredientIndex, setEditingIngredientIndex] = useState(null);
   const [newMealName, setNewMealName] = useState(meal.name);
@@ -23,7 +23,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
 
   const scaleValue = useRef(new Animated.Value(1)).current;
 
-  const mealSaveButtonClicked = async () => {
+  const mealSaveButtonClicked = () => {
     setIsLiked(true);
     animateHeart();
     const addIngredientToSavedModal = {
@@ -32,6 +32,12 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
     };
 
     saveMeal(addIngredientToSavedModal);
+  };
+
+  const mealSaveButtonUnclicked = () => {
+    setIsLiked(false);
+    animateHeart();
+    removeMeal(meal.name);
   };
 
   const animateHeart = () => {
@@ -130,7 +136,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
               <TouchableOpacity style={{ marginRight: 5 }}>
                 <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
                   {isLiked ? (
-                    <HeartIcon fill={'#FF8303'} width={24} height={26} />
+                    <HeartIcon fill={'#FF8303'} width={24} height={26} onPress={() => mealSaveButtonUnclicked()} />
                   ) : (
                     <EmptyHeartIcon fill={'#FF8303'} width={24} height={26} onPress={() => mealSaveButtonClicked()}/>
                   )}

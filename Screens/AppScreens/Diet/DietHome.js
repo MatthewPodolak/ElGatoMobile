@@ -43,6 +43,39 @@ function DietHome({ navigation }) {
     navigation.navigate('SavedMeals');
   };
 
+  const removeMeal = async (name) => {
+    try{
+      const token = await AuthService.getToken();
+      
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+         return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Diet/RemoveMealFromSavedMeals?mealName=${name}`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        console.log("ERROR removing");
+        return;
+      }
+
+      console.log("removed");
+
+    }catch(error){
+      console.log("Error while removing meal " + error);
+    }
+  }
+
   const saveMeal = async (addIngredientToSavedModal) => {
     try{
       const token = await AuthService.getToken();
@@ -740,6 +773,7 @@ function DietHome({ navigation }) {
             onRemoveIngredientFromMeal = {removeIngredientFromMeal}
             onChangeIngredientWeightValue = {changeIngredientWieghtValue}
             saveMeal = {saveMeal}
+            removeMeal = {removeMeal}
             />
         ))}
         <View style={DietHomeStyles.bottomSpacing}></View>
