@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
+import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
@@ -8,13 +9,75 @@ import config from '../../../Config.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import SavedMeal from '../../../Components/Diet/SavedMeal.js';
+import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
 
 function SavedMeals({ navigation }) {
 const [isScreenLoading, setIsScreenLoading] = useState(false);
 const [mealsData, setMealsData] = useState([]);
 
+const [mealIndexesHold, setMealIndexesHold] = useState([]);
+const [mealsToDelete, setMealsToDelete] = useState([]);
+
 const NavigateBack = () => {
     navigation.goBack();
+};
+
+const handleLongPress = (index, meal) => {
+  setMealIndexesHold((prev) => {
+    if (prev.includes(index)) {
+      return prev.filter((i) => i !== index);
+    } else {
+      return [...prev, index];
+    }
+  });
+
+  setMealsToDelete((prev) =>{
+    if(prev.includes(meal.name)) {
+      return prev.filter((i) => i !== meal.name);
+    }else{
+      return [...prev, meal.name];
+    }
+  });
+};
+
+const deleteSavedMeals = async () => {
+  setMealsData((prev) => prev.filter((meal) => !mealsToDelete.includes(meal.name)));
+  try{
+    const token = await AuthService.getToken();   
+    if (!token || AuthService.isTokenExpired(token)) {
+      await AuthService.logout(setIsAuthenticated, navigation);
+      return;
+    }
+
+    const deleteModel = {
+      savedMealsNames: mealsToDelete,
+    };
+
+    const res = await fetchWithTimeout(
+      `${config.ipAddress}/api/Diet/DeleteMealsFromSaved`,
+      {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(deleteModel)
+      },
+      config.timeout
+    );
+
+    if(!res.ok){
+      //ERROR
+      console.log("Error");
+      return;
+    }
+
+    //Ok.
+
+  }catch(error){
+    //ERROR
+    console.log("Error while removing", error);
+  }
 };
 
 const updateIngridientWeight = async (updateModel) => {
@@ -105,7 +168,11 @@ useEffect(() => {
           </TouchableOpacity>
           <View style = {styles.titleMid}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Saved meals</Text></View>
           <View style = {styles.titleRight}>
-            
+            {mealsToDelete.length != 0 &&(
+              <TouchableOpacity style={styles.titleRight} onPress={() => deleteSavedMeals()}>
+                <DeleteIcon width={26} height={26} fill={"#fff"} />
+              </TouchableOpacity>
+            )}
           </View>
         </View>
 
@@ -128,13 +195,28 @@ useEffect(() => {
                     </View>
                 ):(
                     <ScrollView style={styles.mainContainer}>
-                        {mealsData.map((meal, index) => (      
-                         <SavedMeal
-                            key={index}
-                            meal={meal}
-                            addMeal={addMealFromSaved}
-                            updateIngridient={updateIngridientWeight}
-                         />
+                        {mealsData.map((meal, index) => (
+                        <GestureHandlerRootView
+                          key={index}
+                        >
+                          <LongPressGestureHandler                            
+                            onHandlerStateChange={({ nativeEvent }) => {
+                              if (nativeEvent.state === 4) {
+                                handleLongPress(index, meal);
+                              }
+                            }}
+                            minDurationMs={200}
+                          >
+                            <View>
+                              <SavedMeal
+                                meal={meal}
+                                addMeal={addMealFromSaved}
+                                updateIngridient={updateIngridientWeight}
+                                isSetted={mealIndexesHold.includes(index)}
+                              />
+                            </View>
+                          </LongPressGestureHandler>
+                          </GestureHandlerRootView>
                         ))}
                     </ScrollView>
                 )}

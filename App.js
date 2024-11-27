@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext  } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import StartScreen from './Screens/Start/StartScreen';
 import LoginScreen from './Screens/Auth/LoginScreen';
@@ -117,8 +117,8 @@ function App() {
 
 export default function AppWrapper() {
   return (
-    <AuthProvider>
-      <App />
-    </AuthProvider>
+      <AuthProvider>
+        <App />
+      </AuthProvider>
   );
 }
