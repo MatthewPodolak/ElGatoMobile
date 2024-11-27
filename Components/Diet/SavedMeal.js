@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Animated, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
 
@@ -8,13 +8,16 @@ import AddIcon from '../../assets/main/Diet/plus-lg.svg';
 import EditIcon from '../../assets/main/Diet/pencil-square.svg';
 import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 
-
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const SavedMeal = ({ meal, addMeal }) => {
+const SavedMeal = ({ meal, addMeal, updateIngridient }) => {  
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const contentAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
+
+  const [editingIngridientIndex, setEditingIngridientIndex] = useState(null);
+  const [newWeightValue, setNewWeightValue] = useState('');
+  const [oldWeightValue , setOdlWeightValue] = useState('');
 
   const totalSummary = meal.ingridient.reduce(
     (totals, ingredient) => {
@@ -28,6 +31,90 @@ const SavedMeal = ({ meal, addMeal }) => {
     },
     { energyKcal: 0, proteins: 0, fats: 0, carbs: 0 }
   );
+  const [summary, setSummary] = useState(totalSummary);
+
+  const editIngridient = (index, currentWeight) => {
+    setEditingIngridientIndex(index);
+    setOdlWeightValue(currentWeight);
+  };
+
+  const handleWeightSubmit = (name, publicId, isServings) => {
+    let newWeightForUpdate = 0;
+
+    if(isServings){
+      const weightRegex = /^\d+([.,]\d+)?$/;
+      if (!weightRegex.test(newWeightValue)) {
+        //error
+        setEditingIngridientIndex(null);
+        return;
+      }
+
+      const standardizedWeight = parseFloat(newWeightValue.replace(',', '.'));
+      const kcalRef = standardizedWeight * 100;
+      if(kcalRef === oldWeightValue) { setEditingIngridientIndex(null); return; }
+
+      newWeightForUpdate = kcalRef;
+
+    }else{
+      const parsedNewWeight = parseInt(newWeightValue, 10);  
+      if(parsedNewWeight === 0 || parsedNewWeight === undefined || isNaN(parsedNewWeight)|| parsedNewWeight === oldWeightValue){
+        //handle double error
+        setEditingIngridientIndex(null);
+        return;
+      } 
+      newWeightForUpdate = parsedNewWeight;
+    }
+    setEditingIngridientIndex(null);
+    updateTotalSummary(name,publicId,newWeightForUpdate);
+    const updateModel = {
+      mealName: meal.name,
+      ingridientName: name,
+      publicId: publicId,
+      newWeight: newWeightForUpdate
+    };
+    updateIngridient(updateModel);
+  };
+
+  const updateTotalSummary = (name, publicId, newWeightForUpdate) => {
+
+    const ingredientToUpdate = meal.ingridient.find(
+      (ingredient) => ingredient.name === name && ingredient.publicId === publicId
+    );
+  
+    if (!ingredientToUpdate) {
+      //ERROR
+      console.error("Ingredient not found");
+      return;
+    }
+  
+    const oldFactor = ingredientToUpdate.weightValue / 100;
+    const newFactor = newWeightForUpdate / 100;
+  
+    const updatedSummary = {
+      energyKcal:
+        summary.energyKcal -
+        ingredientToUpdate.energyKcal * oldFactor +
+        ingredientToUpdate.energyKcal * newFactor,
+      proteins:
+        summary.proteins -
+        ingredientToUpdate.proteins * oldFactor +
+        ingredientToUpdate.proteins * newFactor,
+      fats:
+        summary.fats -
+        ingredientToUpdate.fats * oldFactor +
+        ingredientToUpdate.fats * newFactor,
+      carbs:
+        summary.carbs -
+        ingredientToUpdate.carbs * oldFactor +
+        ingredientToUpdate.carbs * newFactor,
+    };
+  
+    ingredientToUpdate.weightValue = newWeightForUpdate;
+  
+    setSummary(updatedSummary);
+  };
+  
+  
 
   const addMealButtonClicked = (meal) => {
     addMeal(meal);
@@ -115,13 +202,45 @@ const SavedMeal = ({ meal, addMeal }) => {
                         </View>
                         <View style={styles.ingWeightCont}>
                             {ing.servings ? (
-                                <Text style={styles.ingredientName}>{ing.weightValue / 100} s.</Text>
+                              <View>
+                                {editingIngridientIndex == index ? (
+                                  <TextInput
+                                    style={styles.input}
+                                    placeholder="1"
+                                    value={newWeightValue}
+                                    placeholderTextColor="#888"
+                                    selectionColor="#FF8303"
+                                    keyboardType="numeric"
+                                    onChangeText={setNewWeightValue}
+                                    onBlur={() => handleWeightSubmit(ing.name, ing.publicId, true)}
+                                    autoFocus
+                                  />
+                                ): (
+                                  <Text style={styles.ingredientName}>{ing.weightValue / 100} s.</Text>
+                                )}                               
+                              </View>
                             ) : (
-                                <Text style={styles.ingredientName}>{ing.weightValue} g</Text>
+                              <View>
+                                {editingIngridientIndex == index ? (
+                                  <TextInput
+                                    style={styles.input}
+                                    placeholder="100"
+                                    value={newWeightValue}
+                                    placeholderTextColor="#888"
+                                    selectionColor="#FF8303"
+                                    keyboardType="numeric"
+                                    onChangeText={setNewWeightValue}
+                                    onBlur={() => handleWeightSubmit(ing.name, ing.publicId, false)}
+                                    autoFocus
+                                  />
+                                ): (
+                                  <Text style={styles.ingredientName}>{ing.weightValue} g</Text>
+                                )}                                
+                              </View>
                             )}
                         </View>
                         <View style = {styles.ingOptionsCont}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => editIngridient(index, ing.weightValue)}>
                                 <EditIcon width={20} height={20} />
                             </TouchableOpacity>
                             <TouchableOpacity>
@@ -134,12 +253,12 @@ const SavedMeal = ({ meal, addMeal }) => {
             <View style={[styles.hr, styles.margins]}></View>
             <View style={styles.summaryRow}>
                 <View style={styles.kcal}>
-                    <Text>Kcal: {totalSummary.energyKcal.toFixed()} </Text>
+                    <Text>Kcal: {summary.energyKcal.toFixed()} </Text>
                 </View>
                 <View style={styles.macros}>
-                    <Text>P: {totalSummary.proteins.toFixed(2)}g </Text>
-                    <Text>F: {totalSummary.fats.toFixed(2)}g </Text>
-                    <Text>C: {totalSummary.carbs.toFixed(2)}g </Text>
+                    <Text>P: {summary.proteins.toFixed(2)}g </Text>
+                    <Text>F: {summary.fats.toFixed(2)}g </Text>
+                    <Text>C: {summary.carbs.toFixed(2)}g </Text>
                 </View>
             </View>
 
@@ -232,6 +351,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         justifyContent: 'space-between',
         alignItems: 'center',
+      },
+      input: {
+        color: '#000',
+        fontSize: 18,
+        fontFamily: 'Helvetica',
+        borderBottomWidth: 1,
+        borderBottomColor: '#000',
       },
 });
 

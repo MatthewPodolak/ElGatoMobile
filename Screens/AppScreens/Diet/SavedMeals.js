@@ -17,6 +17,41 @@ const NavigateBack = () => {
     navigation.goBack();
 };
 
+const updateIngridientWeight = async (updateModel) => {
+    try{
+      const token = await AuthService.getToken();   
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return;
+      }
+
+      const res = await fetchWithTimeout(
+        `${config.ipAddress}/api/Diet/UpdateSavedMealIngridientWeight`,
+        {
+          method: 'PATCH',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(updateModel)
+        },
+        config.timeout
+      );
+
+      if(!res.ok){
+        //ERROR
+        console.log("Error");
+        return;
+      }
+
+      //ok.
+
+    }catch(error){
+      //ERROR
+      console.log(error);
+    }
+};
+
 const addMealFromSaved = (savedMealToAdd) => {
   navigation.navigate('DietHome', { savedMealToAdd });
 };
@@ -98,6 +133,7 @@ useEffect(() => {
                             key={index}
                             meal={meal}
                             addMeal={addMealFromSaved}
+                            updateIngridient={updateIngridientWeight}
                          />
                         ))}
                     </ScrollView>

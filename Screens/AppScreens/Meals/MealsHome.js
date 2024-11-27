@@ -784,7 +784,8 @@ function MealsHome({ navigation }) {
 
 const styles = StyleSheet.create({
   row: {
-    minHeight: screenHeight * 0.32,
+    //minHeight: screenHeight * 0.32, ????
+    minHeight: 229,
     height: 'auto',
     marginVertical: 10,    
   },
