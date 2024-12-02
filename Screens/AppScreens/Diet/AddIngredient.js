@@ -4,7 +4,9 @@ import { ScrollView,View, Text, TextInput, StatusBar, ActivityIndicator } from '
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
 
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
+import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
+import MealDataService from '../../../Services/ApiCalls/MealData/MealDataService.js';
+import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
 
 import BarCodeIcon from '../../../assets/main/Diet/upc-scan.svg';
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
@@ -17,9 +19,7 @@ import GatoRightModal from '../../../Components/ElGato/GatoRightModal';
 import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 import { AddIngredientStyles } from '../../../Styles/Diet/AddIngredientStyles.js';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import AuthService from '../../../Services/Auth/AuthService.js';
 
-import config from '../../../Config.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 
@@ -141,23 +141,7 @@ const AddIngredient = ({ route, navigation }) => {
     setIsOwnLoading(true);
     setOwnError(null);
     try{
-      const token = await AuthService.getToken();   
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/GetOwnRecipes`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.getOwnRecipes(setIsAuthenticated, navigation);
 
       if(!res.ok){
         //Error
@@ -181,23 +165,7 @@ const AddIngredient = ({ route, navigation }) => {
     setIsFavLoading(true);
     setFavError(null);
     try{
-      const token = await AuthService.getToken();   
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/GetLikedMeals`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.getLikedMeals(setIsAuthenticated, navigation);
 
       if(!res.ok){
         //Error throw popup
@@ -225,33 +193,22 @@ const AddIngredient = ({ route, navigation }) => {
     }
 
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
+
+      let requestBody = {
+        productName: productName,
+        productBrand: brandName,
+        productEan13: ean,
+        proteins: protein,
+        carbs: carbs,
+        fats: fat,
+        energyKcal: kcal 
+      };
+
+      const res = await UserRequestService.addIngredientRequest(setIsAuthenticated, navigation, requestBody);
+      if(!res.ok){
+        //ERROR
         return;
       }
-
-      const requestAddProduct = await fetchWithTimeout(
-        `${config.ipAddress}/api/UserRequest/AddIngredientRequest`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-              productName: productName,
-              productBrand: brandName,
-              productEan13: ean,
-              proteins: protein,
-              carbs: carbs,
-              fats: fat,
-              energyKcal: kcal 
-          }),
-        },
-        config.timeout
-      );
 
     }catch(error){
       //error
@@ -299,33 +256,22 @@ const AddIngredient = ({ route, navigation }) => {
 
   const sendReport = async (sendingCase) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
-      const requestReport = await fetchWithTimeout(
-        `${config.ipAdress}/api/UserRequest/ReportIngredientRequest`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-                ingredientId: reportedItem.id,
-                ingredientName: reportedItem.name,
-                cause: sendingCase
-          }),
-        },
-        config.timeout
-      );
+      let requestBody = {
+        ingredientId: reportedItem.id,
+        ingredientName: reportedItem.name,
+        cause: sendingCase
+      };
+
+      const res = await UserRequestService.reportIngredientRequest(setIsAuthenticated, navigation, requestBody);
+      if(!res.ok){
+        //ERROR
+        return;
+      };
 
     }catch(error){
       //error handle
-      console.log(error);
+      console.log("HERE" + error);
     }
 
     setReportedItem(null);
@@ -454,27 +400,9 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const handleBarCodeScanned = async ({ type, data }) => {
-    setScanned(true);
-    //api call 
+    setScanned(true); 
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
-      const scannedIngredient = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/GetIngridientByEan?ean=${data}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        (config.timeout + 5000)
-      );
+      const scannedIngredient = await DietDataService.getIngridientByEan(setIsAuthenticated, navigation, data);
 
       if(!scannedIngredient.ok){
         console.log('not ok');
@@ -512,24 +440,7 @@ const AddIngredient = ({ route, navigation }) => {
 
   const fetchIngredientData = async (ingredient) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
-      const ingredientListRes = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/GetListOfCorrelatedItemByName?name=${ingredient}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const ingredientListRes = await DietDataService.getListOfCorrelatedItemByName(setIsAuthenticated, navigation, ingredient);
 
       if(!ingredientListRes.ok){
         //show none
@@ -682,7 +593,7 @@ const AddIngredient = ({ route, navigation }) => {
                         key={`${item.stringId || 'item'}-${index}`}
                         onPress={() => inspectModal(item)}
                       >
-                      <MealDisplayBig meal={item} />
+                      <MealDisplayBig meal={item} navigation={navigation} />
                       </TouchableOpacity>
                   ))}
                 </ScrollView>
@@ -722,7 +633,7 @@ const AddIngredient = ({ route, navigation }) => {
                       key={`${item.stringId || 'item'}-${index}`}
                       onPress={() => inspectModal(item)}
                     >
-                    <MealDisplayBig meal={item} />
+                    <MealDisplayBig meal={item} navigation={navigation} />
                     </TouchableOpacity>
                 ))}
               </ScrollView>
@@ -1317,6 +1228,7 @@ const AddIngredient = ({ route, navigation }) => {
         closeInspectModal={closeInspectModal}
         item={currentlyInspectedItem}
         specialClose={closeInspectModalAndAddMeal}
+        navigation={navigation}
       >
       </InspectMealModal>
     </SafeAreaView>

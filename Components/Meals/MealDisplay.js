@@ -1,5 +1,5 @@
 import React, { useState, useEffect,useContext } from 'react';
-import { View, Pressable, StyleSheet, SafeAreaView, Text, TouchableOpacity, ImageBackground } from 'react-native';
+import { View, StyleSheet, Text, TouchableOpacity, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 
 import Save from '../../assets/main/Diet/bookmark.svg';
@@ -7,15 +7,10 @@ import SaveFilled from '../../assets/main/Diet/bookmark-fill.svg';
 import HeartEmpty from '../../assets/main/Diet/heartEmpty.svg';
 import HeartFull from '../../assets/main/Diet/heartFull.svg'
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
-
 import { AuthContext } from '../../Services/Auth/AuthContext.js';
-import AuthService from '../../Services/Auth/AuthService.js';
+import MealDataService from '../../Services/ApiCalls/MealData/MealDataService.js';
 
-import config from '../../Config.js';
-
-function MealDisplay({meal}) {
+function MealDisplay({meal, navigation}) {
   const { setIsAuthenticated } = useContext(AuthContext);
 
   const imageSource = meal.img ? { uri: `http://192.168.0.143:5094${meal.img}` } : require('../../assets/recepieBaseImage.png');
@@ -31,24 +26,7 @@ function MealDisplay({meal}) {
 
   const likeMeal = async (id) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-          await AuthService.logout(setIsAuthenticated, navigation);
-          return;
-      }   
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/LikeMeal?mealId=${id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.likeMeal(setIsAuthenticated, navigation, id);
 
       if(!res.ok){
         //return no
@@ -70,24 +48,7 @@ function MealDisplay({meal}) {
 
   const saveMeal = async (id) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-          await AuthService.logout(setIsAuthenticated, navigation);
-          return;
-      } 
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/SaveMeal?mealId=${id}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.saveMeal(setIsAuthenticated, navigation, id);
 
       if(!res.ok){
         //return no

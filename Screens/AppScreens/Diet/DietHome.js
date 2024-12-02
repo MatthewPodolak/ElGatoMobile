@@ -15,10 +15,9 @@ import LoadIcon from '../../../assets/main/Diet/load.svg';
 import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import AuthService from '../../../Services/Auth/AuthService.js';
-import config from '../../../Config.js';
 import ErrorPopup from '../../../Components/Error/ErrorPopup';
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
+
+import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
 
 function DietHome({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -44,32 +43,14 @@ function DietHome({ navigation }) {
   };
 
   const addMealFromSaved = async (savedMealName) => {
-    try{
-      const token = await AuthService.getToken();
+    try{     
       const date = selectedDate + 'T00:00:00Z';
-
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-         return;
-      }
-
       const requestBody = {
         date: date,
         name: savedMealName,
       };
 
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/AddMealFromSaved`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),
-        },
-        config.timeout
-      );
+      const res = await DietDataService.addMealFromSaved(setIsAuthenticated, navigation, requestBody);
 
       if(!res.ok){
         //ERROR
@@ -86,24 +67,7 @@ function DietHome({ navigation }) {
 
   const removeMealSaved = async (name) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-         return;
-      }
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/RemoveMealFromSavedMeals?mealName=${name}`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await DietDataService.removeMealFromSavedMeals(setIsAuthenticated, navigation, name);
 
       if(!res.ok){
         console.log("ERROR removing");
@@ -119,25 +83,7 @@ function DietHome({ navigation }) {
 
   const saveMealSaved = async (addIngredientToSavedModal) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-         return;
-      }
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/AddMealToSavedMeals`,
-        {
-          method: 'POST',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(addIngredientToSavedModal),
-        },
-        config.timeout
-      );
+      const res = await DietDataService.addMealToSavedMeals(setIsAuthenticated, navigation, addIngredientToSavedModal);
 
       if(!res.ok){
         const errorText = await res.text(); 
@@ -226,13 +172,6 @@ function DietHome({ navigation }) {
             addIngredientToMeal(mealId, ingredient);
           });
   
-          const token = await AuthService.getToken();
-      
-          if (!token || AuthService.isTokenExpired(token)) {
-            await AuthService.logout(setIsAuthenticated, navigation);
-            return;
-          }
-
           const mealDate = selectedDate + 'T00:00:00Z';
   
           const ingredientsToSend = selectedItemsData.map((ingredient) => ({
@@ -247,28 +186,13 @@ function DietHome({ navigation }) {
             id: String(ingredient.id) || "123"
           }));
   
-          console.log('Payload:', {
+          let requestBodyPushIng = {
             mealId: mealId,
             date: mealDate,
-            ingridient: ingredientsToSend
-          });
+            ingridient: ingredientsToSend,
+          };
 
-          const pushIngRes = await fetchWithTimeout(
-            `${config.ipAddress}/api/Diet/AddIngriedientsToMeal`,
-            {
-              method: 'POST',
-              headers: {
-                Authorization: `Bearer ${token}`,
-                'Content-Type': 'application/json',
-              },
-              body: JSON.stringify({
-                mealId: mealId,
-                date: mealDate,
-                ingridient: ingredientsToSend,
-              }),
-            },
-            config.timeout
-          );
+          const pushIngRes = await DietDataService.addIngriedientsToMeal(setIsAuthenticated, navigation, requestBodyPushIng);
   
           if (!pushIngRes.ok) {
             //error
@@ -344,39 +268,23 @@ function DietHome({ navigation }) {
       };
     });
 
-    //API CALL!
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
       const mealDate = selectedDate + 'T00:00:00Z';
 
-      const removeIngredientFromMeal = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/RemoveIngridientFromMeal`,
-        {
-          method: 'DELETE',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            mealPublicId: publicId,
-            ingridientId: id,
-            ingridientName: name,
-            weightValue: weightValue,
-            date: mealDate          
-          }),
-        },
-        config.timeout
-      );
+      let requestBodyRemoveIng = {
+        mealPublicId: publicId,
+        ingridientId: id,
+        ingridientName: name,
+        weightValue: weightValue,
+        date: mealDate 
+      };
+
+      const removeIngredientFromMeal = await DietDataService.removeIngridientFromMeal(setIsAuthenticated, navigation, requestBodyRemoveIng);
 
       if(!removeIngredientFromMeal.ok){
         //error handling
         console.log('NOT REMOVED - ERROR');
+        return;
       }
 
     }catch(error){
@@ -455,42 +363,25 @@ function DietHome({ navigation }) {
       };
     });
   
-    //API
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
       const mealDate = selectedDate + 'T00:00:00Z';
-
-      const patchIngredientWeight = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/UpdateIngridientWeightValue`,
-        {
-          method: 'PATCH',
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            mealPublicId: mealId,
-            ingridientName: name,
-            ingridientId: publicId,
-            ingridientWeightOld: oldWeight,
-            ingridientWeightNew: newWeightValue,
-            date: mealDate          
-          }),
-        },
-        config.timeout
-      );
+      let requestBodyPatchWeight = {
+        mealPublicId: mealId,
+        ingridientName: name,
+        ingridientId: publicId,
+        ingridientWeightOld: oldWeight,
+        ingridientWeightNew: newWeightValue,
+        date: mealDate
+      };
+      const patchIngredientWeight = await DietDataService.updateIngridientWeightValue(setIsAuthenticated, navigation, requestBodyPatchWeight);
 
       if(!patchIngredientWeight.ok){
         //error handle
         console.log('error patching new weight');
+        return;
       }
 
+      console.log("patched");
     }catch(error){
       //error int
       console.log('hitted error');
@@ -538,33 +429,18 @@ function DietHome({ navigation }) {
     }));
 
     const changeMealDate = selectedDate + 'T00:00:00Z';
-    const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
     try{
-      const mealChangeRes = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/UpdateMealName`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            name: newName??"Meal",
-            mealPublicId: mealId,
-            date: changeMealDate,
-          }),
-        },
-        config.timeout
-      );
+      let requestBodyChangeName = {
+        name: newName??"Meal",
+        mealPublicId: mealId,
+        date: changeMealDate,
+      };
+      const mealChangeRes = await DietDataService.UpdateMealName(setIsAuthenticated, navigation, requestBodyChangeName);
 
       if(!mealChangeRes.ok){
         //error internet prob
+        return;
       }
 
     }catch(error){
@@ -603,28 +479,18 @@ function DietHome({ navigation }) {
     });
 
     const delMealDate = selectedDate + 'T00:00:00Z';
-    const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
     try{
-      const mealRemoveRes = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/DeleteMeal?publicId=${mealId}&date=${delMealDate}`,
-        {
-          method: 'DELETE',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const mealRemoveModel = {
+        publicId: mealId,
+        date: delMealDate
+      };
+
+      const mealRemoveRes = await DietDataService.DeleteMeal(setIsAuthenticated, navigation, mealRemoveModel);
 
       if(!mealRemoveRes.ok){
         //error.
+        return;
       }
 
     }catch(error){
@@ -676,12 +542,6 @@ function DietHome({ navigation }) {
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
     const counter = getIdCounter(); //id counter
-    const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
     const newMeal = {
       name: `Meal${counter}`,
@@ -696,22 +556,22 @@ function DietHome({ navigation }) {
       meals: updatedMeals
     }));
 
+    const addNewMealModel = {
+      MealName: newMeal.name,
+      Date: newMealDate,
+    };
+
     try {
-      const mealAddRes = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/AddNewMeal?mealName=${newMeal.name}&date=${newMealDate}`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const mealAddRes = await DietDataService.AddNewMeal(setIsAuthenticated, navigation, addNewMealModel);
+
       if(!mealAddRes.ok){
         //set error popup no internet - meal could not be saved.
         console.log('err while adding');
+        return;
       }
+
+      console.log("new meal added.");
+
     } catch (error) {
       console.log("Error while adding newMeal");
       //set error popup no internet - meal could not be saved.
@@ -724,25 +584,9 @@ function DietHome({ navigation }) {
 
     try {
       setDietData(null);
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
       date = date + 'T00:00:00Z';
 
-      const response = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/GetUserDietDay?date=${date}`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const response = await DietDataService.GetUserDietDay(setIsAuthenticated, navigation, date);
 
       if (!response.ok) {
         let currentDate = new Date();
@@ -778,25 +622,19 @@ function DietHome({ navigation }) {
           const data = dietDayVMO;
           setDietData(data);
 
+          const addNewMealModel = {
+            MealName: meal.name,
+            Date: dietDayVMO.date,
+          };
+          console.log("CHUJJ " + addNewMealModel);
+
           try{
-            console.log(date);
-            console.log(dietDayVMO.date);
-            const mealAddRes = await fetchWithTimeout(
-              `${config.ipAddress}/api/Diet/AddNewMeal?mealName=${meal.name}&date=${date}`,
-              {
-                method: 'POST',
-                headers: {
-                  'Authorization': `Bearer ${token}`,
-                  'Content-Type': 'application/json',
-                },
-              },
-              config.timeout
-            );
-            
+            const mealAddRes = await DietDataService.AddNewMeal(setIsAuthenticated, navigation, addNewMealModel);           
 
             if(!mealAddRes.ok){
               console.log("ERROR HIT");
               setError("throw net");
+              return;
             }
             console.log("HIT");
           }catch(error){
@@ -909,7 +747,7 @@ function DietHome({ navigation }) {
         onClose={closeErrorPopup}
       />
 
-      <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} />
+      <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} navigation={navigation} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />
     </SafeAreaView>
   );

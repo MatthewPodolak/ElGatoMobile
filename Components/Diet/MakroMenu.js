@@ -1,16 +1,12 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { ActivityIndicator, View, StyleSheet, SafeAreaView, Text } from 'react-native';
-
-import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { ActivityIndicator, View, SafeAreaView, Text } from 'react-native';
 
 import { MakroMenuStyles } from '../../Styles/Components/MakroMenuStyles.js';
 import { AuthContext } from '../../Services/Auth/AuthContext.js';
-import AuthService from '../../Services/Auth/AuthService.js';
 
-import config from '../../Config.js';
+import UserDataService from '../../Services/ApiCalls/UserData/UserDataService.js';
 
-function MakroMenu({ CalorieCounter }) {
+function MakroMenu({ CalorieCounter, navigation }) {
     const { setIsAuthenticated } = useContext(AuthContext);
 
     const [kcal, setKcal] = useState(0);
@@ -28,27 +24,9 @@ function MakroMenu({ CalorieCounter }) {
     useEffect(() => {         
         const fetchFromApi = async () => {
             try{
-                const token = await AuthService.getToken();
-      
-                if (!token || AuthService.isTokenExpired(token)) {
-                    await AuthService.logout(setIsAuthenticated, navigation);
-                    return;
-                }
-
-                const response = await fetchWithTimeout(
-                    `${config.ipAddress}/api/UserData/GetUserCaloriesIntake`,
-                    {
-                      method: 'GET',
-                      headers: {
-                        'Authorization': `Bearer ${token}`,
-                        'Content-Type': 'application/json',
-                      },
-                    },
-                    config.timeout
-                  );
-
-                  if(response.ok){
-                    const data = await response.json();
+                const calorieInfromation = await UserDataService.getUserCaloriesIntake(setIsAuthenticated, navigation);
+                if(calorieInfromation.ok){
+                    const data = await calorieInfromation.json();
 
                     setKcal(data.kcal);
                     setCarbs(data.carbs);
@@ -56,14 +34,13 @@ function MakroMenu({ CalorieCounter }) {
                     setProtein(data.protein);
 
                     setLoading(false);
-                  }else{
+                }else{
                     setLoading(true);
                     throw "Could'nt connect to the database, try again later.";
-                  }
-
+                }
             }catch(error){
                 setLoading(true);
-                throw "Could'nt connect to the database, try again later.";
+                throw "Could'nt connect to the database, try again later." + error;
             }
         };
     
@@ -72,7 +49,7 @@ function MakroMenu({ CalorieCounter }) {
                 await fetchFromApi();
             } catch (error) {
                 //error
-                console.log('Failed ...');
+                console.log('Failed ...' + error);
             }
         };
     

@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpa
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import FilterModal from '../../../Components/Meals/FilterModal.js';
 import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
@@ -18,11 +17,8 @@ import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 import { AllRecepies } from '../../../Styles/Meals/AllRecepies.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import AuthService from '../../../Services/Auth/AuthService.js';
+import MealDataService from '../../../Services/ApiCalls/MealData/MealDataService.js';
 
-import config from '../../../Config.js';
-
-const screenHeight = Dimensions.get('window').height;
 
 function MealsHome({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -140,23 +136,7 @@ function MealsHome({ navigation }) {
     setIsLoadingOwn(true);
 
     try{
-      const token = await AuthService.getToken();   
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/GetOwnRecipes`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.getOwnRecipes(setIsAuthenticated, navigation);
 
       if(!res.ok){
         console.log(res.error);
@@ -177,23 +157,7 @@ function MealsHome({ navigation }) {
   const fetchUserLikedAndSavedMeals = async () => {
     setIsLoadingLikedAndSaved(true);
     try{
-      const token = await AuthService.getToken();   
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
- 
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/GetLikedMeals`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.getLikedMeals(setIsAuthenticated, navigation);
 
       if(!res.ok){
         //return no
@@ -214,13 +178,6 @@ function MealsHome({ navigation }) {
 
   const fetchMoreSearchedData = async (page) => {
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
-
       let requestBody = {
         qty: currentQty,
         pageNumber: page,
@@ -248,18 +205,7 @@ function MealsHome({ navigation }) {
         };
       }
 
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/Search`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),       
-        },
-        config.timeout
-      );
+      const res = await MealDataService.Search(setIsAuthenticated, navigation, requestBody);    
 
       if(!res.ok){
         //error
@@ -278,12 +224,6 @@ function MealsHome({ navigation }) {
   const fetchSearchData = async (page) => {
     setIsLoadingSearch(true);
     try{
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
       let requestBody = {
         qty: currentQty,
@@ -312,18 +252,7 @@ function MealsHome({ navigation }) {
         };
       }
 
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/Search`,
-        {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(requestBody),       
-        },
-        config.timeout
-      );
+      const res = await MealDataService.Search(setIsAuthenticated, navigation, requestBody);
 
       if(!res.ok){
         //error
@@ -343,24 +272,8 @@ function MealsHome({ navigation }) {
 
   const fetchAllMealsData = async () => {
     try {
-      const token = await AuthService.getToken();
-      
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
  
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Meal/GetStarters`,
-        {
-          method: 'GET',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        },
-        config.timeout
-      );
+      const res = await MealDataService.GetStarters(setIsAuthenticated, navigation);
 
       if(!res.ok){
         //return no
@@ -402,7 +315,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay meal={item} />
+                  <MealDisplay meal={item} navigation={navigation} />
                 </TouchableOpacity>
                 
               ))}
@@ -418,7 +331,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -433,7 +346,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -448,7 +361,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -463,7 +376,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -478,7 +391,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -493,7 +406,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -508,7 +421,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}
             </ScrollView>
@@ -523,7 +436,7 @@ function MealsHome({ navigation }) {
                   key={item.stringId}
                   onPress={() => inspectModal(item)}
                 >
-                  <MealDisplay key={item.stringId} meal={item} />
+                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
                 </TouchableOpacity>
               ))}              
             </ScrollView>            
@@ -579,7 +492,7 @@ function MealsHome({ navigation }) {
                           style={[styles.searchedRow]}
                           onPress={() => inspectModal(item)}
                       >
-                          <MealDisplayBig meal={item} />
+                          <MealDisplayBig meal={item} navigation={navigation} />
                       </TouchableOpacity>
                   )}
                   keyExtractor={(item) => item.stringId}
@@ -642,7 +555,7 @@ function MealsHome({ navigation }) {
                     onPress={() => inspectModal(item)}
                     >
                     <View>
-                      <MealDisplayBig meal={item} />
+                      <MealDisplayBig meal={item} navigation={navigation} />
                     </View>
                   </TouchableOpacity>
                   
@@ -682,7 +595,7 @@ function MealsHome({ navigation }) {
                       onPress={() => inspectModal(item)}
                       >
                       <View>
-                        <MealDisplayBig meal={item} />
+                        <MealDisplayBig meal={item} navigation={navigation} />
                       </View>
                     </TouchableOpacity>         
                   ))}
@@ -768,6 +681,7 @@ function MealsHome({ navigation }) {
         visible={inspectModalVisible}
         closeInspectModal={closeInspectModal}
         item={currentlyInspectedItem}
+        navigation={navigation}
       >
       </InspectMealModal>
 

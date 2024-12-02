@@ -1,17 +1,18 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
-import AuthService from '../../../Services/Auth/AuthService.js';
-import config from '../../../Config.js';
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import SavedMeal from '../../../Components/Diet/SavedMeal.js';
 import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
 
+import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
+
 function SavedMeals({ navigation }) {
+const { setIsAuthenticated } = useContext(AuthContext);
 const [isScreenLoading, setIsScreenLoading] = useState(false);
 const [mealsData, setMealsData] = useState([]);
 
@@ -43,28 +44,11 @@ const handleLongPress = (index, meal) => {
 const deleteSavedMeals = async () => {
   setMealsData((prev) => prev.filter((meal) => !mealsToDelete.includes(meal.name)));
   try{
-    const token = await AuthService.getToken();   
-    if (!token || AuthService.isTokenExpired(token)) {
-      await AuthService.logout(setIsAuthenticated, navigation);
-      return;
-    }
-
     const deleteModel = {
       savedMealsNames: mealsToDelete,
     };
 
-    const res = await fetchWithTimeout(
-      `${config.ipAddress}/api/Diet/DeleteMealsFromSaved`,
-      {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(deleteModel)
-      },
-      config.timeout
-    );
+    const res = await DietDataService.DeleteMealsFromSaved(setIsAuthenticated, navigation, deleteModel);
 
     if(!res.ok){
       //ERROR
@@ -82,24 +66,8 @@ const deleteSavedMeals = async () => {
 
 const updateIngridientWeight = async (updateModel) => {
     try{
-      const token = await AuthService.getToken();   
-      if (!token || AuthService.isTokenExpired(token)) {
-        await AuthService.logout(setIsAuthenticated, navigation);
-        return;
-      }
 
-      const res = await fetchWithTimeout(
-        `${config.ipAddress}/api/Diet/UpdateSavedMealIngridientWeight`,
-        {
-          method: 'PATCH',
-          headers: {
-            'Authorization': `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(updateModel)
-        },
-        config.timeout
-      );
+      const res = await DietDataService.UpdateSavedMealIngridientWeight(setIsAuthenticated, navigation, updateModel);
 
       if(!res.ok){
         //ERROR
@@ -123,23 +91,8 @@ useEffect(() => {
     const fetchSavedMeals = async () => {
         try {
             setIsScreenLoading(true);
-            const token = await AuthService.getToken();   
-            if (!token || AuthService.isTokenExpired(token)) {
-                await AuthService.logout(setIsAuthenticated, navigation);
-                return;
-            }
 
-            const res = await fetchWithTimeout(
-                `${config.ipAddress}/api/Diet/GetSavedMeals`,
-                {
-                  method: 'GET',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                },
-                config.timeout
-            );
+            const res = await DietDataService.GetSavedMeals(setIsAuthenticated, navigation);
 
             if(!res.ok){
                 console.log("error");

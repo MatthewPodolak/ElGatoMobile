@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 
 import { Alert, Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, ActivityIndicator, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
@@ -12,15 +12,15 @@ import ChevronLeft from '../../assets/main/Diet/chevron-left.svg';
 import Trash from '../../assets/main/Diet/trash3.svg'
 import EditIcon from '../../assets/main/Diet/pencil-square.svg';
 
-import AuthService from '../../Services/Auth/AuthService.js';
-import config from '../../Config.js';
-import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
+import { AuthContext } from '../../Services/Auth/AuthContext.js';
+import MealDataService from '../../Services/ApiCalls/MealData/MealDataService.js';
 
 const InspectMealModal = ({
     visible,
     closeInspectModal,
     item,
-    specialClose
+    specialClose,
+    navigation
   }) => {
 
     const mainDishImage = item && item.img ? { uri: `http://192.168.0.143:5094${item.img}` } : require('../../assets/recepieBaseImage.png');
@@ -30,6 +30,7 @@ const InspectMealModal = ({
     const [isDescExpanded, setIsDescExpanded] = useState(false);
     const [isStepsExpanded, setIsStepsExpanded] = useState(true);
     const [isIngridientsExpanded, setIsIngridientsExpanded] = useState(true);
+    const { setIsAuthenticated } = useContext(AuthContext);
 
     const [reportModalVisible, setReportModalVisible] = useState(false);
 
@@ -69,30 +70,15 @@ const InspectMealModal = ({
     };
     
     const sendDeleteRequest = async () => {
-        const token = await AuthService.getToken();   
-        if (!token || AuthService.isTokenExpired(token)) {
-            await AuthService.logout(setIsAuthenticated, navigation);
-            return;
-        }
-
         try{
-             const res = await fetchWithTimeout(
-                 `${config.ipAddress}/api/Meal/DeleteMeal?mealId=${item.stringId}`,
-                 {
-                   method: 'DELETE',
-                   headers: {
-                     'Authorization': `Bearer ${token}`,
-                   },
-                 },
-                 config.longTimeout
-             );
-
-             if(!res.ok){
+            const res = await MealDataService.deleteMeal(setIsAuthenticated, navigation, item.stringId);
+            
+            if(!res.ok){
                 //error show 
                 return;
-             }
+            }
 
-             closeInspectModal();
+            closeInspectModal();
         }catch(error){
             console.log("Error" + error);
             //Error
@@ -252,6 +238,7 @@ const InspectMealModal = ({
                     visible={reportModalVisible}
                     closeReportModal={closeReportModal}
                     item={item}
+                    navigation={navigation}
                 />
             </Modal>
         ) : (

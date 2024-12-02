@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { View, StyleSheet, SafeAreaView, Text, TouchableOpacity, StatusBar } from 'react-native';
+import { View, SafeAreaView, Text, TouchableOpacity, StatusBar } from 'react-native';
 
 import { DietCalendarStyles } from '../../Styles/Components/DietCalendarStyles.js';
 

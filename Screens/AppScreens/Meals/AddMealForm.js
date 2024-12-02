@@ -3,7 +3,6 @@ import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, ImageB
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 import * as ImagePicker from 'expo-image-picker';
 import ErrorPopup from '../../../Components/Error/ErrorPopup';
 
@@ -13,13 +12,14 @@ import Plus from '../../../assets/main/Diet/plus-lg.svg';
 import TrashIcon from '../../../assets/main/Diet/trash3.svg';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import AuthService from '../../../Services/Auth/AuthService.js';
-import config from '../../../Config.js';
+import MealDataService from '../../../Services/ApiCalls/MealData/MealDataService.js';
 
 import { doubleValidator, intValidator } from '../../../Services/Conversion/NumberValidators.js';
 import AchievmentModal from '../../../Components/ElGato/AchievmentModal.js';
 
 function AddMealForm({ navigation }) {
+    const { setIsAuthenticated } = useContext(AuthContext);
+
     const [recipeName, setRecipeName] = useState(null);
     const [description, setDescription] = useState(null);
     const [mainImage, setMainImage] = useState(null);
@@ -148,24 +148,8 @@ function AddMealForm({ navigation }) {
             formData.append("Makro.Servings", makro.servings);
         }
 
-        const token = await AuthService.getToken();   
-        if (!token || AuthService.isTokenExpired(token)) {
-            await AuthService.logout(setIsAuthenticated, navigation);
-            return;
-        }
-
         try{
-            const res = await fetchWithTimeout(
-                `${config.ipAddress}/api/meal/publishMeal`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                  },
-                  body: formData
-                },
-                config.longTimeout
-            );
+            const res = await MealDataService.publishMeal(setIsAuthenticated, navigation, formData);
 
             if(!res.ok){
                 setErrorMsg("Upss... We couldn't add your recipe, please try again later.");

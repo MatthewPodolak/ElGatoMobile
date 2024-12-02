@@ -1,49 +1,33 @@
 import React, { useContext } from 'react';
 
-import { Modal, View,StyleSheet, TouchableOpacity, Text, ScrollView, TouchableWithoutFeedback, ImageBackground } from 'react-native';
+import { Modal, View, TouchableOpacity, Text, TouchableWithoutFeedback } from 'react-native';
 import { AddIngredientStyles } from '../../Styles/Diet/AddIngredientStyles';
 
 import { AuthContext } from '../../Services/Auth/AuthContext.js';
-import AuthService from '../../Services/Auth/AuthService.js';
-import config from '../../Config.js';
-
-import { fetchWithTimeout } from '../../Services/ApiCalls/fetchWithTimeout';
+import UserRequestService from '../../Services/ApiCalls/RequestData/UserRequestService.js';
 
 const ReportMealModal = ({
     visible,
     closeReportModal,
     item,
+    navigation
   }) => {
 
     const { setIsAuthenticated } = useContext(AuthContext);
 
     const sendReport = async (reportCase) => {
       try{
-        const token = await AuthService.getToken();
-      
-        if (!token || AuthService.isTokenExpired(token)) {
-            await AuthService.logout(setIsAuthenticated, navigation);
-            return;
-        }
-
         let requestBody = {
             mealId : item.stringId,
             mealName : item.name,
             cause : reportCase,
         };
 
-        await fetchWithTimeout(
-          `${config.ipAddress}/api/UserRequest/ReportMealRequest`,
-          {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${token}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(requestBody),
-          },
-          config.timeout
-        );
+        const res = await UserRequestService.reportMealRequest(setIsAuthenticated, navigation, requestBody);
+        if(!res.ok){
+          //ERROR
+          return;
+        }
 
       }catch(error){
         //error

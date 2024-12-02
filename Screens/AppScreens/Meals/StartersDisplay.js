@@ -3,14 +3,12 @@ import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import { fetchWithTimeout } from '../../../Services/ApiCalls/fetchWithTimeout';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import AuthService from '../../../Services/Auth/AuthService.js';
+import MealDataService from '../../../Services/ApiCalls/MealData/MealDataService.js';
 
-import config from '../../../Config.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
@@ -53,12 +51,6 @@ function StartersDisplay({ navigation, route }) {
 
     const fetchData = async (nextPage) => {
         try{
-            const token = await AuthService.getToken();
-      
-            if (!token || AuthService.isTokenExpired(token)) {
-                await AuthService.logout(setIsAuthenticated, navigation);
-                return;
-            }
 
             let requestBody = {
                 type: requestType,
@@ -66,18 +58,7 @@ function StartersDisplay({ navigation, route }) {
                 pageSize: pageSize,
             };
 
-            const res = await fetchWithTimeout(
-                `${config.ipAddress}/api/Meal/GetExtendedStarters`,
-                {
-                  method: 'POST',
-                  headers: {
-                    'Authorization': `Bearer ${token}`,
-                    'Content-Type': 'application/json',
-                  },
-                  body: JSON.stringify(requestBody),
-                },
-                config.timeout
-              );
+            const res = await MealDataService.GetExtendedStarters(setIsAuthenticated, navigation, requestBody);
         
               if(!res.ok){
                 //return no
@@ -136,7 +117,7 @@ function StartersDisplay({ navigation, route }) {
                         style={[styles.searchedRow, index === 0 && { marginTop: 10 }]}
                         onPress={() => inspectModal(item)}
                     >
-                        <MealDisplayBig meal={item} />
+                        <MealDisplayBig meal={item} navigation={navigation} />
                     </TouchableOpacity>
                 )}
                 keyExtractor={(item) => item.stringId}
@@ -155,6 +136,7 @@ function StartersDisplay({ navigation, route }) {
                 visible={inspectModalVisible}
                 closeInspectModal={closeInspectModal}
                 item={currentlyInspectedItem}
+                navigation={navigation}
             >
             </InspectMealModal>        
             <NavigationMenu navigation={navigation} />
