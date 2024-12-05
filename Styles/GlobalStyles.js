@@ -1,6 +1,9 @@
 import { StyleSheet } from 'react-native';
 
 export const GlobalStyles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
     text14: {
         fontSize: 14,
         fontFamily: 'Helvetica',

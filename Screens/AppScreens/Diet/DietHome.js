@@ -1,12 +1,13 @@
 import React, { useState, useEffect,useContext, useRef } from 'react';
 import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
-import MakroMenu from '../../../Components/Diet/MakroMenu';
-import Calendar from '../../../Components/Diet/DietCalendar';
-import Meal from '../../../Components/Diet/Meal';
+import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
+import MakroMenu from '../../../Components/Diet/MakroMenu.js';
+import Calendar from '../../../Components/Diet/Calendar';
+import Meal from '../../../Components/Diet/Meal.js';
 import { useRoute } from '@react-navigation/native';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { closeOptionsAnimation, showOptionsAnimation } from '../../../Animations/ButtonAnimation.js';
 
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
 import AddIcon from '../../../assets/main/Diet/plus-square.svg';
@@ -15,7 +16,7 @@ import LoadIcon from '../../../assets/main/Diet/load.svg';
 import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
-import ErrorPopup from '../../../Components/Error/ErrorPopup';
+import ErrorPopup from '../../../Components/Error/ErrorPopup.js';
 
 import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
 
@@ -499,41 +500,11 @@ function DietHome({ navigation }) {
 
   };
 
-  const closeOptionsAnimation = () => {
-    Animated.parallel([
-      Animated.timing(optionsAnimation, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-      Animated.timing(iconAnimation, {
-        toValue: 0,
-        duration: 300,
-        useNativeDriver: true,
-      }),
-    ]).start(() => setOptionsVisible(false));
-  };
-  const showOptionsAnimation = () => {
-    setOptionsVisible(true);
-      Animated.parallel([
-        Animated.timing(optionsAnimation, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-        Animated.timing(iconAnimation, {
-          toValue: 1,
-          duration: 300,
-          useNativeDriver: true,
-        }),
-      ]).start();
-  };
-
   const optionButtonPressed = () => {
     if (optionsVisible) {
-      closeOptionsAnimation();
+      closeOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
     } else {
-      showOptionsAnimation();
+      showOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
     }
   };
 

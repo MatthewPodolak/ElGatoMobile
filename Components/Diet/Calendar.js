@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { View, SafeAreaView, Text, TouchableOpacity, StatusBar } from 'react-native';
 
-import { DietCalendarStyles } from '../../Styles/Components/DietCalendarStyles.js';
+import { DietCalendarStyles } from '../../Styles/Components/CalendarStyles.js';
 
 
-function DietCalendar({ onDateSelect }) {
+function Calendar({ onDateSelect }) {
     const [days, setDays] = useState([]);
     const [selectedDate, setSelectedDate] = useState(null);
 
@@ -95,4 +95,4 @@ function DietCalendar({ onDateSelect }) {
 }
 
 
-export default DietCalendar;
+export default Calendar;
