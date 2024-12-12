@@ -29,6 +29,10 @@ function TrainingHome({ navigation }) {
     }
   };
 
+  const navigateToAddExercise = () => {
+    navigation.navigate('AddExercise');
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <Calendar onDateSelect={handleDateSelect} />     
@@ -55,7 +59,7 @@ function TrainingHome({ navigation }) {
             { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
           ]}
         >
-          <TouchableOpacity style={styles.expOptionRow}>
+          <TouchableOpacity style={styles.expOptionRow} onPress={navigateToAddExercise}>
             <Text style={[GlobalStyles.text16]}>Add new</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.expOptionRow} >

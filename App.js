@@ -32,6 +32,8 @@ import AddMealScreen from './Screens/AppScreens/Meals/AddMealForm';
 import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
 import SavedMealsScreen from './Screens/AppScreens/Diet/SavedMeals';
 
+import AddExerciseScreen from './Screens/AppScreens/Training/AddExercise';
+
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
 import * as Font from 'expo-font';
@@ -105,6 +107,7 @@ function App() {
             <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
             <Stack.Screen name="MealsHome" component={MealsScreenMain} />
             <Stack.Screen name="AddIngredient" component={AddIngredientScreen} />
+            <Stack.Screen name="AddExercise" component={AddExerciseScreen}/>
             <Stack.Screen name="StartersDisplay" component={StartersDisplayScreen}/>
             <Stack.Screen name="AddMeal" component={AddMealScreen} />
             <Stack.Screen name="SavedMeals" component={SavedMealsScreen}/>
