@@ -8,6 +8,7 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 import ExerciseDisplay from '../../../Components/Training/ExerciseDisplay.js';
+import FilterModal from '../../../Components/Training/FilterModal.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
@@ -17,6 +18,12 @@ function AddExercise({ navigation }) {
     const { setIsAuthenticated } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('Search');
     const [exercisesList, setExercisesList] = useState(null);
+
+    const [isFilterModalActive, setIsFilterModalActive] = useState(false);
+
+    const closeFilterModal = () => {
+      setIsFilterModalActive(false);
+    };
 
     const navigateBack = () => {
         navigation.goBack();
@@ -79,7 +86,7 @@ function AddExercise({ navigation }) {
                             </View>
 
                             <View style = {styles.filterRow}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => setIsFilterModalActive()}>
                                 <View style = {styles.filterContainer}>
                                 <Text style = {styles.filterText}>Filters </Text>
                                 <ChevronDown style={{ marginTop: 3 , marginRight: 5}} width={17} height={17} fill={'whitesmoke'} />
@@ -162,7 +169,10 @@ function AddExercise({ navigation }) {
 
             {renderContent()}
 
+            <FilterModal  visible={isFilterModalActive} closeFilterModal={closeFilterModal}/>
+
         </SafeAreaView>
+        
     );
 };
 
