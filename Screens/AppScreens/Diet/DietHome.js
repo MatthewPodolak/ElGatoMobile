@@ -509,7 +509,8 @@ function DietHome({ navigation }) {
   };
 
   const newMealPress = async () => {
-    closeOptionsAnimation();
+    console.log("xd");
+    closeOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
     const counter = getIdCounter(); //id counter

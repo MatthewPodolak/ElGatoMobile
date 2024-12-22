@@ -1,31 +1,63 @@
-import React, { useState } from 'react';
+import React, { useState, useContext, useEffect } from 'react';
 import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
+
 
 function AddExercise({ navigation }) { 
+    const { setIsAuthenticated } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('Search');
+    const [exercisesList, setExercisesList] = useState(null);
 
     const navigateBack = () => {
         navigation.goBack();
     };
 
-    const setActiveTabFun = (tab) => {
+    useEffect(() => {
+      getAllExercises();
+    }, []);
+
+    const setActiveTabFun = async (tab) => {
         setActiveTab(tab);
         switch(tab){
             case "Search":
-                console.log("abc");
+              await getAllExercises();
                 break;
             case "Favs":
                 break;
             case "New":
                 break;
         }
+    };
+
+    const getAllExercises = async () => {
+      try{
+        const savedExercises = await AsyncStorage.getItem('allExercises');
+        if (savedExercises) {
+          setExercisesList(JSON.parse(savedExercises));
+        }else{
+          const res = await TrainingDataService.getAllExerciseData(setIsAuthenticated, navigation);
+          if(res.ok){
+            const data = await res.json();
+            await AsyncStorage.setItem('allExercises', JSON.stringify(data));
+            setExercisesList(data);
+            return;
+          }
+          
+          //error
+        }
+
+      }catch(error){
+        console.log(error);
+      }
     };
 
     const renderContent = () => { 
@@ -57,7 +89,29 @@ function AddExercise({ navigation }) {
                         </View>
 
                         <View style={GlobalStyles.flex}>
-
+                          {exercisesList === null ?(
+                            <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                                <ActivityIndicator size="large" color="#FF8303" />
+                            </View>
+                          ):(
+                            <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                                {exercisesList.length === 0 ?(
+                                  <View style={styles.contentError}>
+                                    <View style = {styles.errorLottieContainer}>
+                                      <Text>EL GATO LOTTIE HERE</Text>
+                                    </View>
+                                    <View style = {styles.errorAddingContainer}>
+                                      <Text style = {styles.errorAddNormal}>Couldn't find what you are looking for?</Text>
+                                      <View>
+                                        <Text style={styles.errorAddOrange}>Try changing your filters<Text style = {styles.errorAddNormal}>.</Text></Text>
+                                      </View>
+                                    </View>
+                                  </View>
+                                ):(
+                                  <Text>Proper data here</Text>
+                                )}
+                            </View>
+                          ) }
                         </View>             
                     </View>
                 );
@@ -215,6 +269,34 @@ const styles = StyleSheet.create({
         marginLeft: 10,
         color: 'whitesmoke',
         fontFamily: 'Helvetica',
+      },
+      contentError:{
+        width: '100%',
+        height: '100%',
+        justifyContent: 'center', 
+        alignItems: 'center', 
+      },
+      errorLottieContainer: {
+        width: '100%',
+        height: '70%',
+      },
+      errorAddingContainer: {
+        width: '100%',
+        height: '30%',
+        justifyContent: 'center',
+        alignItems: 'center',
+        textAlign: 'center',
+      },
+      errorAddOrange: {
+        color: '#FF8303',
+        fontWeight: '600', //700?
+        fontSize: 18,
+        fontFamily: 'Helvetica',
+      },
+      errorAddNormal: {
+        fontSize: 18,
+        fontFamily: 'Helvetica',
+        color: '#000',
       },
 });
 
