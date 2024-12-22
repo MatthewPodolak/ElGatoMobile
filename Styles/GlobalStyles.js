@@ -68,5 +68,15 @@ export const GlobalStyles = StyleSheet.create({
     },
     white: {
         color: 'whitesmoke',
+    },
+
+    wide: {
+        width: '100%',
+    },
+    padding15: {
+        padding: 15,
+    },
+    minorSpacing: {
+        height: 30,
     }
 });

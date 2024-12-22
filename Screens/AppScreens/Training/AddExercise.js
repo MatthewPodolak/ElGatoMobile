@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput } from 'react-native';
+import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -7,6 +7,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
+import ExerciseDisplay from '../../../Components/Training/ExerciseDisplay.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
@@ -108,7 +109,12 @@ function AddExercise({ navigation }) {
                                     </View>
                                   </View>
                                 ):(
-                                  <Text>Proper data here</Text>
+                                  <ScrollView style={[GlobalStyles.wide, GlobalStyles.padding15]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                                    {exercisesList.map((exercise) => (
+                                      <ExerciseDisplay key={exercise.id} exercise={exercise} navigation={navigation}/>
+                                    ))}
+                                    <View style={GlobalStyles.minorSpacing}></View>
+                                  </ScrollView>
                                 )}
                             </View>
                           ) }
@@ -297,7 +303,7 @@ const styles = StyleSheet.create({
         fontSize: 18,
         fontFamily: 'Helvetica',
         color: '#000',
-      },
+      },      
 });
 
 export default AddExercise;
