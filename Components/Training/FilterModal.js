@@ -10,6 +10,7 @@ import ChevDown from '../../assets/main/Diet/chevron-down.svg';
 const FilterModal = ({
   visible,
   closeFilterModal,
+  activeFilters,
 }) => {
 
   const [selectedOption, setSelectedOption] = useState(null);
@@ -18,7 +19,14 @@ const FilterModal = ({
   const [selectedMuscles, setSelectedMuscles] = useState([]);
 
   const handleApplyFilters = () => {
-    console.log("applied");
+    let filterModel = {
+      selectedOption: selectedOption,
+      selectedEquipment: selectedEquipment,
+      selectedDifficulties: selectedDifficulties,
+      selectedMuscles: selectedMuscles,
+    };
+
+    closeFilterModal(filterModel);
   };
 
   const handleOptionPress = (id) => {
@@ -34,7 +42,7 @@ const FilterModal = ({
 
     const difficultyOptions = [
         { id: '0', label: 'Easy'},
-        { id: '1', label: 'Normal'},
+        { id: '1', label: 'Medium'},
         { id: '2', label: 'Hard'},
     ];
 
@@ -107,14 +115,14 @@ const FilterModal = ({
     >    
         <View style = {styles.elGatoAddOverlay}>
               <View style = {styles.content}>
-                <TouchableWithoutFeedback onPress={closeFilterModal}>
+                <TouchableWithoutFeedback onPress={() => closeFilterModal(activeFilters)}>
                     <View style = {styles.closingFeed}></View>
                 </TouchableWithoutFeedback>
                 <View style = {styles.contentCont}>
                     <ScrollView style = {styles.contentScrollable}>
                         <View style = {styles.topContainer}>
                             <Text style={[GlobalStyles.text18]}>Filters: </Text>
-                            <TouchableOpacity onPress={closeFilterModal}>
+                            <TouchableOpacity onPress={() => closeFilterModal(activeFilters)}>
                                 <Close width={18} height={18} fill={"#000"} />
                             </TouchableOpacity>
                         </View>

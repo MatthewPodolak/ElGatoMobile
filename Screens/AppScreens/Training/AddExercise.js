@@ -18,12 +18,67 @@ function AddExercise({ navigation }) {
     const { setIsAuthenticated } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('Search');
     const [exercisesList, setExercisesList] = useState(null);
+    const [filteredExercisesList, setFilteredExercisesList] = useState(null);
 
     const [isFilterModalActive, setIsFilterModalActive] = useState(false);
+    const [activeFilters, setActiveFilters] = useState(null);
+    const [debounceTimeout, setDebounceTimeout] = useState(null);
+    const [searchQuery, setSearchQuery] = useState('');
 
-    const closeFilterModal = () => {
+    const closeFilterModal = (filters) => {
       setIsFilterModalActive(false);
+      if (filters) {
+        setActiveFilters(filters);
+    
+        const selectedEquipmentLabels = filters?.selectedEquipment?.map(
+          (id) => equipmentOptions.find((option) => option.id === id)?.label
+        );
+    
+        const selectedDifficultiesLabels = filters?.selectedDifficulties?.map(
+          (id) => difficultyOptions.find((option) => option.id === id)?.label
+        );
+    
+        const selectedMuscleFilters = filters?.selectedMuscles;
+    
+        let filteredList = exercisesList.filter((item) => {
+          const matchesEquipment = selectedEquipmentLabels?.length
+            ? selectedEquipmentLabels.some(
+                (label) => label.toLowerCase() === item.equipment.toLowerCase()
+              )
+            : true;
+    
+          const matchesDifficulties = selectedDifficultiesLabels?.length
+            ? selectedDifficultiesLabels.some((label) => label === item.difficulty)
+            : true;
+    
+          const matchesMuscles = selectedMuscleFilters?.length
+            ? selectedMuscleFilters.some((muscle) => muscle === item.specificBodyPart)
+            : true;
+    
+          return matchesEquipment && matchesDifficulties && matchesMuscles;
+        });
+    
+        filteredList = filteredList.sort((a, b) => {
+          switch (filters.selectedOption) {
+            case '1':
+              return a.name.localeCompare(b.name);
+            case '2':
+              return b.name.localeCompare(a.name);
+            case '3':
+              return a.difficulty.localeCompare(b.difficulty);
+            case '4':
+              return b.difficulty.localeCompare(a.difficulty);
+            default:
+              return 0;
+          }
+        });
+    
+        setFilteredExercisesList(filteredList);
+      }
+      console.log(filters);
     };
+    
+    
 
     const navigateBack = () => {
         navigation.goBack();
@@ -51,12 +106,14 @@ function AddExercise({ navigation }) {
         const savedExercises = await AsyncStorage.getItem('allExercises');
         if (savedExercises) {
           setExercisesList(JSON.parse(savedExercises));
+          setFilteredExercisesList(JSON.parse(savedExercises));
         }else{
           const res = await TrainingDataService.getAllExerciseData(setIsAuthenticated, navigation);
           if(res.ok){
             const data = await res.json();
             await AsyncStorage.setItem('allExercises', JSON.stringify(data));
             setExercisesList(data);
+            setFilteredExercisesList(data);
             return;
           }
           
@@ -66,6 +123,104 @@ function AddExercise({ navigation }) {
       }catch(error){
         console.log(error);
       }
+    };
+
+    const equipmentOptions = [
+      { id: '0', label: 'None' },
+      { id: '1', label: 'Body' },
+      { id: '2', label: 'Cables' },
+      { id: '3', label: 'Dumbbells' },
+      { id: '4', label: 'Machine' },
+      { id: '5', label: 'Barbel' },
+      { id: '6', label: 'Other' },
+    ];
+
+    const difficultyOptions = [
+      { id: '0', label: 'Easy'},
+      { id: '1', label: 'Medium'},
+      { id: '2', label: 'Hard'},
+  ];
+
+    const handleSearch = (query) => {
+      const selectedEquipmentLabels = activeFilters?.selectedEquipment?.map(
+        (id) => equipmentOptions.find((option) => option.id === id)?.label
+      );
+
+      const selectedDifficultiesLabels = activeFilters?.selectedDifficulties?.map(
+        (id) => difficultyOptions.find((option) => option.id === id)?.label
+      );
+
+      const selectedMuscleFilters = activeFilters?.selectedMuscles;
+
+      if (
+        query.trim() === '' &&
+        !activeFilters?.selectedOption &&
+        !activeFilters?.selectedEquipment?.length &&
+        !activeFilters?.selectedDifficulties?.length &&
+        !activeFilters?.selectedMuscles?.length
+      ) {
+        setFilteredExercisesList(exercisesList);
+        return;
+      }
+    
+      const res = exercisesList
+        .filter((item) => {
+          const matchesQuery = query
+            ? item.name.toLowerCase().includes(query.toLowerCase())
+            : true;
+    
+            const matchesEquipment = selectedEquipmentLabels?.length
+            ? selectedEquipmentLabels.some(
+                (label) => label.toLowerCase() === item.equipment.toLowerCase()
+              )
+            : true;
+
+            const difficultiesMatch = selectedDifficultiesLabels?.length
+            ? selectedDifficultiesLabels.some(
+                (label) => label === item.difficulty
+              )
+            : true;
+
+            const matchesMuscles = selectedMuscleFilters?.length
+            ? selectedMuscleFilters.some((muscle) => muscle === item.specificBodyPart)
+            : true;
+          
+          return (
+            matchesQuery &&
+            matchesEquipment && 
+            difficultiesMatch &&
+            matchesMuscles
+          );
+        })
+        .sort((a, b) => {
+          switch (activeFilters?.selectedOption) {
+            case '1':
+              return a.name.localeCompare(b.name);
+            case '2':
+              return b.name.localeCompare(a.name);
+            case '3':
+              return a.difficulty.localeCompare(b.difficulty);
+            case '4':
+              return b.difficulty.localeCompare(a.difficulty);
+            default:
+              return 0;
+          }
+        });
+    
+      setFilteredExercisesList(res);
+    };
+
+    const handleTextChange = (text) => {
+      setSearchQuery(text);
+  
+      if (debounceTimeout) {
+        clearTimeout(debounceTimeout);
+      }
+  
+      const timeout = setTimeout(() => {
+        handleSearch(text);
+      }, 500);
+      setDebounceTimeout(timeout);
     };
 
     const renderContent = () => { 
@@ -81,6 +236,8 @@ function AddExercise({ navigation }) {
                                 selectionColor="#FF8303"
                                 placeholder="Search for ..."
                                 placeholderTextColor="#999"
+                                onChangeText={handleTextChange}
+                                value={searchQuery}
                                 />
                             </View>
                             </View>
@@ -97,13 +254,13 @@ function AddExercise({ navigation }) {
                         </View>
 
                         <View style={GlobalStyles.flex}>
-                          {exercisesList === null ?(
+                          {filteredExercisesList === null ?(
                             <View style={[GlobalStyles.center, GlobalStyles.flex]}>
                                 <ActivityIndicator size="large" color="#FF8303" />
                             </View>
                           ):(
                             <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-                                {exercisesList.length === 0 ?(
+                                {filteredExercisesList.length === 0 ?(
                                   <View style={styles.contentError}>
                                     <View style = {styles.errorLottieContainer}>
                                       <Text>EL GATO LOTTIE HERE</Text>
@@ -117,7 +274,7 @@ function AddExercise({ navigation }) {
                                   </View>
                                 ):(
                                   <ScrollView style={[GlobalStyles.wide, GlobalStyles.padding15]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-                                    {exercisesList.map((exercise) => (
+                                    {filteredExercisesList.map((exercise) => (
                                       <ExerciseDisplay key={exercise.id} exercise={exercise} navigation={navigation}/>
                                     ))}
                                     <View style={GlobalStyles.minorSpacing}></View>
@@ -169,7 +326,7 @@ function AddExercise({ navigation }) {
 
             {renderContent()}
 
-            <FilterModal  visible={isFilterModalActive} closeFilterModal={closeFilterModal}/>
+            <FilterModal  visible={isFilterModalActive} closeFilterModal={closeFilterModal} activeFilters={activeFilters}/>
 
         </SafeAreaView>
         
