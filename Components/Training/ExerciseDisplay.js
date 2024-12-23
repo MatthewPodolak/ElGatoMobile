@@ -5,10 +5,10 @@ import { BlurView } from 'expo-blur';
 import config from '../../Config';
 
 
-function ExerciseDisplay({exercise, navigation}) {
+function ExerciseDisplay({exercise, navigation, selected}) {
   return (
     <View style={styles.container}>
-        <BlurView style={styles.glassEffect} intensity={125} tint="light">
+        <BlurView style={[styles.glassEffect, selected ? styles.selectedStyle : styles.unselectedStyle]} intensity={125} tint="light">
             <View style={styles.topRow}>
                 <ImageBackground style={styles.mainImg} resizeMode="contain" source={{ uri: config.ipAddress + exercise.image }} />
             </View>
@@ -33,13 +33,19 @@ const styles = StyleSheet.create({
         borderRadius: 20,
         overflow: 'hidden',
         backgroundColor: 'rgba(255, 255, 255, 0.3)',
-        borderWidth: 1,
-        borderColor: 'rgba(000, 000, 000, 0.2)',
         shadowColor: '#000',
         shadowOffset: { width: 0, height: 5 },
         shadowOpacity: 0.2,
         shadowRadius: 10,
         elevation: 5,
+      },
+      selectedStyle: {
+        borderColor: '#FF8303',
+        borderWidth: 2,
+      },
+      unselectedStyle:{
+        borderColor: 'rgba(000, 000, 000, 0.2)',
+        borderWidth: 1,
       },
       topRow: {
         height: '75%',

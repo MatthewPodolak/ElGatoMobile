@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView } from 'react-native';
+import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -13,17 +14,34 @@ import FilterModal from '../../../Components/Training/FilterModal.js';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
-
-function AddExercise({ navigation }) { 
+function AddExercise({ navigation, route }) { 
     const { setIsAuthenticated } = useContext(AuthContext);
     const [activeTab, setActiveTab] = useState('Search');
     const [exercisesList, setExercisesList] = useState(null);
     const [filteredExercisesList, setFilteredExercisesList] = useState(null);
+    const [selectedExercises, setSelectedExercises] = useState([]);
 
     const [isFilterModalActive, setIsFilterModalActive] = useState(false);
     const [activeFilters, setActiveFilters] = useState(null);
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
+
+    const handleLongPressExercise = (id) => {
+      setSelectedExercises((prev) => {
+        if (prev.includes(id)) {
+          return prev.filter((i) => i !== id);
+        } else {
+          return [...prev, id];
+        }
+      });
+    };
+    
+    useEffect(() => {
+      if (route.params?.exercise) {
+          setSelectedExercises((prev) => [...prev, route.params.exercise.id]);
+      }
+    }, [route.params?.exercise]);
+
 
     const closeFilterModal = (filters) => {
       setIsFilterModalActive(false);
@@ -78,7 +96,9 @@ function AddExercise({ navigation }) {
       console.log(filters);
     };
     
-    
+    const inspectExercise = (exercise) => {
+        navigation.navigate('InspectExercise', { exercise })
+    };
 
     const navigateBack = () => {
         navigation.goBack();
@@ -275,7 +295,24 @@ function AddExercise({ navigation }) {
                                 ):(
                                   <ScrollView style={[GlobalStyles.wide, GlobalStyles.padding15]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
                                     {filteredExercisesList.map((exercise) => (
-                                      <ExerciseDisplay key={exercise.id} exercise={exercise} navigation={navigation}/>
+                                      <GestureHandlerRootView key={exercise.id}>
+                                        <LongPressGestureHandler                            
+                                          onHandlerStateChange={({ nativeEvent }) => {
+                                          if (nativeEvent.state === 4) {
+                                            handleLongPressExercise(exercise.id);
+                                          }
+                                          }}
+                                          minDurationMs={200}
+                                        >
+                                        <TouchableOpacity activeOpacity={1} onPress={() => inspectExercise(exercise)}>
+                                          <ExerciseDisplay
+                                            exercise={exercise}
+                                            navigation={navigation}
+                                            selected={selectedExercises?.includes(exercise.id)}
+                                          />
+                                        </TouchableOpacity>
+                                        </LongPressGestureHandler>
+                                      </GestureHandlerRootView>                                     
                                     ))}
                                     <View style={GlobalStyles.minorSpacing}></View>
                                   </ScrollView>
