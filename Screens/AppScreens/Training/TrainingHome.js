@@ -45,7 +45,7 @@ function TrainingHome({ navigation }) {
             {/* EL GATO BASED ON THIS WEEK ALRD FINISHED TRAINIGNS */}
             <View style = {styles.emptyGatoLottie}></View>
             <View style = {styles.emptySearchText}>
-                <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Nothing? </Text>Get yo ass to work</Text>
+                <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work</Text>
             </View>
           </View>
         ) : (
@@ -106,7 +106,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptySearchTxt: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Helvetica',
     fontWeight: '500',
     textAlign: 'center',

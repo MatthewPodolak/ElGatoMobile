@@ -8,8 +8,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
+import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
+
 import ExerciseDisplay from '../../../Components/Training/ExerciseDisplay.js';
 import FilterModal from '../../../Components/Training/FilterModal.js';
+import LikedExerciseDisplay from '../../../Components/Training/LikedExercise.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
@@ -26,6 +29,117 @@ function AddExercise({ navigation, route }) {
     const [debounceTimeout, setDebounceTimeout] = useState(null);
     const [searchQuery, setSearchQuery] = useState('');
 
+    const [isLikedListLoading, setIsLikedListLoading] = useState(true);
+    const [likedExercisesList, setLikedExercisesList] = useState([]);
+    const [likedExercisePicked, setLikedExercisePicked] = useState([]);
+    const [likedExercisePickedIndex, setLikedExercisePickedIndex] = useState([]);
+    const [likedExercisesIndexesHold, setLikedExercisesIndexesHold] = useState([]);
+    const [likedExercisesToDelete, setLikedExercisesToDelete] = useState([]);
+
+    const addExercisesToTrainingDay = () => {
+      console.log("POLUBIONE DODANE -> " + likedExercisePicked);
+      console.log("DODANE -> " + selectedExercises);
+    };
+
+    const removeExercisesFromLiked = async () => {
+      setLikedExercisesList((prevList) => {
+        const updatedList = prevList.filter(
+          (exercise) =>
+            !likedExercisesToDelete.some((deleteExercise) => 
+              JSON.stringify(deleteExercise) === JSON.stringify(exercise)
+            )
+        );
+    
+        return updatedList;
+      });   
+  
+      try{
+        const res = await TrainingDataService.removeExercisesFromLiked(setIsAuthenticated, navigation, likedExercisesToDelete);
+        if(res.ok){         
+          setLikedExercisesToDelete([]);
+          setLikedExercisesIndexesHold([]);
+          return;
+        }
+        //error
+        console.log("error");
+
+      }catch(error){
+        //ERROR
+        console.log(error);
+      }
+    };
+
+    const addLikedExercise = (indexx, exercise) => {
+      setLikedExercisePicked((prev) => {
+        if (prev?.includes(exercise)) {
+          return prev.filter((i) => i !== exercise);
+        } else {
+          return [...(prev || []), exercise];
+        }
+      });
+    
+      setLikedExercisePickedIndex((prev) => {
+        if (prev?.includes(indexx)) {
+          return prev.filter((i) => i !== indexx);
+        } else {
+          return [...(prev || []), indexx];
+        }
+      });
+    
+      //Remove from del list
+      setLikedExercisesIndexesHold((prev) => {
+        if (prev?.includes(indexx)) {
+          return prev.filter((i) => i !== indexx);
+        } else {
+          return prev || [];
+        }
+      });
+    
+      setLikedExercisesToDelete((prev) => {
+        if (prev?.includes(exercise)) {
+          return prev.filter((i) => i !== exercise);
+        } else {
+          return prev || [];
+        }
+      });
+    };
+    
+    const handleLongPressLikedExercise = (index, exercise) => {
+      setLikedExercisesIndexesHold((prev) => {
+        if (prev?.includes(index)) {
+          return prev.filter((i) => i !== index);
+        } else {
+          return [...(prev || []), index];
+        }
+      });
+    
+      setLikedExercisesToDelete((prev) => {
+        if (prev?.includes(exercise)) {
+          return prev.filter((i) => i !== exercise);
+        } else {
+          return [...(prev || []), exercise];
+        }
+      });
+    
+      //Remove from add listt
+      setLikedExercisePicked((prev) => {
+        if (prev?.includes(exercise)) {
+          return prev.filter((i) => i !== exercise);
+        } else {
+          return prev || [];
+        }
+      });
+    
+      setLikedExercisePickedIndex((prev) => {
+        if (prev?.includes(index)) {
+          return prev.filter((i) => i !== index);
+        } else {
+          return prev || [];
+        }
+      });
+    };
+    
+
     const handleLongPressExercise = (id) => {
       setSelectedExercises((prev) => {
         if (prev.includes(id)) {
@@ -40,7 +154,18 @@ function AddExercise({ navigation, route }) {
       if (route.params?.exercise) {
           setSelectedExercises((prev) => [...prev, route.params.exercise.id]);
       }
-    }, [route.params?.exercise]);
+      if (route.params?.changedState) {
+        setLikedExercisesList((prev) => {
+            const exists = prev.some((item) => item.id === route.params.changedState.id);
+            if (exists) {
+                return prev.filter((item) => item.id !== route.params.changedState.id);
+            } else {
+                return [...prev, route.params.changedState];
+            }
+        });
+    }
+    
+    }, [route.params?.exercise, route.params?.changedState]);
 
 
     const closeFilterModal = (filters) => {
@@ -97,7 +222,7 @@ function AddExercise({ navigation, route }) {
     };
     
     const inspectExercise = (exercise) => {
-        navigation.navigate('InspectExercise', { exercise })
+        navigation.navigate('InspectExercise', { exercise, isLiked: likedExercisesList.some(liked => liked.id === exercise.id)  })
     };
 
     const navigateBack = () => {
@@ -106,6 +231,9 @@ function AddExercise({ navigation, route }) {
 
     useEffect(() => {
       getAllExercises();
+      if(likedExercisesList?.length === 0){
+        getLikedExercises();
+      }
     }, []);
 
     const setActiveTabFun = async (tab) => {
@@ -113,12 +241,34 @@ function AddExercise({ navigation, route }) {
         switch(tab){
             case "Search":
               await getAllExercises();
+              if(likedExercisesList?.length === 0){
+                await getLikedExercises();
+              }
                 break;
             case "Favs":
+              await getLikedExercises();
                 break;
             case "New":
                 break;
         }
+    };
+
+    const getLikedExercises = async () => {
+      try{
+        const res = await TrainingDataService.getLikedExercises(setIsAuthenticated, navigation);
+        if(res.ok){
+          const data = await res.json();
+          console.log(data);
+          setLikedExercisesList(data);
+          setIsLikedListLoading(false);
+          return;
+        }
+        //error
+        console.log("error");
+      }catch(error){
+        //Error
+        console.log(error);
+      }
     };
 
     const getAllExercises = async () => {
@@ -324,7 +474,48 @@ function AddExercise({ navigation, route }) {
                 );
             case "Favs":
                 return(
-                    <Text>fav</Text>
+                    <View style={GlobalStyles.flex}>
+                      {isLikedListLoading ?(
+                        <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                          <ActivityIndicator size="large" color="#FF8303" />
+                        </View>
+                      ):(
+                        <View style={[GlobalStyles.flex]}>
+                          {likedExercisesList !== null && likedExercisesList.length > 0 ?(
+                        <ScrollView style={GlobalStyles.flex} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                          {likedExercisesList.map((exercise, index) => (
+                            <GestureHandlerRootView
+                              key={index}
+                            >
+                              <LongPressGestureHandler                            
+                                onHandlerStateChange={({ nativeEvent }) => {
+                                if (nativeEvent.state === 4) {
+                                  handleLongPressLikedExercise(index, exercise);
+                                 }
+                                }}
+                                  minDurationMs={200}
+                              >
+                                <View><LikedExerciseDisplay indexx={index} exercise={exercise} pickExercise={addLikedExercise} isSetted={likedExercisesIndexesHold.includes(index)} isPicked={likedExercisePickedIndex.includes(index)} /></View>
+                            </LongPressGestureHandler>
+                          </GestureHandlerRootView>
+                          ))}
+                        </ScrollView>
+                      ):(
+                        <View style={styles.contentError}>
+                          <View style = {styles.errorLottieContainer}>
+                              <Text>EL GATO LOTTIE HERE</Text>
+                          </View>
+                          <View style = {styles.errorAddingContainer}>
+                            <Text style = {styles.errorAddNormal}>There is nothing here yet!</Text>
+                          <View>
+                            <Text style={styles.errorAddOrange}>Your favourites will appear here<Text style = {styles.errorAddNormal}>.</Text></Text>
+                          </View>
+                          </View>
+                        </View>
+                      )}
+                        </View>
+                      )}                    
+                    </View>
                 );
             case "New":
                 return(
@@ -349,9 +540,17 @@ function AddExercise({ navigation, route }) {
                     <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>Exercises</Text>
                 </View>
                 <View style = {styles.topContIngReport}>
-                <TouchableOpacity>
-                    <CheckIcon width={37} height={37} fill={'#fff'} />
-                </TouchableOpacity>
+                <View>
+                    {likedExercisesToDelete !== null && likedExercisesToDelete.length > 0 ?(
+                      <TouchableOpacity onPress={() => removeExercisesFromLiked()}>
+                        <DeleteIcon width={26} height={26} fill={"#fff"} />
+                      </TouchableOpacity>                
+                    ):(
+                      <TouchableOpacity onPress={() => addExercisesToTrainingDay()}>
+                        <CheckIcon width={37} height={37} fill={'#fff'} />
+                      </TouchableOpacity>
+                    )}
+                </View>
                 </View>
             </View>
 

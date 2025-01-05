@@ -1,5 +1,5 @@
-import React, { useState, useContext, useEffect } from 'react';
-import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView, ImageBackground } from 'react-native';
+import React, { useState, useContext, useEffect, useRef } from 'react';
+import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
@@ -8,6 +8,7 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import ChevUp from '../../../assets/main/Diet/chevron-up.svg';
 import ChevDown from '../../../assets/main/Diet/chevron-down.svg';
 import HeartIcon from '../../../assets/main/Diet/heartEmpty.svg';
+import HeartIconFull from '../../../assets/main/Diet/heartFull.svg';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import config from '../../../Config';
@@ -16,21 +17,119 @@ import TrainingDataService from '../../../Services/ApiCalls/TrainingData/Trainin
 
 function InspectExercise({ navigation, route }) { 
     const { setIsAuthenticated } = useContext(AuthContext);
-    const { exercise } = route.params;
+    const { exercise, isLiked } = route.params;
     const [currentImage, setCurrentImage] = useState(`${config.ipAddress}${exercise.image}`);
     const [isDescExpanded, setIsDescExpanded] = useState(true);
     const [isMuscleExpanded, setIsMuscleExpanded] = useState(true);
-    
-    const navigateBack = () => {
-        navigation.goBack();
+    const [isExerciseLiked, setIsExerciseLiked] = useState(false);
+    const [startingState, setStartingState] = useState(null);
+
+    const scaleValue = useRef(new Animated.Value(1)).current;
+
+    const likeActionCount = useRef(0);
+    const isLikeThrottleActive = useRef(false);
+    const queLikeState = useRef(null);
+
+    const MAX_LIKE_ST = 3;
+    const THROTTLE_TIME_LIKES = 3000;
+
+    const navigateBack = () => {    
+        if(startingState != isExerciseLiked){
+            let changedState = {
+                own: false,
+                name: exercise.name,
+                id: exercise.id,
+            }
+
+            navigation.navigate('AddExercise', { changedState }); 
+        }else{
+            navigation.goBack();
+        }
     };
 
     const addExercise = () => {
-        navigation.navigate('AddExercise', { exercise }); 
+        if(startingState != isExerciseLiked){
+            let changedState = {
+                own: false,
+                name: exercise.name,
+                id: exercise.id,
+            }
+            navigation.navigate('AddExercise', { exercise, changedState }); 
+        }else{
+            navigation.navigate('AddExercise', { exercise }); 
+        }
     };
+    
+    const likeExercise = () => {
+        animateHeart();
+        if(isLikeThrottleActive.current){
+         queLikeState.current = !queLikeState.current;
+         setIsExerciseLiked(!isExerciseLiked);
+         return;
+        }
+ 
+        const newState = !isExerciseLiked;
+        setIsExerciseLiked(newState);
+        likeActionCount.current++;
+        likeExerciseAsync(newState);
+
+        if(likeActionCount.current >= MAX_LIKE_ST){
+            isLikeThrottleActive.current = true;
+
+            setTimeout(() =>{
+                isLikeThrottleActive.current = false;
+                likeActionCount.current = 0;
+
+                if(queLikeState.current != null){
+                    likeExerciseAsync(queLikeState.current);
+                    setIsExerciseLiked(queLikeState.current);
+                }
+            }, THROTTLE_TIME_LIKES);
+        }
+     };
      
+     const likeExerciseAsync = async (liked) => {
+         try {
+             let model = {
+                 own: false,
+                 name: exercise.name,
+                 id: exercise.id,               
+             };
+ 
+             if (liked) {             
+                 await TrainingDataService.addExerciseToLiked(setIsAuthenticated, navigation, model);
+             } else {
+                 let arrayModel = [
+                     model
+                 ];
+                 await TrainingDataService.removeExercisesFromLiked(setIsAuthenticated, navigation, arrayModel);
+             }
+         } catch (error) {
+             console.error("Error ", error);
+         }
+     };
+    
+
+    const animateHeart = () => {
+        Animated.sequence([
+          Animated.timing(scaleValue, {
+            toValue: 1.5,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+          Animated.timing(scaleValue, {
+            toValue: 1,
+            duration: 150,
+            useNativeDriver: true,
+          }),
+        ]).start();
+    };
 
     useEffect(() => {
+        console.log(isLiked);     
+        setIsExerciseLiked(isLiked);
+        setStartingState(isLiked);
+
         const interval = setInterval(() => {
             setCurrentImage((prev) =>
                 prev === `${config.ipAddress}${exercise.image}`
@@ -54,8 +153,14 @@ function InspectExercise({ navigation, route }) {
                     <Text numberOfLines={2} ellipsizeMode="tail" style={styles.topNameText}>{exercise.name}</Text>
                 </View>
                 <View style = {styles.topContIngReport}>
-                <TouchableOpacity>
-                    <HeartIcon width={28} height={28} fill={'#fff'} />
+                <TouchableOpacity onPress={() => likeExercise()}>
+                    <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                        {isExerciseLiked ? (
+                            <HeartIconFull width={28} height={28} fill={'#fff'} />
+                        ):(
+                            <HeartIcon width={28} height={28} fill={'#fff'} />
+                        )}
+                    </Animated.View>
                 </TouchableOpacity>
                 </View>
             </View>
