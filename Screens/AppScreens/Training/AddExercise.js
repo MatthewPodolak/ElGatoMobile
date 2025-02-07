@@ -19,6 +19,7 @@ import TrainingDataService from '../../../Services/ApiCalls/TrainingData/Trainin
 
 function AddExercise({ navigation, route }) { 
     const { setIsAuthenticated } = useContext(AuthContext);
+    const currentDate = route.params?.selectedDate;
     const [activeTab, setActiveTab] = useState('Search');
     const [exercisesList, setExercisesList] = useState(null);
     const [filteredExercisesList, setFilteredExercisesList] = useState(null);
@@ -36,9 +37,42 @@ function AddExercise({ navigation, route }) {
     const [likedExercisesIndexesHold, setLikedExercisesIndexesHold] = useState([]);
     const [likedExercisesToDelete, setLikedExercisesToDelete] = useState([]);
 
-    const addExercisesToTrainingDay = () => {
-      console.log("POLUBIONE DODANE -> " + likedExercisePicked);
-      console.log("DODANE -> " + selectedExercises);
+    const addExercisesToTrainingDay = async () => {
+      if(selectedExercises.length === 0 && likedExercisePicked.length === 0){
+        navigation.goBack();
+        return;
+      }
+
+      let exerciseNames = [];
+      selectedExercises.forEach(element => {
+          exerciseNames.push(element);
+      });
+
+      likedExercisePicked.forEach(element => {
+          exerciseNames.push(element.name);
+      });
+
+      let model = {
+        date: currentDate,
+        name: exerciseNames
+      };
+
+      try{
+        const res = await TrainingDataService.addExercisesToTrainingDay(setIsAuthenticated, navigation, model);
+        if(res.ok){
+          navigation.navigate('TrainingHome', { updatedExercises: model });
+          return;
+        }
+
+        //error
+        console.log("errorek");
+        const errorData = await res.json();
+        console.log(errorData);
+
+      }catch(error){
+        console.log(error);
+      }
+
     };
 
     const removeExercisesFromLiked = async () => {
@@ -449,7 +483,7 @@ function AddExercise({ navigation, route }) {
                                         <LongPressGestureHandler                            
                                           onHandlerStateChange={({ nativeEvent }) => {
                                           if (nativeEvent.state === 4) {
-                                            handleLongPressExercise(exercise.id);
+                                            handleLongPressExercise(exercise.name);
                                           }
                                           }}
                                           minDurationMs={200}
@@ -458,7 +492,7 @@ function AddExercise({ navigation, route }) {
                                           <ExerciseDisplay
                                             exercise={exercise}
                                             navigation={navigation}
-                                            selected={selectedExercises?.includes(exercise.id)}
+                                            selected={selectedExercises?.includes(exercise.name)}
                                           />
                                         </TouchableOpacity>
                                         </LongPressGestureHandler>

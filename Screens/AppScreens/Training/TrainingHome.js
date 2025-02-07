@@ -1,13 +1,20 @@
-import React, { useState, useRef } from 'react';
-import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator } from 'react-native';
+import React, { useState, useRef, useEffect, useContext } from 'react';
+import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { closeOptionsAnimation, showOptionsAnimation } from '../../../Animations/ButtonAnimation.js';
+import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
+import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
+import TrainingDayExerciseDisplay from '../../../Components/Training/TrainingDayExerciseDisplay.js';
 import Calendar from '../../../Components/Diet/Calendar';
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 
-function TrainingHome({ navigation }) {
+
+function TrainingHome({ navigation, route }) {
+  const { setIsAuthenticated } = useContext(AuthContext);
+  const [measureType, setMeasureType] = useState("metric");
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
@@ -17,9 +24,109 @@ function TrainingHome({ navigation }) {
   const iconAnimation = useRef(new Animated.Value(0)).current;
 
   const handleDateSelect = async (date) => {
-    setSelectedDate(date);
-    console.log(date);
+    if((date + 'T00:00:00Z') === selectedDate){
+      return;
+    }
+
+    setSelectedDate(date + 'T00:00:00Z');
+    
+    if (selectedDate !== null) {
+      await getTrainingDay(date + 'T00:00:00Z');
+    }
   }
+
+  useEffect(() => {
+    if (route.params?.updatedExercises) {
+        const receivedExercisesNames = route.params.updatedExercises.name;
+        const receivedDate = route.params.updatedExercises.date;
+
+        if (selectedDate === receivedDate) {
+
+            setTrainingData(prevData => {
+                const maxPublicId = prevData?.exercises?.reduce(
+                    (max, exercise) => Math.max(max, exercise.exercise.publicId), 0
+                ) || 0;
+
+                const newExercises = receivedExercisesNames.map((name, index) => ({
+                    exercise: {
+                        name: name,
+                        publicId: maxPublicId + 1 + index,
+                        series: []
+                    },
+                    pastData: null
+                }));
+
+                return {
+                    ...prevData,
+                    exercises: [...(prevData?.exercises || []), ...newExercises]
+                };
+            });
+
+            (async () => {
+                try {
+                    const updatedData = await getTrainingDay(receivedDate, false);
+                    if (updatedData) {
+                        setTrainingData(updatedData);
+                    }
+                } catch (error) {
+                    console.error("Error fetching training day", error);
+                    //Error
+                }
+            })();
+        }
+    }
+  }, [route.params?.updatedExercises]);
+
+
+  useEffect(() => {
+      getMeasureType();
+
+      if (!selectedDate) {
+        getTrainingDay();
+      }
+      
+  }, []);
+
+  const getMeasureType = async () => {
+    try{
+      var res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
+      setMeasureType(res);
+    }catch(ex){
+      console.log(ex);
+      //error
+    }
+  };
+
+  const getTrainingDay = async (specifiedDate, canBeBlocked = true) => {
+    let dates;
+
+    if(specifiedDate){
+      dates = specifiedDate;
+    }else{
+      let date = new Date();
+      dates = date.toISOString().split("T")[0] + "T00:00:00Z";
+    }
+    
+    if(canBeBlocked){
+      setIsLoading(true);
+    }
+
+    try{
+      const res = await TrainingDataService.getTrainingDay(setIsAuthenticated, navigation, dates);
+      if(!res.ok){
+        //Error
+        return;
+      }
+
+      const data = await res.json();
+      setIsLoading(false);
+      setTrainingData(data);
+
+    }catch(error){
+      console.log(error);
+      //Error
+    }
+  };
 
   const optionButtonPressed = () => {
     if (optionsVisible) {
@@ -30,27 +137,36 @@ function TrainingHome({ navigation }) {
   };
 
   const navigateToAddExercise = () => {
-    navigation.navigate('AddExercise');
+    navigation.navigate('AddExercise', { selectedDate });
   };
+
 
   return (
     <SafeAreaView style={styles.container}>
       <Calendar onDateSelect={handleDateSelect} />     
-        {isLoading ? (
+      {isLoading ? (
           <View style={[GlobalStyles.center, GlobalStyles.flex]}>
             <ActivityIndicator size="large" color="#FF8303" />
           </View>
-        ) : (trainingData == null && !isLoading) ? (
-          <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-            {/* EL GATO BASED ON THIS WEEK ALRD FINISHED TRAINIGNS */}
-            <View style = {styles.emptyGatoLottie}></View>
-            <View style = {styles.emptySearchText}>
-                <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work</Text>
-            </View>
-          </View>
         ) : (
-          <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-          </View>
+          trainingData?.exercises && trainingData.exercises.length > 0 ? (
+            <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              <View style={styles.topMargin}></View>
+              {trainingData.exercises.map((model, index) => (
+                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} />
+              ))}
+              <View style={styles.bottomMargin}></View>
+            </ScrollView>
+          ) : (
+            <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+              <View style={styles.emptyGatoLottie}></View>
+              <View style={styles.emptySearchText}>
+                <Text style={styles.emptySearchTxt}>
+                  <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
+                </Text>
+              </View>
+            </View>
+          )
         )}
         
         <Animated.View
@@ -144,7 +260,12 @@ const styles = StyleSheet.create({
     paddingTop: 2,
     paddingBottom: 2,
   },
-
+  topMargin: {
+    height: 15,
+  },
+  bottomMargin: {
+    height: 80,
+  }
 });
 
 export default TrainingHome;

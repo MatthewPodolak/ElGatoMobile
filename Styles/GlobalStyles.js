@@ -32,6 +32,10 @@ export const GlobalStyles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontSize: 32,
     },
+    text32: {
+        fontFamily: 'Helvetica',
+        fontSize: 32,
+    },
     bold: {
         fontWeight: '700',
     },
@@ -59,12 +63,17 @@ export const GlobalStyles = StyleSheet.create({
         alignItems: 'flex-start', 
         paddingLeft: 10,        
     },
-
+    centeredText: {
+        textAlign: 'center',
+    },
     orange: {
         color: '#FF8303',
     },
     red: {
         color: "red",
+    },
+    green: {
+        color: "#3E7B27",
     },
     white: {
         color: 'whitesmoke',
@@ -78,5 +87,8 @@ export const GlobalStyles = StyleSheet.create({
     },
     minorSpacing: {
         height: 30,
+    },
+    floatRight: {
+        textAlign: 'right',
     }
 });

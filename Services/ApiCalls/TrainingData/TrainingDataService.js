@@ -94,4 +94,48 @@ export default class TrainingDataService {
       return response;
     };
 
+    static async getTrainingDay(setIsAuthenticated, navigation, date){
+      const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        var response = await fetchWithTimeout(
+          `${config.ipAddress}/api/Training/GetTrainingDay?date=${date}`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+          config.longTimeout
+      );
+
+      return response;
+    }
+
+    static async addExercisesToTrainingDay(setIsAuthenticated, navigation, data){
+      const token = await AuthService.getToken();
+      if(!token || AuthService.isTokenExpired(token)){
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      var response = await fetchWithTimeout(
+        `${config.ipAddress}/api/Training/AddExercisesToTrainingDay`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        },
+        config.longTimeout
+    );
+
+    return response;
+    }
 }
