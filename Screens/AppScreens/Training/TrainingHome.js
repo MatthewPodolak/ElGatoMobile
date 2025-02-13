@@ -18,10 +18,292 @@ function TrainingHome({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
+  
+  const [seriesAddingList, setSeriesAddingList] = useState([]);
+  const [serieRemovalList, setSeriesRemovalList] = useState([]);
+  const [temporarlyRemovedSeries, setTemporarlyRemovedSeries] = useState([]);
 
   const [optionsVisible, setOptionsVisible] = useState(false);
   const optionsAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
+  const timeoutRef = useRef(null);
+  const timeoutRefRemoval = useRef(null);
+
+  const serieRemoval = (data, tempData) => {
+    data.date = selectedDate;
+
+    if (timeoutRefRemoval.current) {
+      clearTimeout(timeoutRefRemoval.current);
+    }
+
+    temporarlyRemovedSeries.push(tempData);
+
+    setSeriesRemovalList((prevList) => {
+      const index = prevList.findIndex(
+        (item) =>
+          item.exerciseName === data.exerciseName &&
+          item.exerciseId === data.exerciseId
+      );
+  
+      if (index === -1) {
+        const newRecord = {
+          exerciseName: data.exerciseName,
+          exerciseId: data.exerciseId,
+          date: data.date,
+          seriesToRemoveId: [data.serieId],
+        };
+        return [...prevList, newRecord];
+      } else {
+        const updatedRecord = {
+          ...prevList[index],
+          seriesToRemoveId: [
+            ...prevList[index].seriesToRemoveId,
+            data.serieId,
+          ],
+        };
+  
+        return [
+          ...prevList.slice(0, index),
+          updatedRecord,
+          ...prevList.slice(index + 1),
+        ];
+      }
+    });
+
+    timeoutRefRemoval.current = setTimeout(() => {
+      removeSeriesRequest(serieRemovalListRef.current);
+    }, 3000);
+
+  };
+  
+  const removeSeriesRequest = async (currentList) => {
+    const sortedList = [...currentList].sort((a, b) => a.exerciseId - b.exerciseId);
+    let groupedPastForExercises = [];
+
+    sortedList.forEach(record => {
+      let existingPastData = groupedPastForExercises.find((ex) => ex.exerciseName === record.exerciseName);
+      if (!existingPastData) {
+        const exercisesFound = trainingData.exercises.filter(item =>
+          item.exercise.name.toLowerCase() === record.exerciseName.toLowerCase()
+        );
+
+        let pastDataSeries = [];
+        let counter = 0;
+
+        exercisesFound.forEach(ex => {
+          ex.exercise.series.forEach(serie => {
+            let pastDataSerie = {
+              publicId: counter,
+              repetitions: serie.repetitions,
+              weightKg: serie.weightKg,
+              weightLbs: serie.weightLbs,
+            };
+            pastDataSeries.push(pastDataSerie);
+            counter++;
+          });
+        });
+        
+        let pastExData = {
+          date: selectedDate,
+          series: pastDataSeries,
+        };
+
+        let exercisePastDataModel = {
+          exerciseName: record.exerciseName,
+          exerciseData: pastExData
+        };
+
+        groupedPastForExercises.push(exercisePastDataModel);
+      }
+    });
+
+    const finalModel = sortedList.map((element) => ({
+      date: element.date,
+      exercisePublicId: element.exerciseId,
+      historyUpdate: groupedPastForExercises.find(ex => ex.exerciseName === element.exerciseName)??[],
+      seriesIdToRemove: element.seriesToRemoveId,
+    }));
+
+    try{
+      const res = await TrainingDataService.removeSeriesFromExercisses(setIsAuthenticated, navigation, finalModel);
+      if(!res.ok){
+        //error
+        addRemovedSeriesDueToUpdateError();
+        console.log("error");
+      }
+
+    }
+    catch(error){
+      //error
+      addRemovedSeriesDueToUpdateError();
+      console.log("error");
+    }
+    finally{
+      setTemporarlyRemovedSeries([]);
+      setSeriesRemovalList([]);
+    }
+  };
+
+  const serieAddition = (data) => {
+    data.date = selectedDate;
+  
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+  
+    setSeriesAddingList((prevList) => {
+      const updatedList = prevList.map((record) => ({
+        ...record,
+        series: [...record.series],
+      }));
+  
+      const existingIndex = updatedList.findIndex(
+        (record) =>
+          record.exerciseName === data.exerciseName &&
+          record.publicId === data.higherId
+      );
+  
+      if (existingIndex !== -1) {
+        updatedList[existingIndex] = {
+          ...updatedList[existingIndex],
+          series: [
+            ...updatedList[existingIndex].series,
+            {
+              repetitions: data.repetitions,
+              weightKg: data.weightKg,
+              weightLbs: data.weightLbs,
+            },
+          ],
+        };
+      } else {
+        updatedList.push({
+          exerciseName: data.exerciseName,
+          publicId: data.higherId,
+          date: data.date,
+          series: [
+            {
+              repetitions: data.repetitions,
+              weightKg: data.weightKg,
+              weightLbs: data.weightLbs,
+            },
+          ],
+        });
+      }
+  
+      return updatedList;
+    });
+  
+    timeoutRef.current = setTimeout(() => {
+      addSeriesRequest(seriesAddingListRef.current);
+    }, 3000);
+  };
+  
+  //rem 
+  const seriesAddingListRef = useRef(seriesAddingList);
+  useEffect(() => {
+    seriesAddingListRef.current = seriesAddingList;
+  }, [seriesAddingList]);
+
+  const serieRemovalListRef = useRef(serieRemovalList);
+  useEffect(() => {
+    serieRemovalListRef.current = serieRemovalList;
+  }, [serieRemovalList]);
+  
+  const addSeriesRequest = async (currentList) => {
+    const sortedList = [...currentList].sort((a, b) => a.publicId - b.publicId);
+  
+    let groupedPastForExercises = [];
+  
+    sortedList.forEach((record) => {
+      let existingExercise = groupedPastForExercises.find((ex) => ex.exerciseName === record.exerciseName);
+  
+      if (!existingExercise) {
+        const exercisesFound = trainingData.exercises.filter(item =>
+          item.exercise.name.toLowerCase() === record.exerciseName.toLowerCase()
+        );
+
+        let pastDataSeries = [];
+        let counter = 0;
+
+        exercisesFound.forEach(ex => {
+          ex.exercise.series.forEach(serie => {
+            let pastDataSerie = {
+              publicId: counter,
+              repetitions: serie.repetitions,
+              weightKg: serie.weightKg,
+              weightLbs: serie.weightLbs,
+            };
+            pastDataSeries.push(pastDataSerie);
+            counter++;
+          });
+        });
+        
+        let pastExData = {
+          date: selectedDate,
+          series: pastDataSeries,
+        };
+
+        let exercisePastDataModel = {
+          exerciseName: record.exerciseName,
+          exerciseData: pastExData
+        };
+
+        groupedPastForExercises.push(exercisePastDataModel);
+      }
+    });
+  
+    const finalModel = sortedList.map((element) => ({
+      date: element.date,
+      publicId: element.publicId,
+      historyUpdate: groupedPastForExercises.find(ex => ex.exerciseName === element.exerciseName)??[],
+      series: element.series,
+    }));
+  
+  
+    try {
+      const res = await TrainingDataService.addSeriesToExercisses(setIsAuthenticated, navigation, finalModel);
+      if (!res.ok) {
+        //ERROR
+        removeInsertedSeriesDueToUpdateError(finalModel);
+      }
+    } catch (error) {
+      //ERROR
+      console.log(error);
+      removeInsertedSeriesDueToUpdateError(finalModel);
+    } finally {
+      setSeriesAddingList([]);
+    }
+  };
+  
+
+  const removeInsertedSeriesDueToUpdateError = (finalModel) => {
+    finalModel.forEach(element => {
+      let id = element.publicId;
+      let removeCount = element.series.length;
+
+      let target = trainingData.exercises.find(ex => ex.exercise.publicId === id);
+
+      if (target) {
+          let series = target.exercise.series;
+            
+          if (series.length >= removeCount) {
+            target.exercise.series = series.slice(0, series.length - removeCount);
+          }
+      }
+
+    });
+  };
+
+  const addRemovedSeriesDueToUpdateError = () => {
+    temporarlyRemovedSeries.forEach(record => {
+      let targetedExercise = trainingData.exercises.find(ex => ex.exercise.publicId === record.exerciseId && ex.exercise.name === record.exerciseName);
+      
+      if(targetedExercise){
+        targetedExercise.exercise.series.push(record.exerciseData);
+        targetedExercise.exercise.series.sort((a, b) => a.publicId - b.publicId);
+      }
+    });
+  };
 
   const handleDateSelect = async (date) => {
     if((date + 'T00:00:00Z') === selectedDate){
@@ -77,6 +359,13 @@ function TrainingHome({ navigation, route }) {
     }
   }, [route.params?.updatedExercises]);
 
+  useEffect(() => {
+    if (seriesAddingList.length > 0) {
+      clearTimeout(timeoutRef.current);
+      addSeriesRequest();
+    }
+  }, [selectedDate]);
+  
 
   useEffect(() => {
       getMeasureType();
@@ -153,7 +442,7 @@ function TrainingHome({ navigation, route }) {
             <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               <View style={styles.topMargin}></View>
               {trainingData.exercises.map((model, index) => (
-                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} />
+                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval}/>
               ))}
               <View style={styles.bottomMargin}></View>
             </ScrollView>

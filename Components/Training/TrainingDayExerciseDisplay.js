@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Animated ,StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -8,11 +8,71 @@ import TrashIcon from '../../assets/main/Diet/trash3.svg';
 import AddSquareIcon from '../../assets/main/Diet/plus-square.svg';
 import HeartIcon from '../../assets/main/Diet/heart.svg';
 import EmptyHeartIcon from '../../assets/main/Diet/heartEmpty.svg';
+import ArrowUpIcon from '../../assets/main/Diet/arrow-up.svg';
+import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
+
+
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
 
-const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType }) => {
+const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, serieAddition, serieRemoval }) => {
   const [isLiked, setIsLiked] = useState(true);
+  const [updateFlag, setUpdateFlag] = useState(false);
+
+  const [pastTotalReps, setPastTotalReps] = useState(null);
+  const [pastTotalSeries, setPastTotalSeries] = useState(null);
+  const [pastTotalWeightKg, setPastTotalWeightKg] = useState(null);
+  const [pastTotalWeightLbs, setPastTotalWeightLbs] = useState(null);
+  const [currentTotalReps, setCurrentTotalReps] = useState(null);
+  const [currentTotalSeries, setCurrentTotalSeries] = useState(null);
+  const [currentTotalWeightKg, setCurrentTotalWeightKg] = useState(null);
+  const [currentTotalWeightLbs, setCurrentTotalWeightLbs] = useState(null);
+
+  const addSerieToAnExercise = (name, id) => {
+    const maxPublicId = exercise?.series?.reduce(
+      (max, ex) => Math.max(max, ex.publicId), 0
+    ) || 0;    
+
+    const newSerie = {
+      publicId: maxPublicId + 1,
+      higherId: id,
+      repetitions: 0,
+      weightKg: 0,
+      weightLbs: 0,
+      tempo: null,
+      exerciseName: name,
+    };
+
+    exercise.series.push(newSerie);
+    setUpdateFlag(prev => !prev);
+
+    serieAddition(newSerie);
+  };
+
+  const removeSerieFromAnExercise = (name, serieId, exerciseId, weightKg, weightLbs, repetitions) => {
+    exercise.series = exercise.series.filter(serie => serie.publicId !== serieId);
+    setUpdateFlag(prev => !prev);
+
+    let model = {
+      exerciseName: name,
+      exerciseId: exerciseId,
+      serieId: serieId,
+    };
+
+    let tempModel = {
+      exerciseName: name,
+      exerciseId: exerciseId,
+      serieId: serieId,
+      exerciseData: {
+        weightKg: weightKg,
+        weightLbs: weightLbs,
+        repetitions: repetitions,
+        publicId: serieId
+      }
+    };
+
+    serieRemoval(model, tempModel);
+  };
 
   const calculateProgessPercentage = (past, current) => {
     if (past == null || past === 0) {
@@ -29,6 +89,66 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType })
       </Text>
     );
   };
+
+  const calculateTotalProgress = () => {
+    let totalWeight, pastTotalWeight, pastAvgWeightPerSet, currentAvgWeightPerSet;
+  
+    if (measureType === "metric") {
+      totalWeight = currentTotalWeightKg;
+      pastTotalWeight = pastTotalWeightKg;
+      pastAvgWeightPerSet = (pastTotalWeightKg / (pastTotalSeries || 1));
+      currentAvgWeightPerSet = (currentTotalWeightKg / (currentTotalSeries || 1));
+    } else {
+      totalWeight = currentTotalWeightLbs;
+      pastTotalWeight = pastTotalWeightLbs;
+      pastAvgWeightPerSet = (pastTotalWeightLbs / (pastTotalSeries || 1));
+      currentAvgWeightPerSet = (currentTotalWeightLbs / (currentTotalSeries || 1));
+    }
+  
+    let weightChange = ((totalWeight - pastTotalWeight) / (pastTotalWeight || 1)) * 100;
+    let repsChange = ((currentTotalReps - pastTotalReps) / (pastTotalReps || 1)) * 100;
+    let setsChange = ((currentTotalSeries - pastTotalSeries) / (pastTotalSeries || 1)) * 100;
+    let avgWeightChange = ((currentAvgWeightPerSet - pastAvgWeightPerSet) / (pastAvgWeightPerSet || 1)) * 100;
+  
+    let score = (weightChange * 0.4) + (repsChange * 0.25) + (setsChange * 0.15) + (avgWeightChange * 0.2);
+  
+    if (score > 5) {
+      return <ArrowUpIcon width={16} height={16} color={'#3E7B27'} />;
+    } else if (score < -5) {
+      return <ArrowDownIcon width={16} height={16} color={'#A91D3A'} />;
+    } else {
+      return "";
+    }
+  };
+  
+
+  const returnProgress = (past, current) => {
+    if (past > current) {
+      return <ArrowDownIcon width={16} height={16} color={'#A91D3A'} />;
+    } else if (past < current) {
+      return <ArrowUpIcon width={16} height={16} color={'#3E7B27'} />;
+    } else {
+      return current === 0 ? '' : null;
+    }
+  };
+  
+
+  useEffect(() => {
+    if (pastExerciseData?.series) {
+      setPastTotalReps(pastExerciseData.series.reduce((sum, set) => sum + (set.repetitions || 0), 0));
+      setPastTotalSeries(pastExerciseData.series.length);
+      setPastTotalWeightKg(pastExerciseData.series.reduce((sum, set) => sum + ((set.repetitions || 0) * (set.weightKg || 0)), 0));
+      setPastTotalWeightLbs(pastExerciseData.series.reduce((sum, set) => sum + ((set.repetitions || 0) * (set.weightLbs || 0)), 0));
+    }
+
+    if (exercise?.series) {
+      setCurrentTotalReps(exercise.series.reduce((sum, set) => sum + (set.repetitions || 0), 0));
+      setCurrentTotalSeries(exercise.series.length);
+      setCurrentTotalWeightKg(exercise.series.reduce((sum, set) => sum + ((set.repetitions || 0) * (set.weightKg || 0)), 0));
+      setCurrentTotalWeightLbs(exercise.series.reduce((sum, set) => sum + ((set.repetitions || 0) * (set.weightLbs || 0)), 0));
+    }
+    
+  }, [pastExerciseData, exercise, updateFlag]); 
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -118,14 +238,14 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType })
                         </>
                       )}
                     </View>
-                    <TouchableOpacity style={[styles.countCont, GlobalStyles.center]}>
+                    <TouchableOpacity onPress={() => removeSerieFromAnExercise(exercise.name, serie.publicId, exercise.publicId, serie.weightKg, serie.weightLbs, serie.repetitions)} style={[styles.countCont, GlobalStyles.center]}>
                       <CloseIcon fill={'#000'} width={20} height={20} />
                     </TouchableOpacity>
                   </View>
                 ))}
                                       
               <View style={styles.ingredientRow}>
-                <TouchableOpacity>
+                <TouchableOpacity onPress={() => addSerieToAnExercise(exercise.name, exercise.publicId)}>
                   <AddSquareIcon style={styles.addSquare} width={22} height={22}/>
                 </TouchableOpacity>
               </View>
@@ -133,7 +253,21 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType })
           <View style = {styles.hrLine}></View>
           <View style={[styles.summaryRow, GlobalStyles.center]}>
             <View style={[styles.ingredientRow, GlobalStyles.center]}>
-                
+                <View style={styles.bottomSummaryData}>
+                <View style={styles.statsRow}>
+                  <Text style={[GlobalStyles.text16, GlobalStyles.bold]}>
+                    Total: <Text></Text>
+                    <Text style={[GlobalStyles.text16, { fontWeight: '500' }]}>
+                      {measureType === 'metric' ? currentTotalWeightKg : currentTotalWeightLbs}{measureType === 'metric' ? 'kg' : 'lbs'} 
+                      {returnProgress(measureType === 'metric' ? pastTotalWeightKg : pastTotalWeightLbs, measureType === 'metric' ? currentTotalWeightKg : currentTotalWeightLbs)}
+                    </Text>
+                  </Text>
+                </View>                  
+                <View style={styles.statsRowKlein}><Text style={[GlobalStyles.text16, GlobalStyles.bold]}> Reps: <Text style={[GlobalStyles.text16, { fontWeight: '500' }]}>{currentTotalReps} {returnProgress(pastTotalReps, currentTotalReps)}</Text></Text></View>
+                <View style={styles.statsRowKlein}><Text style={[GlobalStyles.text16, GlobalStyles.bold]}> Series: <Text style={[GlobalStyles.text16, { fontWeight: '500' }]}>{currentTotalSeries} {returnProgress(pastTotalSeries, currentTotalSeries)}</Text></Text></View></View>
+                <View style={styles.bottomSummaryEq}>
+                  <Text >{calculateTotalProgress()}</Text>
+                </View>
             </View>
           </View>
         </BlurView>
@@ -235,10 +369,9 @@ const styles = StyleSheet.create({
         borderBottomColor: '#000',
       },
       summaryRow: {
-      width: '100%',
-      flexDirection: 'row',
-      justifyContent: 'space-between',
-      marginTop: 10,
+        width: '100%',
+        flexDirection: 'row',
+        marginTop: 10,
       },
       kcal: {
         flex: 1,
@@ -281,6 +414,19 @@ const styles = StyleSheet.create({
       },
       centerSpace: {
         width: '10%',
+      },
+      bottomSummaryData: {
+        flex: 0.95,
+        flexDirection: 'row',
+      },
+      bottomSummaryEq: {
+        flex: 0.05,
+      },
+      statsRow: {
+        height: '100%',
+      },
+      statsRowKlein: {
+        height: '100%',
       }
  });
 
