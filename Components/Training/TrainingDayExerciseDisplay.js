@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, TextInput, Animated ,StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { BlurView } from 'expo-blur';
@@ -11,12 +11,10 @@ import EmptyHeartIcon from '../../assets/main/Diet/heartEmpty.svg';
 import ArrowUpIcon from '../../assets/main/Diet/arrow-up.svg';
 import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 
-
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
 
-const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, serieAddition, serieRemoval }) => {
-  const [isLiked, setIsLiked] = useState(true);
+const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, serieAddition, serieRemoval, removeExerciseFromTrainingDat, stopRemovalTimeout, likeExerciseRequest }) => {
   const [updateFlag, setUpdateFlag] = useState(false);
 
   const [pastTotalReps, setPastTotalReps] = useState(null);
@@ -27,6 +25,35 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
   const [currentTotalSeries, setCurrentTotalSeries] = useState(null);
   const [currentTotalWeightKg, setCurrentTotalWeightKg] = useState(null);
   const [currentTotalWeightLbs, setCurrentTotalWeightLbs] = useState(null);
+
+  const scaleValue = useRef(new Animated.Value(1)).current;
+
+  const animateHeart = () => {
+      Animated.sequence([
+        Animated.timing(scaleValue, {
+          toValue: 1.5,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+        Animated.timing(scaleValue, {
+          toValue: 1,
+          duration: 150,
+          useNativeDriver: true,
+        }),
+      ]).start();
+    };
+
+  const likeExercise = () => {
+    animateHeart();
+    exercise.isLiked = !exercise.isLiked;
+    setUpdateFlag(prev => !prev);
+
+    likeExerciseRequest(exercise.name);
+  };
+  
+  const removeExercise = () => {
+    removeExerciseFromTrainingDat(exercise, pastExerciseData);
+  };
 
   const addSerieToAnExercise = (name, id) => {
     const maxPublicId = exercise?.series?.reduce(
@@ -51,6 +78,10 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
 
   const removeSerieFromAnExercise = (name, serieId, exerciseId, weightKg, weightLbs, repetitions) => {
     exercise.series = exercise.series.filter(serie => serie.publicId !== serieId);
+    if(exercise.series.length === 0){
+      stopRemovalTimeout(exerciseId);
+      removeExerciseFromTrainingDat(exercise, pastExerciseData);
+    }
     setUpdateFlag(prev => !prev);
 
     let model = {
@@ -159,14 +190,16 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
               <Text style={styles.mealText}>{exercise.name}</Text>
             </View>
             <View style={styles.headerClose}>
-              <TouchableOpacity style={{ marginRight: 5 }}>
-                  {isLiked ? (
-                    <HeartIcon fill={'#FF8303'} width={24} height={26} />
-                  ) : (
-                    <EmptyHeartIcon fill={'#FF8303'} width={24} height={26} />
-                  )}
+              <TouchableOpacity onPress={() => likeExercise()} style={{ marginRight: 5 }}>
+                  <Animated.View style={{ transform: [{ scale: scaleValue }] }}>
+                    {exercise.isLiked ? (
+                      <HeartIcon fill={'#FF8303'} width={24} height={26} />
+                    ) : (
+                      <EmptyHeartIcon fill={'#FF8303'} width={24} height={26} />
+                    )}
+                  </Animated.View>
               </TouchableOpacity>
-              <TouchableOpacity>
+              <TouchableOpacity onPress={() => removeExercise()}>
                 <TrashIcon fill={'#000'} width={22} height={26} />
               </TouchableOpacity>
             </View>

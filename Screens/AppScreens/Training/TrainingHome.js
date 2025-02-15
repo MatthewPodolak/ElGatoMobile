@@ -18,6 +18,8 @@ function TrainingHome({ navigation, route }) {
   const [isLoading, setIsLoading] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
+  const hasAssignedLikes = useRef(false);
+  const [likedExercises, setLikedExercises] = useState([]);
   
   const [seriesAddingList, setSeriesAddingList] = useState([]);
   const [serieRemovalList, setSeriesRemovalList] = useState([]);
@@ -28,6 +30,104 @@ function TrainingHome({ navigation, route }) {
   const iconAnimation = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
+
+  const likeExerciseRequest = async (exerciseName) => {
+    const existingExercise = likedExercises.find(
+      (exercise) => exercise.name === exerciseName
+    );
+  
+    const isLiked = !!existingExercise;
+    let tempExerciseRecord = null;
+  
+    if (isLiked) {
+      setLikedExercises(
+        likedExercises.filter((exercise) => exercise.name !== exerciseName)
+      );
+      tempExerciseRecord = existingExercise;
+    } else {
+      const newExercise = { name: exerciseName, own: false, id: 0 };
+      setLikedExercises([...likedExercises, newExercise]);
+    }
+  
+    try {
+      const res = await TrainingDataService.likeExercise(setIsAuthenticated, navigation, exerciseName);
+  
+      if (res.ok) {
+        if (isLiked) {
+          setLikedExercises((prevExercises) => [...prevExercises, tempExerciseRecord]);
+        } else {
+          setLikedExercises((prevExercises) => prevExercises.filter((exercise) => exercise.name !== exerciseName));
+        }
+      }
+    } catch (error) {
+      console.log(error);
+      if (isLiked) {
+        setLikedExercises((prevExercises) => [...prevExercises, tempExerciseRecord]);
+      } else {
+        setLikedExercises((prevExercises) => prevExercises.filter((exercise) => exercise.name !== exerciseName));
+      }
+    }
+  }; 
+
+
+  const removeExerciseFromTrainingDat = async (exerciseData, pastExerciseData) => {
+    exerciseData.date = selectedDate;
+
+    setTrainingData((prevData) => {
+      if (!prevData) return prevData;
+  
+      const updatedExercises = prevData.exercises.filter(
+        (item) => item.exercise.publicId !== exerciseData.publicId
+      );
+  
+      return {
+        ...prevData,
+        exercises: updatedExercises,
+      };
+    });
+
+    let data = [
+      {
+        exerciseId: exerciseData.publicId,
+        date: exerciseData.date
+      }
+    ];
+
+    try{
+      var res = await TrainingDataService.removeExerciseFromTrainingDay(setIsAuthenticated, navigation, data);
+      if(!res.ok){
+        //ERROR
+        exerciseRemovalThrowback(exerciseData, pastExerciseData);
+      }
+
+    }catch(error){
+      //ERROR
+      console.log(error);
+      exerciseRemovalThrowback(exerciseData, pastExerciseData);
+    }
+  };
+  
+  const exerciseRemovalThrowback = (exerciseData, pastExerciseData) => {
+    const newExerciseEntry = {
+      exercise: exerciseData,
+      pastData: pastExerciseData,
+    };
+  
+    setTrainingData((prevData) => {
+      if (!prevData) return prevData;
+  
+      const updatedExercises = [...prevData.exercises, newExerciseEntry];
+      updatedExercises.sort(
+        (a, b) => a.exercise.publicId - b.exercise.publicId
+      );
+  
+      return {
+        ...prevData,
+        exercises: updatedExercises,
+      };
+    });
+  };
+  
 
   const serieRemoval = (data, tempData) => {
     data.date = selectedDate;
@@ -76,6 +176,26 @@ function TrainingHome({ navigation, route }) {
 
   };
   
+  const stopRemovalTimeout = (exercisePublicId) => {
+    if (timeoutRefRemoval.current) {
+      clearTimeout(timeoutRefRemoval.current);
+    }
+
+    setSeriesRemovalList((prevList) => {
+      const updatedList = prevList.filter(
+        (item) => item.exerciseId !== exercisePublicId
+      );
+      serieRemovalListRef.current = updatedList;
+      return updatedList;
+    });
+
+    if(serieRemovalListRef.current.length > 0){
+      timeoutRefRemoval.current = setTimeout(() => {
+        removeSeriesRequest(serieRemovalListRef.current);
+      }, 1000);
+    }
+  };
+
   const removeSeriesRequest = async (currentList) => {
     const sortedList = [...currentList].sort((a, b) => a.exerciseId - b.exerciseId);
     let groupedPastForExercises = [];
@@ -370,15 +490,69 @@ function TrainingHome({ navigation, route }) {
   useEffect(() => {
       getMeasureType();
 
+      if(likedExercises.length === 0){
+        getLikedExercises();
+      }
+
       if (!selectedDate) {
         getTrainingDay();
       }
       
   }, []);
 
+  useEffect(() => {
+    if (
+      trainingData &&
+      trainingData.exercises &&
+      trainingData.exercises.length > 0 &&
+      likedExercises &&
+      likedExercises.length > 0 &&
+      !hasAssignedLikes.current
+    ) {
+      assignLikesToExercises();
+      hasAssignedLikes.current = true;
+    }
+  }, [trainingData, likedExercises]);
+  
+   
+
+  const getLikedExercises = async () => {
+    try{
+      const res = await TrainingDataService.getLikedExercises(setIsAuthenticated, navigation);
+      if(res.ok){
+        const data = await res.json();
+        setLikedExercises(data);
+      }else{
+        setLikedExercises([]);
+      }
+    }catch(error){
+      //ERROR
+      setLikedExercises([]);
+      console.log("Error getting liked exercises");
+    }
+  };
+
+  useEffect(() => {
+    hasAssignedLikes.current = false;
+  }, [trainingData]);
+  
+  const assignLikesToExercises = () => {
+    if (!trainingData || !trainingData.exercises || likedExercises.length === 0) {
+      return;
+    }
+        
+    trainingData.exercises.forEach(element => {
+      const match = likedExercises.find(a => a.name === element.exercise.name);
+      if (match) {
+        element.exercise.isLiked = true;
+      }
+    });
+  };
+  
+
   const getMeasureType = async () => {
     try{
-      var res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
+      const res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
       setMeasureType(res);
     }catch(ex){
       console.log(ex);
@@ -442,7 +616,7 @@ function TrainingHome({ navigation, route }) {
             <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               <View style={styles.topMargin}></View>
               {trainingData.exercises.map((model, index) => (
-                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval}/>
+                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest}/>
               ))}
               <View style={styles.bottomMargin}></View>
             </ScrollView>
