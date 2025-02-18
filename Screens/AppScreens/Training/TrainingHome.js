@@ -16,6 +16,7 @@ function TrainingHome({ navigation, route }) {
   const { setIsAuthenticated } = useContext(AuthContext);
   const [measureType, setMeasureType] = useState("metric");
   const [isLoading, setIsLoading] = useState(false);
+  const [isTrainingBeingSaved, setIsTrainingBeingSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
   const hasAssignedLikes = useRef(false);
@@ -32,6 +33,34 @@ function TrainingHome({ navigation, route }) {
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
   const timeoutRefUpdate = useRef(null);
+
+  const saveTraining = async () => {
+    setIsTrainingBeingSaved(true);
+
+    try{
+      let exerciseNames = [];
+
+      trainingData.exercises.forEach(element => {
+        exerciseNames.push(element.exercise.name);
+      });
+
+      let data = {
+        name: "New training",
+        exerciseNames: exerciseNames
+      };
+
+      const res = await TrainingDataService.saveTraining(setIsAuthenticated, navigation, data);
+      if(!res.ok){
+        //error
+      }
+
+    }catch(error){
+      //Error
+      console.log(error);
+    }finally{
+      setIsTrainingBeingSaved(false);
+    }
+  };
 
   const likeExerciseRequest = async (exerciseName) => {
     const existingExercise = likedExercises.find(
@@ -772,6 +801,21 @@ function TrainingHome({ navigation, route }) {
               {trainingData.exercises.map((model, index) => (
                 <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest} updateSerie={updateSerie}/>
               ))}
+              <View style={styles.saveBottomRow}>
+                {isTrainingBeingSaved ? (
+                  <>
+                  <View style={styles.saveLimiter}>
+                    <ActivityIndicator size="small" color="#FF8303" />
+                  </View>
+                  </>
+                ):(
+                  <>
+                  <TouchableOpacity onPress={() => saveTraining()}>
+                    <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>Save training</Text>
+                  </TouchableOpacity>
+                  </>
+                )}               
+              </View>
               <View style={styles.bottomMargin}></View>
             </ScrollView>
           ) : (
@@ -882,6 +926,12 @@ const styles = StyleSheet.create({
   },
   bottomMargin: {
     height: 80,
+  },
+  saveBottomRow: {
+    marginLeft: 25,
+  },
+  saveLimiter: {
+    width: '10%',
   }
 });
 
