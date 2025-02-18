@@ -20,6 +20,7 @@ function TrainingHome({ navigation, route }) {
   const [trainingData, setTrainingData] = useState(null);
   const hasAssignedLikes = useRef(false);
   const [likedExercises, setLikedExercises] = useState([]);
+  const [editedExercisesList, setEditedExercisesList] = useState([]);
   
   const [seriesAddingList, setSeriesAddingList] = useState([]);
   const [serieRemovalList, setSeriesRemovalList] = useState([]);
@@ -30,6 +31,7 @@ function TrainingHome({ navigation, route }) {
   const iconAnimation = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
+  const timeoutRefUpdate = useRef(null);
 
   const likeExerciseRequest = async (exerciseName) => {
     const existingExercise = likedExercises.find(
@@ -69,9 +71,152 @@ function TrainingHome({ navigation, route }) {
     }
   }; 
 
+  const updateSerie = (data) => {    
+    if (timeoutRefUpdate.current) {
+      clearTimeout(timeoutRefUpdate.current);
+    }
+    data.date = selectedDate;
 
-  const removeExerciseFromTrainingDat = async (exerciseData, pastExerciseData) => {
-    exerciseData.date = selectedDate;
+    const targeted = editedExercisesList.find(a=>a.exerciseId === data.exerciseId);
+    if(targeted){
+      const targetedSerie = targeted.seriesToUpdate.find(a=>a.serieId === data.serieId);
+      if(targetedSerie){
+            targetedSerie.newWeightKg = data.newWeightKg;
+            targetedSerie.newWeightLbs = data.newWeightLbs;
+            targetedSerie.newRepetitions = data.newRepetitions;
+      }else{
+        targeted.seriesToUpdate.push({
+          serieId: data.serieId,
+          newWeightKg: data.newWeightKg,
+          newWeightLbs: data.newWeightLbs,
+          newRepetitions: data.newRepetitions
+        });
+      }
+    }else{
+      editedExercisesList.push({
+        exerciseId: data.exerciseId,
+        exerciseName: data.exerciseName,
+        seriesToUpdate: [{
+            serieId: data.serieId,
+            newWeightKg: data.newWeightKg,
+            newWeightLbs: data.newWeightLbs,
+            newRepetitions: data.newRepetitions
+        }],
+        fallBackData: {
+          oldWeightKg: data.oldWeightKg,
+          oldWeightLbs: data.oldWeightLbs,
+          oldRepetitions: data.oldRepetitions
+        },
+        date: data.date,
+      });
+    }
+
+    timeoutRefUpdate.current = setTimeout(() => {
+      updateSerieRequest(updateListRef.current);
+    }, 3000);
+  };
+
+  const updateSerieRequest = async (currentList) => {
+    const sortedList = [...currentList].sort((a, b) => a.exerciseId - b.exerciseId);
+    let groupedPastForExercises = [];
+
+    sortedList.forEach(record => {
+      let existingPastData = groupedPastForExercises.find((ex) => ex.exerciseName === record.exerciseName);
+      if (!existingPastData) {
+        const exercisesFound = trainingData.exercises.filter(item =>
+          item.exercise.name.toLowerCase() === record.exerciseName.toLowerCase()
+        );
+
+        let pastDataSeries = [];
+        let counter = 0;
+
+        exercisesFound.forEach(ex => {
+          ex.exercise.series.forEach(serie => {
+            let pastDataSerie = {
+              publicId: counter,
+              repetitions: serie.repetitions,
+              weightKg: serie.weightKg,
+              weightLbs: serie.weightLbs,
+            };
+            pastDataSeries.push(pastDataSerie);
+            counter++;
+          });
+        });
+        
+        let pastExData = {
+          date: selectedDate,
+          series: pastDataSeries,
+        };
+
+        let exercisePastDataModel = {
+          exerciseName: record.exerciseName,
+          exerciseData: pastExData
+        };
+
+        groupedPastForExercises.push(exercisePastDataModel);
+      }
+    });
+
+    const finalModel = sortedList.map((element) => ({
+      date: element.date,
+      ExercisePublicId: element.exerciseId,
+      SeriesToUpdate: element.seriesToUpdate,
+      historyUpdate: groupedPastForExercises.find(ex => ex.exerciseName === element.exerciseName)??[],
+    }));
+
+    try{
+      const res = await TrainingDataService.updateExerciseSeriesData(setIsAuthenticated, navigation, finalModel);
+      if(!res.ok){
+        //ERROR
+        seriesUpdateThrowback(currentList);
+      }
+
+    }catch(error){
+      //ERROR
+      console.log(error);
+    }finally{
+      setEditedExercisesList([]);
+    }
+
+  };
+
+  const seriesUpdateThrowback = (data) => {  
+    const updatedTrainingData = {
+      ...trainingData,
+      exercises: trainingData.exercises.map((exercise) => ({
+        ...exercise,
+        exercise: {
+          ...exercise.exercise,
+          series: exercise.exercise.series.map((serie) => ({ ...serie })),
+        },
+      })),
+    };
+  
+    data.forEach((element) => {
+      const targetedExercise = updatedTrainingData.exercises.find(
+        (exercise) => exercise.exercise.publicId === element.exerciseId
+      );
+  
+      if (!targetedExercise) return;
+  
+      element.seriesToUpdate.forEach((serie) => {
+        const targetedSerie = targetedExercise.exercise.series.find(
+          (s) => s.publicId === serie.serieId
+        );
+  
+        if (targetedSerie && element.fallBackData) {
+          targetedSerie.weightKg = element.fallBackData.oldWeightKg ?? targetedSerie.weightKg;
+          targetedSerie.weightLbs = element.fallBackData.oldWeightLbs ?? targetedSerie.weightLbs;
+          targetedSerie.repetitions = element.fallBackData.oldRepetitions ?? targetedSerie.repetitions;
+        }
+      });
+    });
+  
+    setTrainingData(updatedTrainingData);
+  };
+
+
+  const removeExerciseFromTrainingDat = async (exerciseData, pastExerciseData) => {   
 
     setTrainingData((prevData) => {
       if (!prevData) return prevData;
@@ -328,6 +473,11 @@ function TrainingHome({ navigation, route }) {
   useEffect(() => {
     serieRemovalListRef.current = serieRemovalList;
   }, [serieRemovalList]);
+
+  const updateListRef = useRef(editedExercisesList);
+  useEffect(() => {
+    updateListRef.current = editedExercisesList;
+  }, [editedExercisesList]);
   
   const addSeriesRequest = async (currentList) => {
     const sortedList = [...currentList].sort((a, b) => a.publicId - b.publicId);
@@ -553,7 +703,8 @@ function TrainingHome({ navigation, route }) {
   const getMeasureType = async () => {
     try{
       const res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
-      setMeasureType(res);
+      const data = await res.json();
+      setMeasureType(data);
     }catch(ex){
       console.log(ex);
       //error
@@ -616,7 +767,7 @@ function TrainingHome({ navigation, route }) {
             <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               <View style={styles.topMargin}></View>
               {trainingData.exercises.map((model, index) => (
-                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest}/>
+                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest} updateSerie={updateSerie}/>
               ))}
               <View style={styles.bottomMargin}></View>
             </ScrollView>

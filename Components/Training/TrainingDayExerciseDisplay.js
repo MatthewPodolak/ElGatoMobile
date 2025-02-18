@@ -14,7 +14,7 @@ import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
 
-const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, serieAddition, serieRemoval, removeExerciseFromTrainingDat, stopRemovalTimeout, likeExerciseRequest }) => {
+const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, serieAddition, serieRemoval, removeExerciseFromTrainingDat, stopRemovalTimeout, likeExerciseRequest, updateSerie }) => {
   const [updateFlag, setUpdateFlag] = useState(false);
 
   const [pastTotalReps, setPastTotalReps] = useState(null);
@@ -25,6 +25,11 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
   const [currentTotalSeries, setCurrentTotalSeries] = useState(null);
   const [currentTotalWeightKg, setCurrentTotalWeightKg] = useState(null);
   const [currentTotalWeightLbs, setCurrentTotalWeightLbs] = useState(null);
+
+  const [editingSerieId, setEditingSerieId] = useState(null);
+  const [editingRepsSerieId, setEditingRepsSerieId] = useState(null);
+  const [editingWeightValue, setEditingWeightValue] = useState(null);
+  const [editingRepsValue, setEditingRepsValue] = useState(null);
 
   const scaleValue = useRef(new Animated.Value(1)).current;
 
@@ -49,6 +54,74 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
     setUpdateFlag(prev => !prev);
 
     likeExerciseRequest(exercise.name);
+  };
+
+  const changeWeight = (seriePublicId) => {
+    let newWeight = parseFloat(editingWeightValue);
+    let oldWeightKg, oldWeightLbs, newRepetitions, newWeightKg, newWeightLbs = 0;
+    let targetSerie = exercise.series.find(a=>a.publicId === seriePublicId);
+
+    newRepetitions = targetSerie.repetitions;
+    
+    oldWeightKg = targetSerie.weightKg;
+    oldWeightLbs = targetSerie.weightLbs;
+
+    if (measureType === "metric") {
+      targetSerie.weightKg = newWeight;
+      targetSerie.weightLbs = newWeight * 2.20462;
+      newWeightKg = newWeight;
+    } else {
+        targetSerie.weightLbs = newWeight;
+        targetSerie.weightKg = newWeight / 2.20462;
+        newWeightLbs = newWeight;
+    }
+
+    setEditingSerieId(null);
+    setEditingWeightValue(null);
+
+    let data = {
+      exerciseId: exercise.publicId,
+      serieId: seriePublicId,
+      oldWeightKg: oldWeightKg,
+      oldWeightLbs: oldWeightLbs,
+      newWeightKg: newWeightKg,
+      newWeightLbs: newWeightLbs,
+      newRepetitions: newRepetitions,
+      oldRepetitions: newRepetitions,
+      exerciseName: exercise.name,
+    };
+
+    updateSerie(data);
+  };
+
+  const changeReps = (seriePublicId) => {
+    let newReps = parseFloat(editingRepsValue);
+    let oldWeightKg, oldWeightLbs, oldRepetitions, newWeightKg, newWeightLbs = 0;
+    let targetSerie = exercise.series.find(a=>a.publicId === seriePublicId);
+
+    oldRepetitions = targetSerie.repetitions;
+    targetSerie.repetitions = newReps;
+    oldWeightKg = targetSerie.weightKg;
+    oldWeightLbs = targetSerie.weightLbs;
+    newWeightKg = targetSerie.weightKg;
+    newWeightLbs = targetSerie.weightLbs;
+
+    setEditingRepsValue(null);
+    setEditingRepsSerieId(null);
+
+    let data = {
+      exerciseId: exercise.publicId,
+      serieId: seriePublicId,
+      oldWeightKg: oldWeightKg,
+      oldWeightLbs: oldWeightLbs,
+      newWeightKg: newWeightKg,
+      newWeightLbs: newWeightLbs,
+      newRepetitions: newReps,
+      oldRepetitions: oldRepetitions,
+      exerciseName: exercise.name,
+    };
+
+    updateSerie(data);
   };
   
   const removeExercise = () => {
@@ -248,15 +321,47 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
                       <Text style={[GlobalStyles.text14]}>{calculateProgessPercentage(pastExerciseData?.series?.[index]?.repetitions ?? null, serie.repetitions)}</Text>
                     </View>
                     <View style={[styles.centerDataCont, GlobalStyles.center]}>
-                      <View style={styles.centerNum}><Text style={[GlobalStyles.text24]}>{serie.repetitions}</Text></View>
+                      <TouchableOpacity onPress={() => setEditingRepsSerieId(serie.publicId)} style={styles.centerNum}>
+                          {editingRepsSerieId === serie.publicId ? (
+                            <>
+                              <TextInput
+                                  style={styles.input}
+                                  value={editingRepsValue}
+                                  onChangeText={setEditingRepsValue}
+                                  keyboardType="numeric"
+                                  onBlur={() => changeReps(serie.publicId)}
+                                  autoFocus
+                                />
+                            </>
+                          ):(
+                            <>
+                              <Text style={[GlobalStyles.text24]}>{serie.repetitions}</Text>
+                            </>
+                          )} 
+                        </TouchableOpacity>
                       <View style={styles.centerSpace}><Text style={[GlobalStyles.text22]}>|</Text></View>
-                      <View style={[styles.centerNum, { flex: 1, alignItems: 'flex-end' }]}>
-                        {measureType === "metric" ? (
-                          <Text style={[GlobalStyles.text24, GlobalStyles.floatRight]}>{serie.weightKg}</Text>
-                        ): (
-                          <Text style={[GlobalStyles.text24, GlobalStyles.floatRight]}>{serie.weightLbs}</Text>
-                        )}
-                      </View>
+                      <TouchableOpacity onPress={() => setEditingSerieId(serie.publicId)} style={[styles.centerNum, { flex: 1, alignItems: 'flex-end' }]}>
+                        {editingSerieId === serie.publicId ? (
+                          <>
+                            <TextInput
+                              style={styles.input}
+                              value={editingWeightValue}
+                              onChangeText={setEditingWeightValue}
+                              keyboardType="numeric"
+                              onBlur={() => changeWeight(serie.publicId)}
+                              autoFocus
+                            />
+                          </>
+                        ):(
+                          <>
+                            {measureType === "metric" ? (
+                              <Text style={[GlobalStyles.text24, GlobalStyles.floatRight]}>{serie.weightKg}</Text>
+                            ): (
+                              <Text style={[GlobalStyles.text24, GlobalStyles.floatRight]}>{serie.weightLbs}</Text>
+                            )}
+                          </>
+                        )}                        
+                      </TouchableOpacity>
                     </View>                 
                     <View style={[styles.prevCont, GlobalStyles.center]}>
                       {measureType === "metric" ? (
@@ -460,7 +565,14 @@ const styles = StyleSheet.create({
       },
       statsRowKlein: {
         height: '100%',
-      }
+      },
+      input: {
+        color: '#000',
+        fontSize: 18,
+        fontFamily: 'Helvetica',
+        borderBottomWidth: 1,
+        borderBottomColor: '#FF8303',
+      },
  });
 
 export default TrainingDayExerciseDisplay;
