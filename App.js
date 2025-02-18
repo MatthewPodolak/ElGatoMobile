@@ -34,6 +34,7 @@ import SavedMealsScreen from './Screens/AppScreens/Diet/SavedMeals';
 
 import AddExerciseScreen from './Screens/AppScreens/Training/AddExercise';
 import InspectExerciseScreen from './Screens/AppScreens/Training/InspectExercise';
+import LoadExercises from './Screens/AppScreens/Training/LoadExercises';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -113,6 +114,7 @@ function App() {
             <Stack.Screen name="AddMeal" component={AddMealScreen} />
             <Stack.Screen name="SavedMeals" component={SavedMealsScreen}/>
             <Stack.Screen name="InspectExercise" component={InspectExerciseScreen}/>
+            <Stack.Screen name="LoadExercises" component={LoadExercises} />
           </>
         )}
       </Stack.Navigator>

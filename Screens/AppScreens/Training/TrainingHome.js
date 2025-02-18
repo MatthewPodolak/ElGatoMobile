@@ -754,6 +754,9 @@ function TrainingHome({ navigation, route }) {
     navigation.navigate('AddExercise', { selectedDate });
   };
 
+  const navigateToLoadPlans = () => {
+    navigation.navigate('LoadExercises');
+  };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -792,7 +795,7 @@ function TrainingHome({ navigation, route }) {
           <TouchableOpacity style={styles.expOptionRow} onPress={navigateToAddExercise}>
             <Text style={[GlobalStyles.text16]}>Add new</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.expOptionRow} >
+          <TouchableOpacity style={styles.expOptionRow} onPress={navigateToLoadPlans} >
             <Text style={[GlobalStyles.text16]}>Load plan</Text>
           </TouchableOpacity>
         </Animated.View>
