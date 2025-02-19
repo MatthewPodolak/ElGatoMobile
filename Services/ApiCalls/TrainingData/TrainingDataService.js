@@ -275,4 +275,49 @@ export default class TrainingDataService {
 
       return response;
     };
+
+    static async getSavedTraining(setIsAuthenticated, navigation){
+      const token = await AuthService.getToken();
+      if(!token || AuthService.isTokenExpired(token)){
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      var response = await fetchWithTimeout(
+        `${config.ipAddress}/api/Training/GetSavedTrainings`,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.longTimeout
+      );
+
+      return response;
+    };
+
+    static async removeSavedTrainings(setIsAuthenticated, navigation, data){
+      const token = await AuthService.getToken();
+      if(!token || AuthService.isTokenExpired(token)){
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      var response = await fetchWithTimeout(
+        `${config.ipAddress}/api/Training/RemoveTrainingsFromSaved`,
+        {
+          method: 'DELETE',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        },
+        config.longTimeout
+      );
+
+      return response;
+    };
 }

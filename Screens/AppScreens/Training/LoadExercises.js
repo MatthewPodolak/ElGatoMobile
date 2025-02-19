@@ -8,6 +8,7 @@ import SavedTrainingDay from '../../../Components/Training/SavedTrainingDay.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
+import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
 function LoadExercises({ navigation }) {
 const { setIsAuthenticated } = useContext(AuthContext);
@@ -16,6 +17,8 @@ const [savedTrainingDayData, setSavedTrainingDayData] = useState([]);
 
 const [trainingIndexHold, setTrainingIndexHold] = useState([]);
 const [savedTrainingsToDelete, setSavedTrainingsToDelete] = useState([]);
+
+console.log("whole data -> " + JSON.stringify(savedTrainingDayData));
 
 const NavigateBack = () => {
     navigation.goBack();
@@ -31,16 +34,36 @@ const handleLongPress = (index, savedTraining) => {
   });
 
   setSavedTrainingsToDelete((prev) =>{
-    if(prev.includes(savedTraining.name)) {
-      return prev.filter((i) => i !== savedTraining.name);
+    if(prev.includes(savedTraining.publicId)) {
+      return prev.filter((i) => i !== savedTraining.publicId);
     }else{
-      return [...prev, savedTraining.name];
+      return [...prev, savedTraining.publicId];
     }
   });
 };
 
 const deleteSavedTrainingDays = async () => {
-    
+    try{
+      let data = {
+        savedTrainingIdsToRemove: savedTrainingsToDelete
+      };
+
+      const res = await TrainingDataService.removeSavedTrainings(setIsAuthenticated, navigation, data);
+      if(!res.ok){
+        //error
+        console.log("ERRO");
+        return;
+      }
+
+      setSavedTrainingDayData((prevData) => prevData.filter(training => !savedTrainingsToDelete.includes(training.publicId)));
+
+    }catch(error){
+      //error
+      console.log("error");
+    }finally{
+      setSavedTrainingsToDelete([]);
+      setTrainingIndexHold([]);
+    }
 };
 
 
@@ -50,7 +73,15 @@ useEffect(() => {
         try {
             setIsScreenLoading(true);
 
-            //GET
+            const res = await TrainingDataService.getSavedTraining(setIsAuthenticated, navigation);
+            if(!res.ok){
+                //ERROR
+                //return internet view
+                return;
+            }
+
+            const data = await res.json();
+            setSavedTrainingDayData(data.savedTrainings);
 
         } catch (error) {
             console.error("Error", error);

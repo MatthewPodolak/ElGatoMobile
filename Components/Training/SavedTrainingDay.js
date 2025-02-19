@@ -51,7 +51,7 @@ const SavedTrainingDay = ({ data, isSetted }) => {
       <BlurView style={isSetted ? styles.pickedGlassEffect : styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
             <View style={styles.headerText}>
-              <Text style={GlobalStyles.text16}>Przykład</Text>
+              <Text style={GlobalStyles.text16}>{data.name}</Text>
             </View>
             <View style={styles.headerClose}>
               <TouchableOpacity style={{ marginRight: 5 }}>
