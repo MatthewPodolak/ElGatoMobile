@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from 'react';
+import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
@@ -17,10 +17,107 @@ const [savedTrainingDayData, setSavedTrainingDayData] = useState([]);
 
 const [trainingIndexHold, setTrainingIndexHold] = useState([]);
 const [savedTrainingsToDelete, setSavedTrainingsToDelete] = useState([]);
+const [exercisesToDelete, setExercisesToDelete] = useState([]);
+const timeoutRefRemoval = useRef(null);
 
 const NavigateBack = () => {
     navigation.goBack();
 };
+
+const removeExercise = (data) => {
+  if (timeoutRefRemoval.current) {
+    clearTimeout(timeoutRefRemoval.current);
+  }
+
+  const target = exercisesToDelete.find(a=>a.trainingId === data.trainingId);
+  if(target){
+    if (!target.exerciseData) {
+      target.exerciseData = [];
+    }
+
+    target.exerciseData.push({
+      name: data.exerciseName,
+      publicId: data.exerciseId
+    });
+  }else{
+    let model = {
+      trainingId: data.trainingId,
+      exerciseData: [{
+        name: data.exerciseName,
+        publicId: data.exerciseId
+      }]
+    };
+
+    exercisesToDelete.push(model);
+  }
+
+  setSavedTrainingDayData(prevData => {
+    return prevData.map(training => {
+      if (training.publicId === data.trainingId) {
+        return {
+          ...training,
+          exercises: training.exercises.filter(exercise => exercise.publicId !== data.exerciseId)
+        };
+      }
+      return training;
+    });
+  })
+
+  timeoutRefRemoval.current = setTimeout(() => {
+    removeExercisesFromTrainingRequest(serieRemovalListRef.current);
+  }, 3000);
+}
+
+const removeExercisesFromTrainingRequest = async (data) => {
+  try{
+    let finalModel = [];
+    
+    data.forEach(element => {
+      let model = {
+        savedTrainingPublicId: element.trainingId,
+        exercisesPublicIdToRemove: []
+      };
+      element.exerciseData.forEach(ex => {
+        model.exercisesPublicIdToRemove.push(ex.publicId);
+      });
+      finalModel.push(model);
+    });
+
+    const res = await TrainingDataService.removeExercisesFromSavedTraining(setIsAuthenticated, navigation, finalModel);
+    if(!res.ok){
+      //error
+      removeExercisesFromSavedTrainingThrowback(data);
+    }
+
+  }catch(error){
+    //ERROR
+    removeExercisesFromSavedTrainingThrowback(data);
+    console.log(error);
+  }finally{
+    setExercisesToDelete([]);
+  }
+};
+
+const removeExercisesFromSavedTrainingThrowback = (data) => {
+  setSavedTrainingDayData(prevData => {
+    return prevData.map(training => {
+      const match = data.find(d => d.trainingId === training.publicId);
+      if (match) {
+        return {
+          ...training,
+          exercises: [...training.exercises, ...match.exerciseData]
+        };
+      }
+      return training;
+    });
+  });
+};
+
+
+const serieRemovalListRef = useRef(exercisesToDelete);
+  useEffect(() => {
+    serieRemovalListRef.current = exercisesToDelete;
+  }, [exercisesToDelete]);
 
 const updateName = async (name, publicId, oldName) => {
   try{
@@ -172,6 +269,7 @@ useEffect(() => {
                                 data={savedTrainingDay}
                                 isSetted={trainingIndexHold.includes(index)}
                                 updateName={updateName}
+                                removeExercises={removeExercise}
                               />
                             </View>
                           </LongPressGestureHandler>

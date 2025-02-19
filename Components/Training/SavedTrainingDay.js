@@ -9,12 +9,22 @@ import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const SavedTrainingDay = ({ data, isSetted, updateName }) => {  
+const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises }) => {  
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const contentAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
   const [isEditing, setIsEditing] = useState(false);
   const [newName, setNewName] = useState(null);
+
+  const removeExercise = (publicId, name) => {
+    let model = {
+      trainingId: data.publicId,
+      exerciseId: publicId,
+      exerciseName: name
+    };
+
+    removeExercises(model);
+  };
 
   const changeName = () => {
     setIsEditing(false);
@@ -124,7 +134,7 @@ const SavedTrainingDay = ({ data, isSetted, updateName }) => {
                             <Text style={styles.ingredientName}>{ex.name}</Text>
                         </View>
                         <View style = {styles.ingOptionsCont}>
-                            <TouchableOpacity>
+                            <TouchableOpacity onPress={() => removeExercise(ex.publicId, ex.name)}>
                                 <CloseIcon fill={'#000'} width={20} height={20} />
                             </TouchableOpacity>
                         </View>
