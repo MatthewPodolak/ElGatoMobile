@@ -9,10 +9,24 @@ import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const SavedTrainingDay = ({ data, isSetted }) => {  
+const SavedTrainingDay = ({ data, isSetted, updateName }) => {  
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const contentAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
+  const [isEditing, setIsEditing] = useState(false);
+  const [newName, setNewName] = useState(null);
+
+  const changeName = () => {
+    setIsEditing(false);
+
+    if(newName){
+      let name = newName;
+      let oldName = data.name;
+      data.name = name;
+      setNewName(null);
+      updateName(name, data.publicId, oldName);
+    }
+  };
 
   const toggleExpand = () => {
     if (isContentExpanded) {
@@ -51,7 +65,22 @@ const SavedTrainingDay = ({ data, isSetted }) => {
       <BlurView style={isSetted ? styles.pickedGlassEffect : styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
             <View style={styles.headerText}>
-              <Text style={GlobalStyles.text16}>{data.name}</Text>
+              {isEditing ? (
+                <>
+                  <TextInput
+                    style={styles.input}
+                    value={newName}
+                    onChangeText={setNewName}
+                    keyboardType="text"
+                    onBlur={() => changeName()}
+                    autoFocus
+                  />           
+                </>
+              ):(
+                <TouchableOpacity onPress={() => setIsEditing(!isEditing)}>
+                  <Text style={GlobalStyles.text16}>{data.name}</Text>
+                </TouchableOpacity>
+              )}           
             </View>
             <View style={styles.headerClose}>
               <TouchableOpacity style={{ marginRight: 5 }}>

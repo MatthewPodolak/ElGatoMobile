@@ -18,10 +18,36 @@ const [savedTrainingDayData, setSavedTrainingDayData] = useState([]);
 const [trainingIndexHold, setTrainingIndexHold] = useState([]);
 const [savedTrainingsToDelete, setSavedTrainingsToDelete] = useState([]);
 
-console.log("whole data -> " + JSON.stringify(savedTrainingDayData));
-
 const NavigateBack = () => {
     navigation.goBack();
+};
+
+const updateName = async (name, publicId, oldName) => {
+  try{
+    let data = {
+      newName: name,
+      publicId: publicId
+    };
+
+    const res = await TrainingDataService.updateSavedExerciseName(setIsAuthenticated, navigation, data);
+    if(!res.ok){
+      //error
+      throwbackToOldName(publicId, oldName);
+    }
+
+  }catch(error){
+    //error
+    console.log(error);
+    throwbackToOldName(publicId, oldName);
+  }
+}
+
+const throwbackToOldName = (publicId, oldName) => {
+  setSavedTrainingDayData(prevData =>
+    prevData.map(training =>
+      training.publicId === publicId ? { ...training, name: oldName } : training
+    )
+  );
 };
 
 const handleLongPress = (index, savedTraining) => {
@@ -145,6 +171,7 @@ useEffect(() => {
                               <SavedTrainingDay 
                                 data={savedTrainingDay}
                                 isSetted={trainingIndexHold.includes(index)}
+                                updateName={updateName}
                               />
                             </View>
                           </LongPressGestureHandler>
