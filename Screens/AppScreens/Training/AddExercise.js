@@ -20,6 +20,7 @@ import TrainingDataService from '../../../Services/ApiCalls/TrainingData/Trainin
 function AddExercise({ navigation, route }) { 
     const { setIsAuthenticated } = useContext(AuthContext);
     const currentDate = route.params?.selectedDate;
+    const [selectedDatee, setSelectedDatee] = useState(currentDate);
     const [activeTab, setActiveTab] = useState('Search');
     const [exercisesList, setExercisesList] = useState(null);
     const [filteredExercisesList, setFilteredExercisesList] = useState(null);
@@ -53,7 +54,7 @@ function AddExercise({ navigation, route }) {
       });
 
       let model = {
-        date: currentDate,
+        date: selectedDatee,
         name: exerciseNames
       };
 
@@ -186,7 +187,7 @@ function AddExercise({ navigation, route }) {
     
     useEffect(() => {
       if (route.params?.exercise) {
-          setSelectedExercises((prev) => [...prev, route.params.exercise.id]);
+          setSelectedExercises((prev) => [...prev, route.params.exercise.name]);
       }
       if (route.params?.changedState) {
         setLikedExercisesList((prev) => {
