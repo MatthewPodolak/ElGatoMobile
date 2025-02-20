@@ -2,6 +2,8 @@ import React, { useState, useRef, useEffect, useContext } from 'react';
 import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { useFocusEffect } from '@react-navigation/native';
+import { useCallback } from 'react';
 import { closeOptionsAnimation, showOptionsAnimation } from '../../../Animations/ButtonAnimation.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
@@ -33,6 +35,17 @@ function TrainingHome({ navigation, route }) {
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
   const timeoutRefUpdate = useRef(null);
+
+  useFocusEffect(
+    useCallback(() => {
+      if (route.params?.shouldReload) {
+        
+        getTrainingDay(selectedDate);
+
+        navigation.setParams({ shouldReload: false });
+      }
+    }, [route.params?.shouldReload])
+  );
 
   const saveTraining = async () => {
     setIsTrainingBeingSaved(true);
@@ -784,7 +797,7 @@ function TrainingHome({ navigation, route }) {
   };
 
   const navigateToLoadPlans = () => {
-    navigation.navigate('LoadExercises');
+    navigation.navigate('LoadExercises', { recivedDate: selectedDate });
   };
 
   return (

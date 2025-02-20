@@ -366,4 +366,27 @@ export default class TrainingDataService {
 
       return response;
     };
+
+    static async addFromSavedToTrainingDay(setIsAuthenticated, navigation, data){
+      const token = await AuthService.getToken();
+      if(!token || AuthService.isTokenExpired(token)){
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      var response = await fetchWithTimeout(
+        `${config.ipAddress}/api/Training/AddSavedTrainingToTrainingDay`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(data),
+        },
+        config.longTimeout
+      );
+
+      return response;
+    };
 }

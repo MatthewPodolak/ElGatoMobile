@@ -9,7 +9,7 @@ import CloseIcon from '../../assets/main/Diet/x-lg.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises }) => {  
+const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises, addSavedTraining }) => {  
   const [isContentExpanded, setIsContentExpanded] = useState(false);
   const contentAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
@@ -93,7 +93,7 @@ const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises }) => {
               )}           
             </View>
             <View style={styles.headerClose}>
-              <TouchableOpacity style={{ marginRight: 5 }}>
+              <TouchableOpacity onPress={() => addSavedTraining(data.publicId)} style={{ marginRight: 5 }}>
                 <AddIcon width={26} height={26} fill={'#FF8303'} />
               </TouchableOpacity>
               <TouchableOpacity onPress={toggleExpand}>

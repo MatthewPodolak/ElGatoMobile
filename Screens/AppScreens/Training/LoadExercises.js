@@ -10,7 +10,9 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
-function LoadExercises({ navigation }) {
+function LoadExercises({ navigation, route  }) {
+const recivedDate = route.params?.recivedDate;
+
 const { setIsAuthenticated } = useContext(AuthContext);
 const [isScreenLoading, setIsScreenLoading] = useState(false);
 const [savedTrainingDayData, setSavedTrainingDayData] = useState([]);
@@ -22,6 +24,25 @@ const timeoutRefRemoval = useRef(null);
 
 const NavigateBack = () => {
     navigation.goBack();
+};
+
+const addSavedTraining = async (publicId) => {
+  try{
+    let finalModel = {
+      savedTrainingId: publicId,
+      date: recivedDate
+    };
+    const res = await TrainingDataService.addFromSavedToTrainingDay(setIsAuthenticated, navigation, finalModel);
+    if(res.ok){
+      navigation.navigate('TrainingHome', { shouldReload: true });
+    }
+
+    //error -> view
+
+  }catch(error){
+    //error
+    console.log(error);
+  }
 };
 
 const removeExercise = (data) => {
@@ -270,6 +291,7 @@ useEffect(() => {
                                 isSetted={trainingIndexHold.includes(index)}
                                 updateName={updateName}
                                 removeExercises={removeExercise}
+                                addSavedTraining={addSavedTraining}
                               />
                             </View>
                           </LongPressGestureHandler>
