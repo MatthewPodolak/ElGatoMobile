@@ -3,6 +3,9 @@ import { View, Text, Pressable, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import NavigationMenu from '../../Components/Navigation/NavigationMenu';
+import { GlobalStyles } from '../../Styles/GlobalStyles';
+
+import WaterContainer from '../../Components/Main/WaterContainer';
 
 const logout = async (navigation) => {
   try {
@@ -20,12 +23,16 @@ const logout = async (navigation) => {
 function HomeScreen({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.content}>
-        <Text style={styles.title}>MAIN APP!!!</Text>
-        <Pressable onPress={() => logout(navigation)}>
-          <Text style={styles.logoutText}>LOG OUT</Text>
-        </Pressable>
-      </View>
+        <View style={[GlobalStyles.flex, styles.paddingBorder]}>
+
+          <View style={styles.row}>
+              <View style={styles.block}>
+                <WaterContainer initialValue={40}/>
+              </View>
+          </View>
+
+        </View>
+
       <NavigationMenu navigation={navigation} currentScreen="Home" />
     </SafeAreaView>
   );
@@ -34,24 +41,24 @@ function HomeScreen({ navigation }) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    justifyContent: 'space-between',
-    alignItems: 'center',
     backgroundColor: 'whitesmoke',
   },
-  content: {
+  paddingBorder: {
+    padding: 10,
+  },
+
+  row: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    flexDirection: 'row',
+    height: '180',
+    justifyContent: 'space-between',
   },
-  title: {
-    fontSize: 24,
-    marginBottom: 20,
+  block: {
+    width: '49%',
+    height: '100%',
   },
-  logoutText: {
-    marginTop: 20,
-    color: 'red',
-    fontSize: 16,
-  },
+
+
 });
 
 export default HomeScreen;

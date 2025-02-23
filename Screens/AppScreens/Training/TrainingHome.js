@@ -276,7 +276,7 @@ function TrainingHome({ navigation, route }) {
     let data = [
       {
         exerciseId: exerciseData.publicId,
-        date: exerciseData.date
+        date: selectedDate
       }
     ];
 

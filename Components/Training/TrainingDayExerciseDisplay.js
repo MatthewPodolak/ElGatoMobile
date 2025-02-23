@@ -78,6 +78,7 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
 
     setEditingSerieId(null);
     setEditingWeightValue(null);
+    setUpdateFlag(prev => !prev);
 
     let data = {
       exerciseId: exercise.publicId,
@@ -108,6 +109,7 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
 
     setEditingRepsValue(null);
     setEditingRepsSerieId(null);
+    setUpdateFlag(prev => !prev);
 
     let data = {
       exerciseId: exercise.publicId,
