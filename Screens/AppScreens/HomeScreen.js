@@ -23,14 +23,28 @@ const logout = async (navigation) => {
 };
 
 function HomeScreen({ navigation }) {
+  let intakeData = {
+    protein: 149,
+    calories: 985,
+    fat: 52,
+    carbs: 112,
+  };
+
+  let dailyMaxData = {
+    protein: 220,
+    calories: 3005,
+    fat: 129,
+    carbs: 300,
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-    <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <StatusBar backgroundColor="#000" barStyle="light-content" />
         <View style={[GlobalStyles.flex, styles.paddingBorder]}>
 
           <View style={styles.row}>
-            <View style={styles.wideBlock}>
-              <NutriContainer />
+            <View style={styles.wideBlockTop}>
+              <NutriContainer intakeData={intakeData} dailyMax={dailyMaxData} system={"metric"}/>
             </View>
           </View>
 
@@ -68,10 +82,10 @@ const styles = StyleSheet.create({
     width: '49%',
     height: '180',
   },
-  wideBlock: {
+  wideBlockTop: {
     width: '100%',
-    height: '180',
-  }
+    height: '200',
+  },
 });
 
 export default HomeScreen;
