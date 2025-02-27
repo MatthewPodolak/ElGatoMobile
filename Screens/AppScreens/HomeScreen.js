@@ -1,28 +1,26 @@
-import React from 'react';
-import { View, Text, Pressable, StyleSheet, StatusBar } from 'react-native';
+import React, { useEffect, useState, useContext } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { AuthContext } from '../../Services/Auth/AuthContext.js';
 import NavigationMenu from '../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
+import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
 import BurntCalorieContainer from '../../Components/Main/BurntCalorieContainer';
-
-const logout = async (navigation) => {
-  try {
-    await AsyncStorage.removeItem('jwtToken');
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Start' }],
-    });
-  } catch (error) {
-    console.error('Error during logout', error);
-    //show
-  }
-};
+import LinearChart from '../../Components/Main/LinearChart';
+import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 
 function HomeScreen({ navigation }) {
+  const { setIsAuthenticated } = useContext(AuthContext);
+  const [userLayoutData, setUserLayoutData] = useState(null);
+  const [areAnimationsActive, setAreAnimationsActive] = useState(null);
+  const [userLayoutError, setUserLayoutError] = useState(null);
+
+  const [chartDataExercises, setChartDataExercises] = useState(null);
+  const [chartDataLoading, setChartDataLoading] = useState(false);
+
   let intakeData = {
     protein: 149,
     calories: 985,
@@ -37,11 +35,135 @@ function HomeScreen({ navigation }) {
     carbs: 300,
   };
 
+  const testData = {
+    dates: [
+      "2023-03-01",
+      "2023-03-02",
+      "2023-03-03",
+      "2023-03-04",
+      "2023-03-05",
+      "2023-03-06",
+      "2023-03-07",
+    ],
+    weight: [150, 149.5, 149.7, 149.2, 148.9, 148.5, 148.0],
+  };
+
+
+  useEffect(() => {
+      getUserLayoutData();
+  }, []);
+
+  useEffect(() => {
+      if (userLayoutData) {
+          getChartsData();
+      }
+  }, [userLayoutData]);
+
+
+  const getChartsData = async () => {
+    setChartDataLoading(true);
+
+    let exerciseNames = [];
+
+    if (userLayoutData && Array.isArray(userLayoutData.chartStack)) {
+      userLayoutData.chartStack.forEach(element => {
+        if (element.chartDataType === "Exercise") {
+          exerciseNames.push(element.name);
+        }
+      });
+    }
+    exerciseNames = [...new Set(exerciseNames)];
+    await getPastExerciseData(exerciseNames);
+
+    //here get the rest data based on layout.
+
+    setChartDataLoading(false);
+  };
+
+  const getUserLayoutData = async () => {
+    try{
+      const res = await UserDataService.getUserLayout(setIsAuthenticated, navigation);
+      if(!res){
+        //error
+        //net
+        console.log("error while getting layout.");
+        setUserLayoutError("");
+        return;
+      }
+
+      setAreAnimationsActive(res.animations);
+      setUserLayoutData(res);
+      console.log(JSON.stringify(res));
+
+    }catch(error){
+      //error 
+      //throw -> fallback to normal
+      setUserLayoutError("");
+      console.log("error " + error);
+    }
+  };
+
+  const getPastExerciseData = async (exerciseNames) => {
+    try{
+      let model = {
+        exercisesNames: exerciseNames
+      };
+
+      const res = await UserDataService.getPastExerciseData(setIsAuthenticated, navigation, model);
+      if(!res.ok){
+        //error
+        //net view.
+        console.log("error");
+        return;
+      }
+
+      const data = await res.json();
+      setChartDataExercises(data);
+
+    }catch(error){
+      //error
+      //net view.
+      console.log(error);
+    }
+  }
+
+  const generateChartsContent = () => {
+    let data = [];
+    if (!chartDataExercises) {
+      return null;
+    }
+
+    userLayoutData.chartStack.forEach((element, index) => {
+      const key = `${index}`;
+      switch(element.chartType){
+        case "Linear":
+          const exPastData = chartDataExercises.find(a=>a.exerciseName === element.name);
+          if(exPastData){
+            data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} />);
+          }else{
+            data.push(<LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />);
+          }
+          break;
+        case "Compare":
+
+          break;
+        case "Hexagonal":
+
+          break;
+        case "Bar":
+
+          break;
+      }
+    });
+
+    return data;
+  };
+
   return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={styles.container}>
     <StatusBar backgroundColor="#000" barStyle="light-content" />
-        <View style={[GlobalStyles.flex, styles.paddingBorder]}>
-
+        <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
           <View style={styles.row}>
             <View style={styles.wideBlockTop}>
               <NutriContainer intakeData={intakeData} dailyMax={dailyMaxData} system={"metric"}/>
@@ -50,17 +172,55 @@ function HomeScreen({ navigation }) {
 
           <View style={styles.row}>
               <View style={styles.block}>
-                <BurntCalorieContainer totalBurnt={100} system={"metric"} />
+                <BurntCalorieContainer totalBurnt={100} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."}/>
               </View>
               <View style={styles.block}>
                 <WaterContainer initialValue={40}/>
               </View>
           </View>
 
-        </View>
+          {userLayoutData ? (
+            <>
+              {chartDataLoading ? (
+                  <>
+                    <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
+                      <ActivityIndicator size="small" color="#FF8303" />
+                      <Text style={[GlobalStyles.text16, {marginTop: 10}]}>setting up your awesome charts...</Text>
+                    </View>
+                  </>
+              ): (
+                <>
+                  {generateChartsContent()}
+                </>
+              )}              
+            </>
+          ):(
+            <>
+              <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
+                {userLayoutError ? (
+                  <>
+                    {/* EL GATO error view - TODO  */}
+                    <Text style={[GlobalStyles.orange, GlobalStyles.text16]}>SOMETHING WENT WRONG</Text>
+                  </>
+                ):(
+                  <>
+                    <ActivityIndicator size="small" color="#FF8303" />
+                    <Text style={[GlobalStyles.text16, {marginTop: 10}]}>please wait we are setting up your layout...</Text>
+                  </>
+                )}
+              </View>
+            </>
+          )}         
+
+          <TouchableOpacity style={[styles.bottomHintCont, GlobalStyles.center]}>
+               <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>personalize my home page</Text>
+          </TouchableOpacity>
+
+        </ScrollView>
 
       <NavigationMenu navigation={navigation} currentScreen="Home" />
     </SafeAreaView>
+    </GestureHandlerRootView>
   );
 }
 
@@ -86,6 +246,15 @@ const styles = StyleSheet.create({
     width: '100%',
     height: '200',
   },
+  bottomHintCont: {
+    height: 50,
+    marginBottom: 20,
+  },
+
+  emptyLayoutContiner: {
+    height: 400,
+    backgroundColor: 'yeelow',
+  }
 });
 
 export default HomeScreen;

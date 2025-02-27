@@ -61,4 +61,64 @@ export default class UserDataService {
 
         return measureType;
     };
+
+    static async getUserLayout(setIsAuthenticated, navigation){
+        const value = await AsyncStorage.getItem("layoutData");
+        if(value != null){
+            try {
+                return JSON.parse(value);
+            } catch (error) {
+                return null;
+            }
+        }
+
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetUserLayoutData`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        if(response.ok){
+            data = await response.json();
+            await AsyncStorage.setItem("layoutData", JSON.stringify(data));
+            return data;
+        }
+
+        return null;
+    };
+
+    static async getPastExerciseData(setIsAuthenticated, navigation, data){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetPastDataForExercises`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            },
+            config.timeout
+        );
+
+        return response;
+    }
 }

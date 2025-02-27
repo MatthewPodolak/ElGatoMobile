@@ -6,8 +6,10 @@ import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { BlurView } from 'expo-blur';
 import LottieView from "lottie-react-native";
 
-const BurntCalorieContainer = ({ totalBurnt = 0, system }) => {
+const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate }) => {
   const [burntCalories, setBurntCalories] = useState(totalBurnt);
+  const [isActive, setIsActive] = useState(canAnimate??false);
+
   const unit = system === 'metric' ? 'kcal' : 'cal.';
   
   const pressed = () => {
@@ -25,12 +27,19 @@ const BurntCalorieContainer = ({ totalBurnt = 0, system }) => {
           colors={['#E85C0D', '#C7253E']}
           style={StyleSheet.absoluteFill}
         />
-        <LottieView
-          source={require("../../assets/main/Lottie/fireLottieJson.json")}
-          //autoPlay
-          //loop
-          style={[styles.lottie]}
-        />
+        {isActive ? (
+          <LottieView
+            source={require("../../assets/main/Lottie/fireLottieJson.json")}
+            autoPlay
+            loop
+            style={[styles.lottie]}
+          />
+        ):(
+          <LottieView
+            source={require("../../assets/main/Lottie/fireLottieJson.json")}
+            style={[styles.lottie]}
+          />
+        )}       
       </BlurView>
 
       <View style={styles.absoluteContiner}>
