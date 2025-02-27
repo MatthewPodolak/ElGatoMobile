@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { View, StyleSheet, Text, Dimensions, TouchableOpacity } from 'react-native';
-import Svg from 'react-native-svg';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { BlurView } from 'expo-blur';
 import { VictoryChart, VictoryAxis, VictoryArea, VictoryScatter } from 'victory-native';
@@ -281,7 +280,7 @@ const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType }) =>
       }
       return tick;
     }
-    
+
     const dt = tick instanceof Date ? tick : new Date(tick);
     return dt.getDate();
   };

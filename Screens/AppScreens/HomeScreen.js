@@ -10,6 +10,7 @@ import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
 import BurntCalorieContainer from '../../Components/Main/BurntCalorieContainer';
 import LinearChart from '../../Components/Main/LinearChart';
+import CompareChart from '../../Components/Main/CompareChart.js';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 
 function HomeScreen({ navigation }) {
@@ -123,19 +124,37 @@ function HomeScreen({ navigation }) {
       const key = `${index}`;
       switch(element.chartType){
         case "Linear":
-          const exPastData = chartDataExercises.find(a=>a.exerciseName === element.name);
-          if(exPastData){
-            data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} />);
-          }else{
-            data.push(<LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />);
+          switch(element.chartDataType){
+            case "Exercise":
+              const exPastData = chartDataExercises.find(a=>a.exerciseName === element.name);
+              if(exPastData){
+                data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} />);
+              }else{
+                data.push(<LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />);
+              }
+              break;
+            //OTHER CASES -- not possible for now.
           }
           break;
-        case "Compare":
 
+        case "Compare":
+          switch(element.chartDataType){
+            case "Exercise":
+              const wholeExPast = chartDataExercises.find(a=>a.exerciseName === element.name);
+              if(wholeExPast){
+                data.push(<CompareChart key={key} name={"Benchpress"} dataa={wholeExPast} isActive={true} />);
+              }else{
+                data.push(<CompareChart key={key} name={"Benchpress"} dataa={null} isActive={false}  />);
+              }
+              break;
+            //OTHER DATA TYPE CASES
+          }
           break;
+
         case "Hexagonal":
 
           break;
+
         case "Bar":
 
           break;
