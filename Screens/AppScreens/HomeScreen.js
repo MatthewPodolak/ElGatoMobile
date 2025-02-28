@@ -141,7 +141,7 @@ function HomeScreen({ navigation }) {
             case "Exercise":
               const exPastData = chartDataExercises.find(a=>a.exerciseName === element.name);
               if(exPastData){
-                data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} />);
+                data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} userSystem={systemType} />);
               }else{
                 data.push(<LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />);
               }

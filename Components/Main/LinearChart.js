@@ -19,8 +19,9 @@ const formatNumber = (num) => {
   return num.toString();
 };
 
-const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType }) => {
+const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType, userSystem }) => {
   const [selectedScale, setSelectedScale] = useState(settedPeriod ?? "Week");
+  const [system, setSystem] = useState(userSystem ?? "metric");
   const [selectedDataType, setSelectedDataType] = useState(settedDataType ?? "Volume");
   const [dropdownVisible, setDropdownVisible] = useState(false);
   const [dataDropdownVisible, setDataDropdownVisible] = useState(false);
@@ -78,7 +79,8 @@ const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType }) =>
         if (selectedDataType === "Repetitions") {
           return sum + seriesItem.repetitions;
         } else {
-          return sum + (seriesItem.weightKg * seriesItem.repetitions);
+          const weight = system !== "metric" ? seriesItem.weightLbs : seriesItem.weightKg;
+          return sum + (weight * seriesItem.repetitions);
         }
       }, 0);
     }
@@ -244,22 +246,16 @@ const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType }) =>
     }
   }
 
-
   const tickFormatter = (tick) => {
     if (selectedScale === "Year") {
-
       const dt = tick instanceof Date ? tick : new Date(tick);
-
       return dt.toLocaleString('default', { month: 'short' });
-      
     } else if (selectedScale === "All") {
       if (!filteredData || filteredData.length === 0) return '';
-
       const startDate = new Date(filteredData[0].date);
       const endDate = new Date(filteredData[filteredData.length - 1].date);
       const diffDays = Math.ceil((endDate - startDate) / (1000 * 60 * 60 * 24));
       const dt = tick instanceof Date ? tick : new Date(tick);
-
       if (diffDays <= 30) {
         return dt.getDate();
       } else if (diffDays < 365) {
@@ -272,15 +268,12 @@ const LinearChart = ({ name, dataa, isActive, settedPeriod, settedDataType }) =>
       selectedScale === "Last 10" ||
       selectedScale === "Last 15"
     ) {
-      
       const index = Math.round(tick);
-
       if (chartData && chartData[index] && chartData[index].origDate) {
         return new Date(chartData[index].origDate).getDate();
       }
       return tick;
     }
-
     const dt = tick instanceof Date ? tick : new Date(tick);
     return dt.getDate();
   };
