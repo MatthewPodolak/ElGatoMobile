@@ -7,20 +7,32 @@ import SettingsSvg from '../../assets/main/Diet/gear.svg';
 
 const { width: screenWidth } = Dimensions.get('window');
 
-const CompareChart = ({ name, dataa, isActive, settedDataType }) => {
+const CompareChart = ({ name, dataa, isActive, settedDataType, userSystem }) => {
   const [selectedDataType, setSelectedDataType] = useState(settedDataType ?? "Weight");
+  const [system, setSystem] = useState(userSystem??"metric");
   const [dataDropdownVisible, setDataDropdownVisible] = useState(false);
   const [exerciseData] = useState(dataa ?? null);
   const [dataActive] = useState(isActive ?? false);
-  const dataOptions = ["Repetitions", "Weight"];
+  const dataOptions = ["Repetitions", "Weight", "Volume"];
 
   const recentSessions = exerciseData && exerciseData.pastData ? [...exerciseData.pastData].sort((a, b) => new Date(b.date) - new Date(a.date)).slice(0, 2) : [];
 
   const trainingData = recentSessions.map(session => {
-    const points = session.series.map((serie, index) => ({
-      x: index + 1,
-      y: selectedDataType === "Weight" ? serie.weightKg : serie.repetitions,
-    }));
+    const points = session.series.map((serie, index) => {
+      let value;
+      if (selectedDataType === "Weight") {
+        value = system !== "metric" ? serie.weightLbs : serie.weightKg;
+      } else if (selectedDataType === "Volume") {
+        const weight = system !== "metric" ? serie.weightLbs : serie.weightKg;
+        value = weight * serie.repetitions;
+      } else {
+        value = serie.repetitions;
+      }
+      return {
+        x: index + 1,
+        y: value,
+      };
+    });
     if (points.length === 1) {
       points.push({ x: points[0].x + 0.1, y: points[0].y });
     }

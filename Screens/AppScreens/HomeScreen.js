@@ -15,6 +15,7 @@ import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
+  const [systemType, setSystemType] = useState("metric");
   const [userLayoutData, setUserLayoutData] = useState(null);
   const [areAnimationsActive, setAreAnimationsActive] = useState(null);
   const [userLayoutError, setUserLayoutError] = useState(null);
@@ -37,6 +38,7 @@ function HomeScreen({ navigation }) {
   };
 
   useEffect(() => {
+      getUserMetricSystem();
       getUserLayoutData();
   }, []);
 
@@ -65,6 +67,17 @@ function HomeScreen({ navigation }) {
     //here get the rest data based on layout.
 
     setChartDataLoading(false);
+  };
+
+  const getUserMetricSystem = async () => {
+    try{
+      const res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
+      const data = await res.json();
+      setSystemType(data);
+    }catch(error){
+      //error
+      console.log(error);
+    }
   };
 
   const getUserLayoutData = async () => {
@@ -142,7 +155,7 @@ function HomeScreen({ navigation }) {
             case "Exercise":
               const wholeExPast = chartDataExercises.find(a=>a.exerciseName === element.name);
               if(wholeExPast){
-                data.push(<CompareChart key={key} name={"Benchpress"} dataa={wholeExPast} isActive={true} />);
+                data.push(<CompareChart key={key} name={"Benchpress"} dataa={wholeExPast} isActive={true} userSystem={systemType} />);
               }else{
                 data.push(<CompareChart key={key} name={"Benchpress"} dataa={null} isActive={false}  />);
               }
