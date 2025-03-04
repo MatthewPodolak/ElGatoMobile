@@ -208,7 +208,7 @@ export default class TrainingDataService {
       return response;
     };
 
-    static async likeExercise(setIsAuthenticated, navigation, exerciseName){
+    static async likeExercise(setIsAuthenticated, navigation, exerciseName, muscleType){
       const token = await AuthService.getToken();
       if(!token || AuthService.isTokenExpired(token)){
         await AuthService.logout(setIsAuthenticated, navigation);
@@ -216,7 +216,7 @@ export default class TrainingDataService {
       }
 
       var response = await fetchWithTimeout(
-        `${config.ipAddress}/api/Training/UpdateExerciseLikedStatus?exerciseName=${exerciseName}`,
+        `${config.ipAddress}/api/Training/UpdateExerciseLikedStatus?exerciseName=${exerciseName}&type=${muscleType}`,
         {
           method: 'PATCH',
           headers: {

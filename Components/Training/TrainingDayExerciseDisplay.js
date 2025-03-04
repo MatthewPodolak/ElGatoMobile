@@ -53,7 +53,7 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
     exercise.isLiked = !exercise.isLiked;
     setUpdateFlag(prev => !prev);
 
-    likeExerciseRequest(exercise.name);
+    likeExerciseRequest(exercise.name, exercise.muscleType);
   };
 
   const changeWeight = (seriePublicId) => {

@@ -75,7 +75,7 @@ function TrainingHome({ navigation, route }) {
     }
   };
 
-  const likeExerciseRequest = async (exerciseName) => {
+  const likeExerciseRequest = async (exerciseName, muscleType) => {
     const existingExercise = likedExercises.find(
       (exercise) => exercise.name === exerciseName
     );
@@ -89,12 +89,12 @@ function TrainingHome({ navigation, route }) {
       );
       tempExerciseRecord = existingExercise;
     } else {
-      const newExercise = { name: exerciseName, own: false, id: 0 };
+      const newExercise = { name: exerciseName, own: false, id: 0, muscleType: muscleType };
       setLikedExercises([...likedExercises, newExercise]);
     }
   
     try {
-      const res = await TrainingDataService.likeExercise(setIsAuthenticated, navigation, exerciseName);
+      const res = await TrainingDataService.likeExercise(setIsAuthenticated, navigation, exerciseName, muscleType);
   
       if (res.ok) {
         if (isLiked) {
@@ -737,6 +737,7 @@ function TrainingHome({ navigation, route }) {
       const match = likedExercises.find(a => a.name === element.exercise.name);
       if (match) {
         element.exercise.isLiked = true;
+        element.exercise.muscleType = match.muscleType;
       }
     });
   };
