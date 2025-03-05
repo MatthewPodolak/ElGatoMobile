@@ -1,5 +1,5 @@
 import React, { useState, useContext, useEffect } from 'react';
-import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView } from 'react-native';
+import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView, ImageBackground } from 'react-native';
 import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -37,6 +37,84 @@ function AddExercise({ navigation, route }) {
     const [likedExercisePickedIndex, setLikedExercisePickedIndex] = useState([]);
     const [likedExercisesIndexesHold, setLikedExercisesIndexesHold] = useState([]);
     const [likedExercisesToDelete, setLikedExercisesToDelete] = useState([]);
+
+    const [selectedMuscle, setSelectedMuscle] = useState(null);
+    const [newExerciseName, setNewExerciseName] = useState(null);
+    const [showAddExerciseErrorText, setShowAddExerciseErrorText] = useState(false);
+    const [showAddExerciseErrorMuscleType, setShowAddExerciseErrorMuscleType] = useState(false);
+
+    const addNewExercise = async () => {
+      console.log("EXERCISE DATA -> " + JSON.stringify(likedExercisesList));
+      if(!newExerciseName){
+        setShowAddExerciseErrorText(true);
+        return;
+      }
+
+      if(!selectedMuscle){
+        setShowAddExerciseErrorMuscleType(true);
+        return;
+      };
+
+      try{
+        let mType = 0;
+        switch(selectedMuscle){
+          case "Chest":
+            mType = 1;
+            break;
+          case "Shoulders":
+            mType = 6;
+            break;
+          case "Arms":
+            mType = 4;
+            break;
+          case "Back":
+            mType = 3;
+            break;
+          case "Core":
+            mType = 5;
+            break;
+          case "Legs":
+            mType = 2;
+            break;
+        };
+
+        let data = {
+          exerciseName: newExerciseName,
+          muscleType: mType
+        };
+        const res = await TrainingDataService.addNewPersonalExercise(setIsAuthenticated, navigation, data);
+        if(!res.ok){
+          //Error
+          return;
+        }
+        let likedExerciseModel = {
+          own: true,
+          name: newExerciseName,
+          muscleType: mType,
+          id: 0,
+        };
+        setLikedExercisesList(prev => [...prev, likedExerciseModel]);
+        setActiveTab("Favs");
+      }catch(error){
+        //error
+        console.log("Error " + error);
+      }finally{
+        setNewExerciseName(null);
+        setSelectedMuscle(null);
+      }
+    };
+
+    useEffect(() => {
+      if(showAddExerciseErrorText){
+        setShowAddExerciseErrorText(false);
+      };
+    },[newExerciseName]);
+
+    useEffect(() => {
+      if(showAddExerciseErrorMuscleType){
+        setShowAddExerciseErrorMuscleType(false);
+      };
+    },[selectedMuscle]);
 
     const addExercisesToTrainingDay = async () => {
       if(selectedExercises.length === 0 && likedExercisePicked.length === 0){
@@ -253,7 +331,6 @@ function AddExercise({ navigation, route }) {
     
         setFilteredExercisesList(filteredList);
       }
-      console.log(filters);
     };
     
     const inspectExercise = (exercise) => {
@@ -293,7 +370,6 @@ function AddExercise({ navigation, route }) {
         const res = await TrainingDataService.getLikedExercises(setIsAuthenticated, navigation);
         if(res.ok){
           const data = await res.json();
-          console.log(data);
           setLikedExercisesList(data);
           setIsLikedListLoading(false);
           return;
@@ -554,7 +630,90 @@ function AddExercise({ navigation, route }) {
                 );
             case "New":
                 return(
-                    <Text>new</Text>
+                    <ScrollView style={GlobalStyles.flex} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+
+                      <View style={styles.topNewContainer}>
+                        <View style={styles.barContainerNew}>
+                          <TextInput
+                            style={styles.searchInputNew}
+                            selectionColor="#FF8303"
+                            placeholder="Enter new exercise name"
+                            placeholderTextColor="#999"
+                            onChangeText={(text) => setNewExerciseName(text)}
+                            value={newExerciseName}
+                          />                         
+                        </View>                      
+                      </View>
+                      {showAddExerciseErrorText ? (
+                        <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                          <Text style={[GlobalStyles.text14, GlobalStyles.red]}>Please fill in new exercise name.</Text>
+                        </View>
+                      ):(
+                        <></>
+                      )}               
+                      {showAddExerciseErrorMuscleType ? (
+                        <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                          <Text style={[GlobalStyles.text14, GlobalStyles.red]}>Select primary muscle for new exercise.</Text>
+                        </View>
+                      ):(
+                        <></>
+                      )}
+
+                      <View style={styles.bottomNewContainer}>
+
+                        <View style={styles.muscleRow}>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Chest')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Chest" && styles.selectedMuscleRectangle
+                            ]}>
+                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Legs')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Legs" && styles.selectedMuscleRectangle
+                            ]}>
+                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.muscleRow}>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Back')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Back" && styles.selectedMuscleRectangle
+                            ]}>
+                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Arms')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Arms" && styles.selectedMuscleRectangle
+                            ]}>
+                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                        </View>
+
+                        <View style={styles.muscleRow}>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Core')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Core" && styles.selectedMuscleRectangle
+                            ]}>
+                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                          <TouchableOpacity onPress={() => setSelectedMuscle('Shoulders')} style={[
+                            styles.muscleRectangle,
+                            selectedMuscle === "Shoulders" && styles.selectedMuscleRectangle
+                            ]}>
+                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          </TouchableOpacity>
+                        </View>
+                      </View>
+
+                      <View style={[styles.addNewButtonRow, GlobalStyles.center]}>
+                        <TouchableOpacity onPress={() => addNewExercise()} style={styles.addNewButton}>
+                          <Text style={[GlobalStyles.text16]}>Add new exercise</Text>
+                        </TouchableOpacity>
+                      </View>                   
+
+                    </ScrollView>
                 );
             default:
                 //error
@@ -742,6 +901,63 @@ const styles = StyleSheet.create({
         fontFamily: 'Helvetica',
         color: '#000',
       },      
+
+      topNewContainer: {
+        marginTop: 10,
+        flex: 1,
+        height: 50,
+        alignItems: 'center',
+      },
+      barContainerNew: {
+        height: '100%',
+        width: '90%',
+        justifyContent: 'center',
+      },
+      searchInputNew: {
+        height: '80%',
+        backgroundColor: '#1B1A17',
+        color: 'white',
+        borderRadius: 5,
+        paddingHorizontal: 10,
+      },
+
+
+      bottomNewContainer: {
+        padding: 10,
+      },
+
+      muscleRow: {
+        marginTop: 5,
+        marginBottom: 10,
+        width: '100%',
+        height: 150,
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+      },
+      muscleRectangle: {
+        width: '49%',
+        height: '100%',
+        borderColor: 'black',
+        borderWidth: 1,
+        borderRadius: 25,
+      },
+      selectedMuscleRectangle:{
+        width: '49%',
+        height: '100%',
+        borderColor: '#FF8303',
+        borderWidth: 1,
+        borderRadius: 25,
+      },
+
+      addNewButton: {
+        height: 50,
+        backgroundColor: '#ff6600',
+        width: '60%',
+        borderRadius: 25,
+        justifyContent: 'center',
+        alignItems: 'center',
+      },
+      
 });
 
 export default AddExercise;
