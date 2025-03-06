@@ -12,6 +12,7 @@ import BurntCalorieContainer from '../../Components/Main/BurntCalorieContainer';
 import LinearChart from '../../Components/Main/LinearChart';
 import CompareChart from '../../Components/Main/CompareChart.js';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
+import HexagonalChart from '../../Components/Main/HexagonalChart.js';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -22,6 +23,7 @@ function HomeScreen({ navigation }) {
 
   const [chartDataExercises, setChartDataExercises] = useState(null);
   const [chartDataLoading, setChartDataLoading] = useState(false);
+  const [muscleUsageData, setMuscleUsageData] = useState(null);
 
   let intakeData = {
     protein: 149,
@@ -62,7 +64,14 @@ function HomeScreen({ navigation }) {
       });
     }
     exerciseNames = [...new Set(exerciseNames)];
-    await getPastExerciseData(exerciseNames);
+
+    if (exerciseNames.length > 0) {
+      await getPastExerciseData(exerciseNames);
+    }
+
+    if(userLayoutData.chartStack.find(a=>a.chartType === "Hexagonal")){
+      await getMuscleUsageData();
+    }
 
     //here get the rest data based on layout.
 
@@ -125,7 +134,25 @@ function HomeScreen({ navigation }) {
       //net view.
       console.log(error);
     }
-  }
+  };
+
+  const getMuscleUsageData = async () => {
+    try{
+      const res = await UserDataService.getMuscleUsageData(setIsAuthenticated, navigation);
+      if(!res){
+        //error net view
+        console.log("error");
+        return;
+      }
+
+      const data = await res.json();
+      setMuscleUsageData(data);
+
+    }catch(error){
+      //Error
+      console.log(error);
+    }
+  };
 
   const generateChartsContent = () => {
     let data = [];
@@ -165,7 +192,11 @@ function HomeScreen({ navigation }) {
           break;
 
         case "Hexagonal":
-
+          if(muscleUsageData){
+            data.push(<HexagonalChart key={key} data={muscleUsageData} isActive={true} settedPeriod={"All"}/>);
+          }else{
+            data.push(<HexagonalChart key={key} data={null} isActive={false} settedPeriod={"All"}/>);
+          }
           break;
 
         case "Bar":

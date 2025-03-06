@@ -120,5 +120,31 @@ export default class UserDataService {
         );
 
         return response;
-    }
+    };
+
+    static async getMuscleUsageData(setIsAuthenticated, navigation, period) {
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+        
+        const baseUrl = `${config.ipAddress}/api/UserData/GetTrainedMuscleData`;
+        const url = period != null ? `${baseUrl}?period=${encodeURIComponent(period)}`: baseUrl;
+        
+        const response = await fetchWithTimeout(
+          url,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json'
+            }
+          },
+          config.timeout
+        );
+      
+        return response;
+      };
+      
 }
