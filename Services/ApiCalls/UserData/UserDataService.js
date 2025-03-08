@@ -6,6 +6,11 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default class UserDataService {
     
     static async getUserCaloriesIntake(setIsAuthenticated, navigation) {
+        const value = await AsyncStorage.getItem("calorieIntake");
+        if(value != null){
+            return JSON.parse(value);;
+        }
+
         const token = await AuthService.getToken();
 
         if (!token || AuthService.isTokenExpired(token)) {
@@ -25,7 +30,13 @@ export default class UserDataService {
             config.timeout
         );
 
-        return response;
+        if(!response.ok){
+            return null;
+        }
+
+        const data = await response.json();
+        await AsyncStorage.setItem("calorieIntake", JSON.stringify(data));
+        return data;
     }
 
     static async getUserWeightType(setIsAuthenticated, navigation){

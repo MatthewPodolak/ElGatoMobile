@@ -25,8 +25,8 @@ function MakroMenu({ CalorieCounter, navigation }) {
         const fetchFromApi = async () => {
             try{
                 const calorieInfromation = await UserDataService.getUserCaloriesIntake(setIsAuthenticated, navigation);
-                if(calorieInfromation.ok){
-                    const data = await calorieInfromation.json();
+                if(calorieInfromation){
+                    const data = calorieInfromation;
 
                     setKcal(data.kcal);
                     setCarbs(data.carbs);

@@ -14,11 +14,11 @@ import CompareChart from '../../Components/Main/CompareChart.js';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 import HexagonalChart from '../../Components/Main/HexagonalChart.js';
 import BarChart from '../../Components/Main/BarChart.js';
-import { JsiSkImage } from '@shopify/react-native-skia';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
+  const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
   const [userLayoutData, setUserLayoutData] = useState(null);
   const [areAnimationsActive, setAreAnimationsActive] = useState(null);
   const [userLayoutError, setUserLayoutError] = useState(null);
@@ -30,19 +30,13 @@ function HomeScreen({ navigation }) {
 
   let intakeData = {
     protein: 149,
-    calories: 985,
-    fat: 52,
+    kcal: 985,
+    fats: 52,
     carbs: 112,
   };
 
-  let dailyMaxData = {
-    protein: 220,
-    calories: 3005,
-    fat: 129,
-    carbs: 300,
-  };
-
   useEffect(() => {
+      getMaxDailyIntake();
       getUserMetricSystem();
       getUserLayoutData();
   }, []);
@@ -92,6 +86,23 @@ function HomeScreen({ navigation }) {
       setSystemType(data);
     }catch(error){
       //error
+      console.log(error);
+    }
+  };
+
+  const getMaxDailyIntake = async () => {
+    try{
+      const data = await UserDataService.getUserCaloriesIntake(setIsAuthenticated, navigation);
+      if(!data){
+        //error internet view
+        return;
+      }
+
+      console.log("Daily " + JSON.stringify(data));
+      setDailyMaxIntake(data);
+
+    }catch(error){
+      //error -> net view
       console.log(error);
     }
   };
@@ -275,6 +286,10 @@ function HomeScreen({ navigation }) {
               break;
           }
           break;
+
+        case "Circle":
+
+          break;
       }
     });
 
@@ -288,7 +303,11 @@ function HomeScreen({ navigation }) {
         <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
           <View style={styles.row}>
             <View style={styles.wideBlockTop}>
-              <NutriContainer intakeData={intakeData} dailyMax={dailyMaxData} system={"metric"}/>
+              {dailyMaxIntake ? (
+                <NutriContainer intakeData={intakeData} dailyMax={dailyMaxIntake} system={"metric"}/>
+              ):(
+                <ActivityIndicator size="small" color="#FF8303" />
+              )}
             </View>
           </View>
 

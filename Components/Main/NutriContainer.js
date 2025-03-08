@@ -62,11 +62,11 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
   const renderMainNutriCircle = () => {
     switch (currentPage) {
       case 0:
-        return <NutriCircleExt value={dailyData.calories} maxValue={dailyMaxData.calories} color={"#FF8303"} gradientColor={"#ffe600"} />;
+        return <NutriCircleExt value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} />;
       case 1:
         return <NutriCircleExt value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} />;
       case 2:
-        return <NutriCircleExt value={dailyData.fat} maxValue={dailyMaxData.fat} color={"#A35709"} gradientColor={"#a2a309"} />;
+        return <NutriCircleExt value={dailyData.fats} maxValue={dailyMaxData.fats} color={"#A35709"} gradientColor={"#a2a309"} />;
       case 3:
         return <NutriCircleExt value={dailyData.carbs} maxValue={dailyMaxData.carbs} color={"#030eff"} gradientColor={"#038CFF"} />;
       default:
@@ -83,7 +83,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
               <NutriCircleMini value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} textValue={"P"} />
             </View>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.fat} maxValue={dailyMaxData.fat} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
+              <NutriCircleMini value={dailyData.fats} maxValue={dailyMaxData.fats} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.carbs} maxValue={dailyMaxData.carbs} color={"#030eff"} gradientColor={"#038CFF"} textValue={"C"} />
@@ -94,10 +94,10 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.calories} maxValue={dailyMaxData.calories} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.fat} maxValue={dailyMaxData.fat} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
+              <NutriCircleMini value={dailyData.fats} maxValue={dailyMaxData.fats} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.carbs} maxValue={dailyMaxData.carbs} color={"#030eff"} gradientColor={"#038CFF"} textValue={settedSystem === "metric" ? "K" : "C"} />
@@ -108,7 +108,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.calories} maxValue={dailyMaxData.calories} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} textValue={"P"} />
@@ -122,13 +122,13 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.calories} maxValue={dailyMaxData.calories} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} textValue={"P"} />
             </View>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.fat} maxValue={dailyMaxData.fat} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
+              <NutriCircleMini value={dailyData.fats} maxValue={dailyMaxData.fats} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
             </View>
           </>
         );
@@ -155,11 +155,11 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
   const currentValueGen = () => {
     switch (currentPage) {
       case 0:
-        return `${dailyData.calories}`;
+        return `${dailyData.kcal}`;
       case 1:
         return `${dailyData.protein}`;
       case 2:
-        return `${dailyData.fat}`;
+        return `${dailyData.fats}`;
       case 3:
         return `${dailyData.carbs}`;
       default:
@@ -171,14 +171,14 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
     switch (currentPage) {
       case 0:
         if(system === "metric"){
-          return `${"/ " + dailyMaxData.calories + " kcal"}`;
+          return `${"/ " + dailyMaxData.kcal + " kcal"}`;
         }else{
-          return `${"/ " + dailyMaxData.calories + " cal"}`;
+          return `${"/ " + dailyMaxData.kcal + " cal"}`;
         }
       case 1:
         return `${"/ " + dailyMaxData.protein + " g"}`;
       case 2:
-        return `${"/ " + dailyMaxData.fat + " g"}`;
+        return `${"/ " + dailyMaxData.fats + " g"}`;
       case 3:
         return `${"/ " + dailyMaxData.carbs + " g"}`;
       default:
