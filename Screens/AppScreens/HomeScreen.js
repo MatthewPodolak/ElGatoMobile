@@ -13,6 +13,8 @@ import LinearChart from '../../Components/Main/LinearChart';
 import CompareChart from '../../Components/Main/CompareChart.js';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 import HexagonalChart from '../../Components/Main/HexagonalChart.js';
+import BarChart from '../../Components/Main/BarChart.js';
+import { JsiSkImage } from '@shopify/react-native-skia';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -24,6 +26,7 @@ function HomeScreen({ navigation }) {
   const [chartDataExercises, setChartDataExercises] = useState(null);
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [muscleUsageData, setMuscleUsageData] = useState(null);
+  const [pastMakroData, setPastMakroData] = useState(null);
 
   let intakeData = {
     protein: 149,
@@ -71,6 +74,10 @@ function HomeScreen({ navigation }) {
 
     if(userLayoutData.chartStack.find(a=>a.chartType === "Hexagonal")){
       await getMuscleUsageData();
+    }
+
+    if(userLayoutData.chartStack.find(a => ["Calorie", "Makro", "Protein", "Fat", "Carbs"].includes(a.chartDataType))){
+      await getPastMakroData();
     }
 
     //here get the rest data based on layout.
@@ -154,6 +161,24 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const getPastMakroData = async () => {
+    try{
+      const res = await UserDataService.getPastMakroData(setIsAuthenticated, navigation);
+      if(!res){
+        //error net view
+        console.log("error");
+        return;
+      }
+
+      const data = await res.json();
+      setPastMakroData(data);
+
+    }catch(error){
+      //error
+      console.log(error);
+    }
+  };
+
   const generateChartsContent = () => {
     let data = [];
     if (!chartDataExercises) {
@@ -200,7 +225,55 @@ function HomeScreen({ navigation }) {
           break;
 
         case "Bar":
-
+          switch(element.chartDataType){
+            case "Calorie":
+              const calorieData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.energyKcal
+              }));
+              if(calorieData){
+                data.push(<BarChart key={key} data={calorieData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#FF6600"}/>);
+              }else{
+                data.push(<BarChart key={key} data={calorieData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
+              }
+              break;
+            case "Makro":
+              
+              break;
+            case "Protein":
+              const proteinData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.proteins
+              }));
+              if(proteinData){
+                data.push(<BarChart key={key} data={proteinData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#09a357"}/>);
+              }else{
+                data.push(<BarChart key={key} data={proteinData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
+              }
+              break;
+            case "Fat":
+              const fatData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.fats
+              }));
+              if(fatData){
+                data.push(<BarChart key={key} data={fatData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#A35709"}/>);
+              }else{
+                data.push(<BarChart key={key} data={fatData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
+              }
+              break;
+            case "Carbs":
+              const carbsData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.carbs
+              }));
+              if(carbsData){
+                data.push(<BarChart key={key} data={carbsData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#030eff"}/>);
+              }else{
+                data.push(<BarChart key={key} data={carbsData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
+              }
+              break;
+          }
           break;
       }
     });
