@@ -19,6 +19,7 @@ function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
   const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
+  const [currentDailyIntake, setCurrentDailyIntake] = useState(null);
   const [userLayoutData, setUserLayoutData] = useState(null);
   const [areAnimationsActive, setAreAnimationsActive] = useState(null);
   const [userLayoutError, setUserLayoutError] = useState(null);
@@ -28,15 +29,9 @@ function HomeScreen({ navigation }) {
   const [muscleUsageData, setMuscleUsageData] = useState(null);
   const [pastMakroData, setPastMakroData] = useState(null);
 
-  let intakeData = {
-    protein: 149,
-    kcal: 985,
-    fats: 52,
-    carbs: 112,
-  };
-
   useEffect(() => {
       getMaxDailyIntake();
+      getCurrentDailyIntake();
       getUserMetricSystem();
       getUserLayoutData();
   }, []);
@@ -98,11 +93,31 @@ function HomeScreen({ navigation }) {
         return;
       }
 
-      console.log("Daily " + JSON.stringify(data));
       setDailyMaxIntake(data);
 
     }catch(error){
       //error -> net view
+      console.log(error);
+    }
+  };
+
+  const getCurrentDailyIntake = async () => {
+    try{
+      const now = new Date();
+      const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+
+      const res = await UserDataService.getCurrentUserMakroIntake(setIsAuthenticated, navigation, currentDate);
+      if(!res.ok){
+        //error - net view.
+        return;
+      }
+
+      const data = await res.json();
+      console.log(JSON.stringify(data));
+      setCurrentDailyIntake(data);
+
+    }catch(error){
+      //return error
       console.log(error);
     }
   };
@@ -303,8 +318,8 @@ function HomeScreen({ navigation }) {
         <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
           <View style={styles.row}>
             <View style={styles.wideBlockTop}>
-              {dailyMaxIntake ? (
-                <NutriContainer intakeData={intakeData} dailyMax={dailyMaxIntake} system={"metric"}/>
+              {dailyMaxIntake && currentDailyIntake ? (
+                <NutriContainer intakeData={currentDailyIntake} dailyMax={dailyMaxIntake} system={"metric"}/>
               ):(
                 <ActivityIndicator size="small" color="#FF8303" />
               )}

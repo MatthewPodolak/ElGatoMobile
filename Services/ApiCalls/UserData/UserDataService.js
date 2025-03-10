@@ -35,9 +35,30 @@ export default class UserDataService {
         }
 
         const data = await response.json();
-        await AsyncStorage.setItem("calorieIntake", JSON.stringify(data));
         return data;
-    }
+    };
+
+    static async getCurrentUserMakroIntake(setIsAuthenticated, navigation, currentDate){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetUserCurrentDayCalorieIntake?date=${encodeURIComponent(currentDate)}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+    };
 
     static async getUserWeightType(setIsAuthenticated, navigation){
         const value = await AsyncStorage.getItem("measureType");
