@@ -203,4 +203,26 @@ export default class UserDataService {
       
         return response;
       };
+
+      static async getUserDailyMakroDist(setIsAuthenticated, navigation, currentDate){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetCurrentDailyMakroDistribution?date=${encodeURIComponent(currentDate)}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+      };
 }

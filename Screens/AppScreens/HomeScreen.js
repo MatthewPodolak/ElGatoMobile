@@ -14,6 +14,7 @@ import CompareChart from '../../Components/Main/CompareChart.js';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 import HexagonalChart from '../../Components/Main/HexagonalChart.js';
 import BarChart from '../../Components/Main/BarChart.js';
+import CircleChartDist from '../../Components/Main/CircleChartDist.js';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -28,6 +29,7 @@ function HomeScreen({ navigation }) {
   const [chartDataLoading, setChartDataLoading] = useState(false);
   const [muscleUsageData, setMuscleUsageData] = useState(null);
   const [pastMakroData, setPastMakroData] = useState(null);
+  const [dailyMakroDist, setDailyMakroDist] = useState(null);
 
   useEffect(() => {
       getMaxDailyIntake();
@@ -69,6 +71,9 @@ function HomeScreen({ navigation }) {
       await getPastMakroData();
     }
 
+    if(userLayoutData.chartStack.find(a=>a.chartType === "Circle" && a.chartDataType === "MakroDist")){
+      await getMakroDailyDistData();
+    }
     //here get the rest data based on layout.
 
     setChartDataLoading(false);
@@ -205,6 +210,27 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const getMakroDailyDistData = async () => {
+    try{
+      const now = new Date();
+      const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+      const res = await UserDataService.getUserDailyMakroDist(setIsAuthenticated, navigation, currentDate);
+
+      if(!res.ok){
+        //error - net view
+        return;
+      }
+
+      const data = await res.json();
+      console.log(JSON.stringify(data));
+      setDailyMakroDist(data);
+
+    }catch(error){
+      //error
+      console.log(error);
+    }
+  };
+
   const generateChartsContent = () => {
     let data = [];
     if (!chartDataExercises) {
@@ -303,7 +329,18 @@ function HomeScreen({ navigation }) {
           break;
 
         case "Circle":
+          switch(element.chartDataType){
+            case "MakroDist":
+              if(dailyMakroDist){
+                data.push(<CircleChartDist key={key} name={element.name} data={dailyMakroDist} isActive={true} system={systemType} maxMakroData={dailyMaxIntake} />)
+              }else{
+                data.push(<CircleChartDist key={key} name={element.name} data={null} isActive={false} system={null} />)
+              }
+              break;
+            case "Makro":
 
+              break;
+          }
           break;
       }
     });
