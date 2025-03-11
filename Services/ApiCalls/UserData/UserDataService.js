@@ -94,6 +94,51 @@ export default class UserDataService {
         return measureType;
     };
 
+    static async getUserCurrentWaterIntake(setIsAuthenticated, navigation, currentDate){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetUserWaterIntake?date=${encodeURIComponent(currentDate)}`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+    }
+
+    static async addWaterToCurrentDay(setIsAuthenticated, navigation, data){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Diet/AddWater`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
+            },
+            config.timeout
+        );
+
+        return response;
+    };
+
     static async getUserLayout(setIsAuthenticated, navigation){
         const value = await AsyncStorage.getItem("layoutData");
         if(value != null){

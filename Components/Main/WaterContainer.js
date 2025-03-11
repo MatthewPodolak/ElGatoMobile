@@ -24,7 +24,7 @@ const generateSineWavePath = (totalWidth, height, cycles, numPoints = 100) => {
   return d;
 };
 
-const WaterContainer = ({ initialValue = 0 }) => {
+const WaterContainer = ({ initialValue = 0, addWaterFunc }) => {
   const [waterValue, setWaterValue] = useState(initialValue);
   const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
   const [currentWaveCycle, setCurrentWaveCycle] = useState(0);
@@ -34,11 +34,14 @@ const WaterContainer = ({ initialValue = 0 }) => {
   const waveCycleAnim = useRef(new Animated.Value(0)).current;
 
   const addWater = () => {
-    setWaterValue(prev => prev + 25);
-    console.log("WATER ADDED");
-    //call.
-
+    if(addWaterFunc){
+      addWaterFunc();
+    }
   };
+
+  useEffect(() => {
+    setWaterValue(initialValue);
+  }, [initialValue]);
 
   const onContainerLayout = (event) => {
     const { width, height } = event.nativeEvent.layout;

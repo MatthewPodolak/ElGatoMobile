@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useContext } from 'react';
+import React, { useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../../Services/Auth/AuthContext.js';
@@ -21,6 +21,11 @@ function HomeScreen({ navigation }) {
   const [systemType, setSystemType] = useState("metric");
   const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
   const [currentDailyIntake, setCurrentDailyIntake] = useState(null);
+  const [userWaterIntake, setUserWaterIntake] = useState(null);
+  const userWaterRef = useRef(userWaterIntake);
+  const [waterAddCounter, setWaterAddCounter] = useState(0);
+  const waterTimeoutRef = useRef(null);
+
   const [userLayoutData, setUserLayoutData] = useState(null);
   const [areAnimationsActive, setAreAnimationsActive] = useState(null);
   const [userLayoutError, setUserLayoutError] = useState(null);
@@ -35,6 +40,7 @@ function HomeScreen({ navigation }) {
       getMaxDailyIntake();
       getCurrentDailyIntake();
       getUserMetricSystem();
+      getWaterIntake();
       getUserLayoutData();
   }, []);
 
@@ -90,6 +96,25 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const getWaterIntake = async () => {
+    try{
+      const now = new Date();
+      const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+      const res = await UserDataService.getUserCurrentWaterIntake(setIsAuthenticated, navigation, currentDate);
+      if(!res.ok){
+        //error net view;
+        return;
+      }
+
+      const waterIntake = await res.json();
+      setUserWaterIntake(waterIntake);
+
+    }catch(error){
+      //error - net
+      console.log(error);
+    }
+  };
+
   const getMaxDailyIntake = async () => {
     try{
       const data = await UserDataService.getUserCaloriesIntake(setIsAuthenticated, navigation);
@@ -118,7 +143,6 @@ function HomeScreen({ navigation }) {
       }
 
       const data = await res.json();
-      console.log(JSON.stringify(data));
       setCurrentDailyIntake(data);
 
     }catch(error){
@@ -222,7 +246,6 @@ function HomeScreen({ navigation }) {
       }
 
       const data = await res.json();
-      console.log(JSON.stringify(data));
       setDailyMakroDist(data);
 
     }catch(error){
@@ -230,6 +253,55 @@ function HomeScreen({ navigation }) {
       console.log(error);
     }
   };
+
+  const addWaterFunc = () => {
+    if (waterTimeoutRef.current) {
+      clearTimeout(waterTimeoutRef.current);
+    }
+
+    setUserWaterIntake(prev => prev + 250);
+    setWaterAddCounter(prev => prev + 1);
+
+    waterTimeoutRef.current = setTimeout(() => {
+      addWaterCall(waterCouner.current);
+    }, 3000);
+  };
+  
+  const addWaterCall = async (counter) => {
+    try{
+      const now = new Date();
+      const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+      let model = {
+        water: (counter * 250),
+        date: currentDate
+      };
+      const res = await UserDataService.addWaterToCurrentDay(setIsAuthenticated, navigation, model);
+      if(!res.ok){
+        addWaterCallBack(counter);
+        return;
+      }
+      
+    }catch(error){
+      //error - normal
+      console.log(error);
+    }finally{
+      setWaterAddCounter(0);
+    }
+  };
+
+  const addWaterCallBack = (counter) => {
+    let old = userWaterRef.current - (counter * 250);
+    setUserWaterIntake(old);
+  };
+
+  const waterCouner = useRef(waterAddCounter);
+    useEffect(() => {
+      waterCouner.current = waterAddCounter;
+    }, [waterAddCounter]);
+
+    useEffect(() => {
+      userWaterRef.current = userWaterIntake;
+    }, [userWaterIntake]);
 
   const generateChartsContent = () => {
     let data = [];
@@ -336,10 +408,7 @@ function HomeScreen({ navigation }) {
               }else{
                 data.push(<CircleChartDist key={key} name={element.name} data={null} isActive={false} system={null} />)
               }
-              break;
-            case "Makro":
-
-              break;
+              break;          
           }
           break;
       }
@@ -368,7 +437,11 @@ function HomeScreen({ navigation }) {
                 <BurntCalorieContainer totalBurnt={100} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."}/>
               </View>
               <View style={styles.block}>
-                <WaterContainer initialValue={40}/>
+                {userWaterIntake ? (
+                  <WaterContainer initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc}/>
+                ):(
+                  <WaterContainer />
+                )}
               </View>
           </View>
 
