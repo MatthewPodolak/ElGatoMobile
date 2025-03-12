@@ -139,6 +139,10 @@ export default class UserDataService {
         return response;
     };
 
+    static async saveUserLayoutDataToAsyncStorage(data){
+        await AsyncStorage.setItem("layoutData", JSON.stringify(data));
+    };
+
     static async getUserLayout(setIsAuthenticated, navigation){
         const value = await AsyncStorage.getItem("layoutData");
         if(value != null){

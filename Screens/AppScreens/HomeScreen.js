@@ -5,6 +5,8 @@ import { AuthContext } from '../../Services/Auth/AuthContext.js';
 import NavigationMenu from '../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
+import DraggableItem from '../../Components/Main/DraggableItem.js';
+import { useSharedValue } from 'react-native-reanimated';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
@@ -37,6 +39,9 @@ function HomeScreen({ navigation }) {
   const [dailyMakroDist, setDailyMakroDist] = useState(null);
 
   const [mainErrors, setMainErrors] = useState(false);
+  const scrollViewRef = useRef(null);
+  const [scrollOffset, setScrollOffset] = useState(0);
+  const scrollOffsetSV = useSharedValue(0);
 
   useEffect(() => {
       getMaxDailyIntake();
@@ -96,12 +101,11 @@ function HomeScreen({ navigation }) {
         const data = await res.json();
         setSystemType(data);
       } else {
-        console.log("hahaha");
-        setMainErrors(true);
+        setSystemType("metric");
       }
     }catch(error){
       console.log(error);
-      setMainErrors(true);
+      setSystemType("metric");
     }
   };
 
@@ -306,120 +310,234 @@ function HomeScreen({ navigation }) {
       userWaterRef.current = userWaterIntake;
     }, [userWaterIntake]);
 
-  const generateChartsContent = () => {
-    let data = [];
-    if (!chartDataExercises) {
-      {/** error charts loading - net elgato */}
-      return <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 250}]}><Text>EL GATO ERROR - CHARTS LOADING.</Text></View>;
-    }
+    const handleDragEnd = (position, index) => {    
+      const compCount = userLayoutData.chartStack.length;
+      const shift = Math.round(position.y / 200);
 
-    userLayoutData.chartStack.forEach((element, index) => {
-      const key = `${index}`;
-      switch(element.chartType){
-        case "Linear":
-          switch(element.chartDataType){
-            case "Exercise":
-              const exPastData = chartDataExercises.find(a=>a.exerciseName === element.name);
-              if(exPastData){
-                data.push(<LinearChart key={key} name={"Benchpress"} dataa={exPastData} isActive={true} settedPeriod={element.period} userSystem={systemType} />);
-              }else{
-                data.push(<LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />);
-              }
-              break;
-            //OTHER CASES -- not possible for now.
-          }
-          break;
+      let newIndex = index + shift;
+      newIndex = Math.max(0, Math.min(newIndex, compCount - 1));
+        
+      if (newIndex !== index) {
+        const updatedStack = [...userLayoutData.chartStack];
+        const [movedItem] = updatedStack.splice(index, 1);
+        updatedStack.splice(newIndex, 0, movedItem);
+        setUserLayoutData(prev => {
+          const newLayout = { ...prev, chartStack: updatedStack };
+          saveLayoutInAsyncStorage(newLayout);
+          return newLayout;
+        });
+      }
+    };
+    
+    
+    const onDeleteChartComp = (index) => {
+      setUserLayoutData((prevLayout) => {
+        if (!prevLayout) return prevLayout;
+        const newStack = prevLayout.chartStack.filter((_, i) => i !== index);
+        const newLayout = { ...prevLayout, chartStack: newStack };
+        saveLayoutInAsyncStorage(newLayout);
+        return newLayout;
+      });
+    };
+    
+    const saveLayoutInAsyncStorage = async (data) => {
+      await UserDataService.saveUserLayoutDataToAsyncStorage(data);
+    };
 
-        case "Compare":
-          switch(element.chartDataType){
-            case "Exercise":
-              const wholeExPast = chartDataExercises.find(a=>a.exerciseName === element.name);
-              if(wholeExPast){
-                data.push(<CompareChart key={key} name={"Benchpress"} dataa={wholeExPast} isActive={true} userSystem={systemType} />);
-              }else{
-                data.push(<CompareChart key={key} name={"Benchpress"} dataa={null} isActive={false}  />);
-              }
-              break;
-            //OTHER DATA TYPE CASES
-          }
-          break;
-
-        case "Hexagonal":
-          if(muscleUsageData){
-            data.push(<HexagonalChart key={key} data={muscleUsageData} isActive={true} settedPeriod={"All"}/>);
-          }else{
-            data.push(<HexagonalChart key={key} data={null} isActive={false} settedPeriod={"All"}/>);
-          }
-          break;
-
-        case "Bar":
-          switch(element.chartDataType){
-            case "Calorie":
+    const onScrollHandler = (event) => {
+      const offsetY = event.nativeEvent.contentOffset.y;
+      setScrollOffset(offsetY);
+      scrollOffsetSV.value = offsetY;
+    };
+  
+    const autoScrollDown = () => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({
+          y: scrollOffset + 150,
+          animated: true,
+        });
+      }
+    };
+  
+    const autoScrollUp = () => {
+      if (scrollViewRef.current) {
+        scrollViewRef.current.scrollTo({
+          y: scrollOffset - 150,
+          animated: true,
+        });
+      }
+    };
+    
+    const generateChartsContent = () => {
+      let data = [];
+      if (!chartDataExercises) {
+        return (
+          <View style={[GlobalStyles.flex, GlobalStyles.center, { height: 250 }]}>
+            <Text>EL GATO ERROR - CHARTS LOADING.</Text>
+          </View>
+        );
+      }
+    
+      userLayoutData.chartStack.forEach((element, index) => {
+        const key = `${index}`;
+        let chartComponent = null;
+    
+        switch (element.chartType) {
+          case "Linear":
+            if (element.chartDataType === "Exercise") {
+              const exPastData = chartDataExercises.find(a => a.exerciseName === element.name);
+              chartComponent = exPastData ? (
+                <LinearChart
+                  key={key}
+                  name={"Benchpress"}
+                  dataa={exPastData}
+                  isActive={true}
+                  settedPeriod={element.period}
+                  userSystem={systemType}
+                />
+              ) : (
+                <LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />
+              );
+            }
+            break;
+    
+          case "Compare":
+            if (element.chartDataType === "Exercise") {
+              const wholeExPast = chartDataExercises.find(a => a.exerciseName === element.name);
+              chartComponent = wholeExPast ? (
+                <CompareChart
+                  key={key}
+                  name={"Benchpress"}
+                  dataa={wholeExPast}
+                  isActive={true}
+                  userSystem={systemType}
+                />
+              ) : (
+                <CompareChart key={key} name={"Benchpress"} dataa={null} isActive={false} />
+              );
+            }
+            break;
+    
+          case "Hexagonal":
+            chartComponent = muscleUsageData ? (
+              <HexagonalChart key={key} data={muscleUsageData} isActive={true} settedPeriod={"All"} />
+            ) : (
+              <HexagonalChart key={key} data={null} isActive={false} settedPeriod={"All"} />
+            );
+            break;
+    
+          case "Bar":
+            if (element.chartDataType === "Calorie") {
               const calorieData = pastMakroData.makroData.map(item => ({
                 date: item.date,
-                data: item.energyKcal
+                data: item.energyKcal,
               }));
-              if(calorieData){
-                data.push(<BarChart key={key} data={calorieData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#FF6600"}/>);
-              }else{
-                data.push(<BarChart key={key} data={calorieData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
-              }
-              break;
-            case "Makro":
-              
-              break;
-            case "Protein":
-              const proteinData = pastMakroData.makroData.map(item => ({
-                date: item.date,
-                data: item.proteins
-              }));
-              if(proteinData){
-                data.push(<BarChart key={key} data={proteinData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#09a357"}/>);
-              }else{
-                data.push(<BarChart key={key} data={proteinData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
-              }
-              break;
-            case "Fat":
-              const fatData = pastMakroData.makroData.map(item => ({
-                date: item.date,
-                data: item.fats
-              }));
-              if(fatData){
-                data.push(<BarChart key={key} data={fatData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#A35709"}/>);
-              }else{
-                data.push(<BarChart key={key} data={fatData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
-              }
-              break;
-            case "Carbs":
+              chartComponent = calorieData ? (
+                <BarChart
+                  key={key}
+                  data={calorieData}
+                  isActive={true}
+                  settedPeriod={"All"}
+                  system={systemType}
+                  name={element.name}
+                  color={"#FF6600"}
+                />
+              ) : (
+                <BarChart key={key} data={calorieData} isActive={false} settedPeriod={"All"} system={null} name={null} />
+              );
+            }  
+            
+            if (element.chartDataType === "Carbs") {
               const carbsData = pastMakroData.makroData.map(item => ({
                 date: item.date,
-                data: item.carbs
+                data: item.carbs,
               }));
-              if(carbsData){
-                data.push(<BarChart key={key} data={carbsData} isActive={true} settedPeriod={"All"} system={systemType} name={element.name} color={"#030eff"}/>);
-              }else{
-                data.push(<BarChart key={key} data={carbsData} isActive={false} settedPeriod={"All"} system={null} name={null}/>);
-              }
-              break;
-          }
-          break;
+              chartComponent = carbsData ? (
+                <BarChart
+                  key={key}
+                  data={carbsData}
+                  isActive={true}
+                  settedPeriod={"All"}
+                  system={systemType}
+                  name={element.name}
+                  color={"#030eff"}
+                />
+              ) : (
+                <BarChart key={key} data={carbsData} isActive={false} settedPeriod={"All"} system={null} name={null} />
+              );
+            }  
 
-        case "Circle":
-          switch(element.chartDataType){
-            case "MakroDist":
-              if(dailyMakroDist){
-                data.push(<CircleChartDist key={key} name={element.name} data={dailyMakroDist} isActive={true} system={systemType} maxMakroData={dailyMaxIntake} />)
-              }else{
-                data.push(<CircleChartDist key={key} name={element.name} data={null} isActive={false} system={null} />)
-              }
-              break;          
-          }
-          break;
-      }
-    });
+            if (element.chartDataType === "Fat") {
+              const fatData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.fats,
+              }));
+              chartComponent = fatData ? (
+                <BarChart
+                  key={key}
+                  data={fatData}
+                  isActive={true}
+                  settedPeriod={"All"}
+                  system={systemType}
+                  name={element.name}
+                  color={"#A35709"}
+                />
+              ) : (
+                <BarChart key={key} data={fatData} isActive={false} settedPeriod={"All"} system={null} name={null} />
+              );
+            }  
 
-    return data;
-  };
+            if (element.chartDataType === "Protein") {
+              const proteinData = pastMakroData.makroData.map(item => ({
+                date: item.date,
+                data: item.proteins,
+              }));
+              chartComponent = proteinData ? (
+                <BarChart
+                  key={key}
+                  data={proteinData}
+                  isActive={true}
+                  settedPeriod={"All"}
+                  system={systemType}
+                  name={element.name}
+                  color={"#09a357"}
+                />
+              ) : (
+                <BarChart key={key} data={proteinData} isActive={false} settedPeriod={"All"} system={null} name={null} />
+              );
+            }  
+            break;
+    
+          case "Circle":
+            if (element.chartDataType === "MakroDist") {
+              chartComponent = dailyMakroDist ? (
+                <CircleChartDist
+                  key={key}
+                  name={element.name}
+                  data={dailyMakroDist}
+                  isActive={true}
+                  system={systemType}
+                  maxMakroData={dailyMaxIntake}
+                />
+              ) : (
+                <CircleChartDist key={key} name={element.name} data={null} isActive={false} system={null} />
+              );
+            }
+            break;
+        }
+    
+        if (chartComponent) {
+          data.push(
+            <DraggableItem key={key} onDragEnd={(position) => handleDragEnd(position, index)} onDelete={() => onDeleteChartComp(index)} autoScrollDown={autoScrollDown} autoScrollUp={autoScrollUp} scrollOffsetSV={scrollOffsetSV}>
+              {chartComponent}
+            </DraggableItem>
+          );
+        }
+      });
+    
+      return data;
+    };
+    
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
@@ -433,7 +551,7 @@ function HomeScreen({ navigation }) {
           </>
         ):(
           <>
-            <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+            <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} ref={scrollViewRef} onScroll={onScrollHandler} scrollEventThrottle={1}>
               <View style={styles.row}>
                 <View style={styles.wideBlockTop}>
                   {dailyMaxIntake && currentDailyIntake ? (
