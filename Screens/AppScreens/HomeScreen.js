@@ -36,6 +36,8 @@ function HomeScreen({ navigation }) {
   const [pastMakroData, setPastMakroData] = useState(null);
   const [dailyMakroDist, setDailyMakroDist] = useState(null);
 
+  const [mainErrors, setMainErrors] = useState(false);
+
   useEffect(() => {
       getMaxDailyIntake();
       getCurrentDailyIntake();
@@ -88,11 +90,18 @@ function HomeScreen({ navigation }) {
   const getUserMetricSystem = async () => {
     try{
       const res = await UserDataService.getUserWeightType(setIsAuthenticated, navigation);
-      const data = await res.json();
-      setSystemType(data);
+      if (typeof res === "string") {
+        setSystemType(res);
+      } else if (res && res.ok) {
+        const data = await res.json();
+        setSystemType(data);
+      } else {
+        console.log("hahaha");
+        setMainErrors(true);
+      }
     }catch(error){
-      //error
       console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -102,7 +111,7 @@ function HomeScreen({ navigation }) {
       const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
       const res = await UserDataService.getUserCurrentWaterIntake(setIsAuthenticated, navigation, currentDate);
       if(!res.ok){
-        //error net view;
+        setMainErrors(true);
         return;
       }
 
@@ -110,7 +119,7 @@ function HomeScreen({ navigation }) {
       setUserWaterIntake(waterIntake);
 
     }catch(error){
-      //error - net
+      setMainErrors(true);
       console.log(error);
     }
   };
@@ -119,14 +128,14 @@ function HomeScreen({ navigation }) {
     try{
       const data = await UserDataService.getUserCaloriesIntake(setIsAuthenticated, navigation);
       if(!data){
-        //error internet view
+        setMainErrors(true);
         return;
       }
 
       setDailyMaxIntake(data);
 
     }catch(error){
-      //error -> net view
+      setMainErrors(true);
       console.log(error);
     }
   };
@@ -138,7 +147,7 @@ function HomeScreen({ navigation }) {
 
       const res = await UserDataService.getCurrentUserMakroIntake(setIsAuthenticated, navigation, currentDate);
       if(!res.ok){
-        //error - net view.
+        setMainErrors(true);
         return;
       }
 
@@ -146,8 +155,7 @@ function HomeScreen({ navigation }) {
       setCurrentDailyIntake(data);
 
     }catch(error){
-      //return error
-      console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -155,22 +163,17 @@ function HomeScreen({ navigation }) {
     try{
       const res = await UserDataService.getUserLayout(setIsAuthenticated, navigation);
       if(!res){
-        //error
-        //net
-        console.log("error while getting layout.");
+        setMainErrors(true);
         setUserLayoutError("");
         return;
       }
 
       setAreAnimationsActive(res.animations);
       setUserLayoutData(res);
-      console.log(JSON.stringify(res));
 
     }catch(error){
-      //error 
-      //throw -> fallback to normal
+      setMainErrors(true);
       setUserLayoutError("");
-      console.log("error " + error);
     }
   };
 
@@ -306,7 +309,8 @@ function HomeScreen({ navigation }) {
   const generateChartsContent = () => {
     let data = [];
     if (!chartDataExercises) {
-      return null;
+      {/** error charts loading - net elgato */}
+      return <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 250}]}><Text>EL GATO ERROR - CHARTS LOADING.</Text></View>;
     }
 
     userLayoutData.chartStack.forEach((element, index) => {
@@ -421,68 +425,78 @@ function HomeScreen({ navigation }) {
     <GestureHandlerRootView style={{ flex: 1 }}>
     <SafeAreaView style={styles.container}>
     <StatusBar backgroundColor="#000" barStyle="light-content" />
-        <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-          <View style={styles.row}>
-            <View style={styles.wideBlockTop}>
-              {dailyMaxIntake && currentDailyIntake ? (
-                <NutriContainer intakeData={currentDailyIntake} dailyMax={dailyMaxIntake} system={"metric"}/>
-              ):(
-                <ActivityIndicator size="small" color="#FF8303" />
-              )}
+        {mainErrors ? (
+          <>
+            <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                <Text>EL GATO ERROR VIEW!</Text>
             </View>
-          </View>
-
-          <View style={styles.row}>
-              <View style={styles.block}>
-                <BurntCalorieContainer totalBurnt={100} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."}/>
-              </View>
-              <View style={styles.block}>
-                {userWaterIntake ? (
-                  <WaterContainer initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc}/>
-                ):(
-                  <WaterContainer />
-                )}
-              </View>
-          </View>
-
-          {userLayoutData ? (
-            <>
-              {chartDataLoading ? (
-                  <>
-                    <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
-                      <ActivityIndicator size="small" color="#FF8303" />
-                      <Text style={[GlobalStyles.text16, {marginTop: 10}]}>setting up your awesome charts...</Text>
-                    </View>
-                  </>
-              ): (
-                <>
-                  {generateChartsContent()}
-                </>
-              )}              
-            </>
-          ):(
-            <>
-              <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
-                {userLayoutError ? (
-                  <>
-                    {/* EL GATO error view - TODO  */}
-                    <Text style={[GlobalStyles.orange, GlobalStyles.text16]}>SOMETHING WENT WRONG</Text>
-                  </>
-                ):(
-                  <>
+          </>
+        ):(
+          <>
+            <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+              <View style={styles.row}>
+                <View style={styles.wideBlockTop}>
+                  {dailyMaxIntake && currentDailyIntake ? (
+                    <NutriContainer intakeData={currentDailyIntake} dailyMax={dailyMaxIntake} system={"metric"}/>
+                  ):(
                     <ActivityIndicator size="small" color="#FF8303" />
-                    <Text style={[GlobalStyles.text16, {marginTop: 10}]}>please wait we are setting up your layout...</Text>
-                  </>
-                )}
+                  )}
+                </View>
               </View>
-            </>
-          )}         
 
-          <TouchableOpacity style={[styles.bottomHintCont, GlobalStyles.center]}>
-               <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>personalize my home page</Text>
-          </TouchableOpacity>
+              <View style={styles.row}>
+                  <View style={styles.block}>
+                    <BurntCalorieContainer totalBurnt={100} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."}/>
+                  </View>
+                  <View style={styles.block}>
+                    {userWaterIntake ? (
+                      <WaterContainer initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc}/>
+                    ):(
+                      <WaterContainer />
+                    )}
+                  </View>
+              </View>
 
-        </ScrollView>
+              {userLayoutData ? (
+                <>
+                  {chartDataLoading ? (
+                      <>
+                        <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
+                          <ActivityIndicator size="small" color="#FF8303" />
+                          <Text style={[GlobalStyles.text16, {marginTop: 10}]}>setting up your awesome charts...</Text>
+                        </View>
+                      </>
+                  ): (
+                    <>
+                      {generateChartsContent()}
+                    </>
+                  )}              
+                </>
+              ):(
+                <>
+                  <View style={[styles.emptyLayoutContiner, GlobalStyles.center]}>
+                    {userLayoutError ? (
+                      <>
+                        {/* EL GATO error view - TODO  */}
+                        <Text style={[GlobalStyles.orange, GlobalStyles.text16]}>SOMETHING WENT WRONG</Text>
+                      </>
+                    ):(
+                      <>
+                        <ActivityIndicator size="small" color="#FF8303" />
+                        <Text style={[GlobalStyles.text16, {marginTop: 10}]}>please wait we are setting up your layout...</Text>
+                      </>
+                    )}
+                  </View>
+                </>
+              )}         
+
+              <TouchableOpacity style={[styles.bottomHintCont, GlobalStyles.center]}>
+                  <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>personalize my home page</Text>
+              </TouchableOpacity>
+
+            </ScrollView>
+          </>
+        )}     
 
       <NavigationMenu navigation={navigation} currentScreen="Home" />
     </SafeAreaView>
