@@ -570,7 +570,7 @@ function HomeScreen({ navigation }) {
                     {userWaterIntake ? (
                       <WaterContainer initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc}/>
                     ):(
-                      <WaterContainer />
+                      <WaterContainer addWaterFunc={addWaterFunc} />
                     )}
                   </View>
               </View>

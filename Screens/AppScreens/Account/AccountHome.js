@@ -2,26 +2,17 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
-
-const logout = async (navigation) => {
-  try {
-    await AsyncStorage.removeItem('jwtToken');
-    navigation.reset({
-      index: 0,
-      routes: [{ name: 'Start' }],
-    });
-  } catch (error) {
-    console.error('Error during logout', error);
-    //show
-  }
-};
+import AccountHeader from '../../../Components/Account/AccountHeader';
 
 function AccountHome({ navigation }) {
   return (
     <SafeAreaView style={styles.container}>
+      <AccountHeader />
+      
       <View style={styles.content}>
-        <Text>ACC Screen</Text>
+        
       </View>
+
       <NavigationMenu navigation={navigation} currentScreen="AccountHome" />
     </SafeAreaView>
   );
