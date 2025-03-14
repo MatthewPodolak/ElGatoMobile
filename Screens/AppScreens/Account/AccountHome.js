@@ -1,30 +1,96 @@
-import React, { useState } from 'react';
-import { View, Text,ScrollView, StyleSheet, TouchableOpacity } from 'react-native';
+import React, { useEffect, useState } from 'react';
+import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import AccountHeader from '../../../Components/Account/AccountHeader';
 import { GlobalStyles } from '../../../Styles/GlobalStyles';
 import Challange from '../../../Components/Account/Challange';
 
+import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataService';
+
+function chunkArray(array, size) {
+  const chunkedArr = [];
+  for (let i = 0; i < array.length; i += size) {
+    chunkedArr.push(array.slice(i, i + size));
+  }
+  return chunkedArr;
+}
 
 function AccountHome({ navigation }) {
-  const [activeTab, setActiveTab] = useState("Challanges");
+  const [activeTab, setActiveTab] = useState("Challenges");
+  const [challengesList, setChallengesList] = useState(null);
   
-  const setActiveTabFun = (type) => {
-
-
+  const setActiveTabFun = async (type) => {
     setActiveTab(type);
+    switch(type){
+      case "Challenges":
+        if(challengesList?.length === 0){
+          await getChallengesList();
+        }
+        break;
+      case "Leaderboards":
+
+        break;
+      case "Friends":
+
+        break;
+    }
+  };
+
+  useEffect(() => {
+      if(!challengesList){
+        getChallengesList();
+      }
+  }, []);
+
+  const getChallengesList = async () => {
+    try{
+      const res = await CardioDataService.getActiveChallenges();
+      if(!res.ok){
+        setChallengesList([]);
+      }
+
+      const data = await res.json();
+      setChallengesList(data);
+
+    }catch(error){
+      setChallengesList([]);
+    }
   };
 
   const renderContent = () => { 
     switch(activeTab){
-        case "Challanges":
+        case "Challenges":
             return(
               <View style={[GlobalStyles.flex, GlobalStyles.center]}>
-                <View style={[styles.challangeRow]}>
-                  <Challange />
-                  <Challange />
-                </View>
+                {challengesList ? (
+                  <>
+                    {challengesList?.length === 0 ? (
+                      <>
+                        <View style={[styles.challangeRow]}>
+
+                        </View>
+                      </>
+                    ):(
+                      chunkArray(challengesList, 2).map((row, rowIndex) => (
+                        <View style={[styles.challangeRow]} key={rowIndex}>
+                          {row.map((challenge, challengeIndex) => (
+                            <Challange
+                              key={challengeIndex}
+                              data={challenge}
+                            />
+                          ))}
+                        </View>
+                      ))
+                    )}                
+                  </>
+                ):(
+                  <>
+                    <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 550}]}>
+                      <ActivityIndicator size="large" color="#FF8303" />
+                    </View>
+                  </>
+                )}
               </View>
             );
           break;
@@ -59,13 +125,13 @@ function AccountHome({ navigation }) {
 
       <ScrollView>
             <View style={styles.categoryContainer}>
-                <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Challanges")} ><Text style={[styles.optionText, activeTab === "Challanges" && styles.activeTab]}>Challanges</Text></TouchableOpacity>
+                <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Challenges")} ><Text style={[styles.optionText, activeTab === "Challenges" && styles.activeTab]}>Challenges</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Leaderboards")} ><Text style={[styles.optionText, activeTab === "Leaderboards" && styles.activeTab]}>Leaderboards</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Friends")} ><Text style={[styles.optionText, activeTab === "Friends" && styles.activeTab]}>Friends</Text></TouchableOpacity>
             </View>
-            <View style={styles.content}>
+            <ScrollView style={styles.content}>
               {renderContent()}
-            </View>
+            </ScrollView>
       </ScrollView>
 
       <NavigationMenu navigation={navigation} currentScreen="AccountHome" />
@@ -81,8 +147,7 @@ const styles = StyleSheet.create({
   },
   content: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+
   },
   categoryContainer: {
     marginTop: 15,
@@ -115,6 +180,7 @@ const styles = StyleSheet.create({
     alignContent: 'center',
     alignItems: 'stretch', 
   },
+  
 });
 
 export default AccountHome;

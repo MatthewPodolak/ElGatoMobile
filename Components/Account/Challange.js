@@ -4,24 +4,41 @@ import { BlurView } from 'expo-blur';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
 function Challange({ data }) {
+
+    function formatEndDate(dateString) {
+        const dateObj = new Date(dateString);
+        
+        if (isNaN(dateObj.getTime())) {
+          return '';
+        }
+      
+        const day = dateObj.getDate();
+        const monthName = dateObj.toLocaleString('default', { month: 'long' });
+        return `${day} ${monthName}`;
+      }
+      
+
   return (
     <BlurView style={styles.container} intensity={125} tint="light">
       <View style={[styles.titleContainer, GlobalStyles.centerLeft]}>
         <Text style={[GlobalStyles.text18, GlobalStyles.bold]}>
-          March 10 K. 
+          {data.name}
         </Text>
       </View>
 
       <View style={[styles.pictureContainer, GlobalStyles.center]}>
         <Image
           style={{ width: 80, height: 80, resizeMode: 'contain' }}
-          source={{ uri: 'http://192.168.0.143:5094/badges/sampleBadge.png' }}
+          source={{ uri: 'http://192.168.0.143:5094' + data.badge }}
         />
       </View>
 
       <View style={styles.descriptionContainer}>
         <Text style={[GlobalStyles.text14]}>
-          Run 10km! Will you accept the challenge? 
+          {data.description}
+        </Text>
+        <Text style={[GlobalStyles.text14]}>
+            Ends {formatEndDate(data.endDate)}
         </Text>
       </View>
 
