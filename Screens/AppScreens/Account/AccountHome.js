@@ -85,7 +85,7 @@ function AccountHome({ navigation }) {
 
   const getChallengesList = async () => {
     try{
-      const res = await CardioDataService.getActiveChallenges();
+      const res = await CardioDataService.getActiveChallenges(setIsAuthenticated, navigation);
       if(!res.ok){
         setChallengesList([]);
       }
