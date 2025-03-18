@@ -4,6 +4,14 @@ export const GlobalStyles = StyleSheet.create({
     flex: {
         flex: 1,
     },
+    text12:{
+        fontSize: 12,
+        fontFamily: 'Helvetica',
+    },
+    text13: {
+        fontSize: 13,
+        fontFamily: 'Helvetica',
+    },
     text14: {
         fontSize: 14,
         fontFamily: 'Helvetica',
@@ -57,7 +65,7 @@ export const GlobalStyles = StyleSheet.create({
     center: {
         justifyContent: 'center',
         alignItems: 'center',
-    },
+    },   
     centerLeft: {
         justifyContent: 'center',
         alignItems: 'flex-start', 

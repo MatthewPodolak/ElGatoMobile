@@ -6,7 +6,6 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 export default class CardioDataService {
 
       static async getActiveChallenges(){
-
         const response = await fetchWithTimeout(
             `${config.ipAddress}/api/Cardio/GetActivChallenges`,
             {
@@ -19,5 +18,27 @@ export default class CardioDataService {
         );
 
         return response;
-      }
+      };
+      
+      static async getCurrentlyActiveChallanges(setIsAuthenticated, navigation){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Cardio/GetCurrentUserActiveChallanges`,
+            {
+                method: 'GET',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+      };
 }
