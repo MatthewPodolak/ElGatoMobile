@@ -11,7 +11,7 @@ export default class CardioDataService {
             await AuthService.logout(setIsAuthenticated, navigation);
             return null;
         }
-        
+
         const response = await fetchWithTimeout(
             `${config.ipAddress}/api/Cardio/GetActivChallenges`,
             {
@@ -41,6 +41,28 @@ export default class CardioDataService {
                 headers: {
                     'Content-Type': 'application/json',
                     'Authorization': `Bearer ${token}`,
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+      };
+
+      static async joinChallenge(setIsAuthenticated, navigation, challengeId){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Cardio/JoinChallenge?challengeId=${encodeURIComponent(challengeId)}`,
+            {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,                   
                 },
             },
             config.timeout

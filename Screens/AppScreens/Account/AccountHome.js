@@ -102,18 +102,30 @@ function AccountHome({ navigation }) {
     try{
       const res = await CardioDataService.getCurrentlyActiveChallanges(setIsAuthenticated, navigation);
       if(!res.ok){
-        console.log("chuj");
         setActiveChallengesList([]);
         return;
       }
 
       const data = await res.json();
-      console.log("passed -> " + JSON.stringify(data));
       setActiveChallengesList(data);
 
     }catch(error){
-      console.log("chuj" + error);
       setActiveChallengesList([]);
+    }
+  };
+
+  const joinChallange = async (challengeId) => {
+    let removedChallange = challengesList.find(a=>a.id === challengeId);
+    setChallengesList((prevList) => prevList.filter(a => a.id !== challengeId));
+
+    try{
+      const res = await CardioDataService.joinChallenge(setIsAuthenticated, navigation, challengeId);
+      if(res.ok){
+        setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
+        return;
+      }
+    }catch(error){
+      setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
     }
   };
 
@@ -147,6 +159,7 @@ function AccountHome({ navigation }) {
                                 <Challange
                                   key={challengeIndex}
                                   data={challenge}
+                                  joinChallengeFunc={joinChallange}
                                 />
                               ))}
                             </View>

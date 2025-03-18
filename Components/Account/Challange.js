@@ -3,7 +3,7 @@ import { View, StyleSheet, Text, Image, TouchableOpacity } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-function Challange({ data }) {
+function Challange({ data, joinChallengeFunc }) {
 
     function formatEndDate(dateString) {
         const dateObj = new Date(dateString);
@@ -16,7 +16,6 @@ function Challange({ data }) {
         const monthName = dateObj.toLocaleString('default', { month: 'long' });
         return `${day} ${monthName}`;
       }
-      
 
   return (
     <BlurView style={styles.container} intensity={125} tint="light">
@@ -43,7 +42,7 @@ function Challange({ data }) {
       </View>
 
       <View style={[styles.buttonContainer, GlobalStyles.center]}>
-        <TouchableOpacity style={[styles.button, GlobalStyles.center]}>
+        <TouchableOpacity onPress={() => joinChallengeFunc(data.id) } style={[styles.button, GlobalStyles.center]}>
           <Text style={[GlobalStyles.text16, GlobalStyles.bold, GlobalStyles.white]}>
             Roll in!
           </Text>
