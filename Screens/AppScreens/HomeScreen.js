@@ -141,7 +141,7 @@ function HomeScreen({ navigation }) {
 
   const getCurrentStepsFromPedometer = async () => {
     if (Platform.OS !== 'ios') {
-      //Android implementation call using google fit.
+      //Android implementation call using health connect.
       return;
     }
   

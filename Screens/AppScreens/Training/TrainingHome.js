@@ -16,8 +16,10 @@ import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 
 function TrainingHome({ navigation, route }) {
   const { setIsAuthenticated } = useContext(AuthContext);
+  const [activeTab, setActiveTab] = useState("Gym");
   const [measureType, setMeasureType] = useState("metric");
-  const [isLoading, setIsLoading] = useState(false);
+  const [isGymLoading, setIsGymLoading] = useState(false);
+  const [isCardioLoading, setIsCarioLoading] = useState(false);
   const [isTrainingBeingSaved, setIsTrainingBeingSaved] = useState(false);
   const [selectedDate, setSelectedDate] = useState(null);
   const [trainingData, setTrainingData] = useState(null);
@@ -29,12 +31,19 @@ function TrainingHome({ navigation, route }) {
   const [serieRemovalList, setSeriesRemovalList] = useState([]);
   const [temporarlyRemovedSeries, setTemporarlyRemovedSeries] = useState([]);
 
+  //cardio variables
+  const [cardioTrainingData, setCardioTrainingData] = useState(null);
+
   const [optionsVisible, setOptionsVisible] = useState(false);
   const optionsAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
   const timeoutRefUpdate = useRef(null);
+
+  const setActiveTabFunc = (value) => {
+    setActiveTab(value);
+  };
 
   useFocusEffect(
     useCallback(() => {
@@ -765,7 +774,7 @@ function TrainingHome({ navigation, route }) {
     }
     
     if(canBeBlocked){
-      setIsLoading(true);
+      setIsGymLoading(true);
     }
 
     try{
@@ -776,7 +785,7 @@ function TrainingHome({ navigation, route }) {
       }
 
       const data = await res.json();
-      setIsLoading(false);
+      setIsGymLoading(false);
       setTrainingData(data);
 
     }catch(error){
@@ -801,61 +810,108 @@ function TrainingHome({ navigation, route }) {
     navigation.navigate('LoadExercises', { recivedDate: selectedDate });
   };
 
+  const navigateToStartCardio = () => {
+    
+  };
+
   return (
     <SafeAreaView style={styles.container}>
-      <Calendar onDateSelect={handleDateSelect} />     
-      {isLoading ? (
-          <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-            <ActivityIndicator size="large" color="#FF8303" />
-          </View>
-        ) : (
-          trainingData?.exercises && trainingData.exercises.length > 0 ? (
-            <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              <View style={styles.topMargin}></View>
-              {trainingData.exercises.map((model, index) => (
-                <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest} updateSerie={updateSerie}/>
-              ))}
-              <View style={styles.saveBottomRow}>
-                {isTrainingBeingSaved ? (
-                  <>
-                  <View style={styles.saveLimiter}>
-                    <ActivityIndicator size="small" color="#FF8303" />
-                  </View>
-                  </>
-                ):(
-                  <>
-                  <TouchableOpacity onPress={() => saveTraining()}>
-                    <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>Save training</Text>
-                  </TouchableOpacity>
-                  </>
-                )}               
-              </View>
-              <View style={styles.bottomMargin}></View>
-            </ScrollView>
-          ) : (
+      <Calendar onDateSelect={handleDateSelect} />  
+      <View style={styles.categoryContainer}>
+        <TouchableOpacity style={styles.option} onPress={() => setActiveTabFunc("Gym")} ><Text style={[styles.optionTextSecondary, activeTab === "Gym" && styles.activeTab]}>Gym</Text></TouchableOpacity>
+        <TouchableOpacity style={styles.option} onPress={() => setActiveTabFunc("Cardio")} ><Text style={[styles.optionTextSecondary, activeTab === "Cardio" && styles.activeTab]}>Cardio</Text></TouchableOpacity>
+      </View>  
+      {activeTab === "Gym" ? (
+        <>
+          {isGymLoading ? (
             <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-              <View style={styles.emptyGatoLottie}></View>
-              <View style={styles.emptySearchText}>
-                <Text style={styles.emptySearchTxt}>
-                  <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
-                </Text>
-              </View>
+              <ActivityIndicator size="large" color="#FF8303" />
             </View>
-          )
-        )}
-        
+          ) : (
+            trainingData?.exercises && trainingData.exercises.length > 0 ? (
+              <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
+
+                <View style={styles.topMargin}></View>
+                {trainingData.exercises.map((model, index) => (
+                  <TrainingDayExerciseDisplay key={index} exercise={model.exercise} pastExerciseData={model.pastData} measureType={measureType} serieAddition={serieAddition} serieRemoval={serieRemoval} removeExerciseFromTrainingDat={removeExerciseFromTrainingDat} stopRemovalTimeout={stopRemovalTimeout} likeExerciseRequest={likeExerciseRequest} updateSerie={updateSerie}/>
+                ))}
+                <View style={styles.saveBottomRow}>
+                  {isTrainingBeingSaved ? (
+                    <>
+                    <View style={styles.saveLimiter}>
+                      <ActivityIndicator size="small" color="#FF8303" />
+                    </View>
+                    </>
+                  ):(
+                    <>
+                    <TouchableOpacity onPress={() => saveTraining()}>
+                      <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>Save training</Text>
+                    </TouchableOpacity>
+                    </>
+                  )}               
+                </View>
+                <View style={styles.bottomMargin}></View>
+              </ScrollView>
+            ) : (
+              <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                <View style={styles.emptyGatoLottie}></View>
+                <View style={styles.emptySearchText}>
+                  <Text style={styles.emptySearchTxt}>
+                    <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
+                  </Text>
+                </View>
+              </View>
+            )
+          )}
+        </>
+      ):(
+        <>
+          {isCardioLoading ? (
+            <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+              <ActivityIndicator size="large" color="#FF8303" />
+            </View>
+          ):(
+            cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
+              <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
+               
+              </ScrollView>
+            ) : (
+              <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                <View style={styles.emptyGatoLottie}></View>
+                <View style={styles.emptySearchText}>
+                  <Text style={styles.emptySearchTxt}>
+                    <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
+                  </Text>
+                </View>
+              </View>
+            )
+          )}
+        </>
+      )}
+                
         <Animated.View
           style={[
             styles.buttonOptionContainer,
             { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
           ]}
         >
-          <TouchableOpacity style={styles.expOptionRow} onPress={navigateToAddExercise}>
-            <Text style={[GlobalStyles.text16]}>Add new</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.expOptionRow} onPress={navigateToLoadPlans} >
-            <Text style={[GlobalStyles.text16]}>Load plan</Text>
-          </TouchableOpacity>
+          {activeTab === "Gym" ? (
+              <>
+                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToAddExercise}>
+                  <Text style={[GlobalStyles.text16]}>Add new</Text>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToLoadPlans} >
+                  <Text style={[GlobalStyles.text16]}>Load plan</Text>
+                </TouchableOpacity>
+              </>
+          ):(
+              <>
+                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToStartCardio} >
+                  <Text style={[GlobalStyles.text16]}>Start activity</Text>
+                </TouchableOpacity>
+              </>
+          )}
+          
         </Animated.View>
 
         <TouchableOpacity style={styles.addExerciseButton} onPress={optionButtonPressed}>
@@ -946,7 +1002,30 @@ const styles = StyleSheet.create({
   },
   saveLimiter: {
     width: '10%',
-  }
+  },
+
+  categoryContainer: {
+    marginTop: 15,
+    width: '100%',
+    flexDirection: 'row',
+  },
+  option: {
+    marginLeft: 15,
+  },
+  optionText: {
+    fontSize: 18,
+    fontFamily: 'Helvetica',
+  },
+  optionTextSecondary: {
+    fontSize: 14,
+    fontFamily: 'Helvetica',
+  },
+  activeTab: {
+    color: '#FF8303',
+    borderBottomColor: '#FF8303', 
+    borderBottomWidth: 2,
+    paddingBottom: 5,
+  },
 });
 
 export default TrainingHome;

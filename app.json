@@ -18,7 +18,8 @@
     "ios": {
       "supportsTablet": true,
       "infoPlist": {
-        "NSCameraUsageDescription": "Allow ElGatoMobile to access the camera to scan barcodes."
+        "NSCameraUsageDescription": "Allow ElGatoMobile to access the camera to scan barcodes.",
+        "NSMotionUsageDescription": "Allow ElGatoMobile to access motion data to track your daily step count."
       }
     },
     "android": {
