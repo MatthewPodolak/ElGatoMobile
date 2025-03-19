@@ -8,7 +8,7 @@ export default class UserDataService {
     static async getUserCaloriesIntake(setIsAuthenticated, navigation) {
         const value = await AsyncStorage.getItem("calorieIntake");
         if(value != null){
-            return JSON.parse(value);;
+            return JSON.parse(value);
         }
 
         const token = await AuthService.getToken();
@@ -93,6 +93,17 @@ export default class UserDataService {
 
         return measureType;
     };
+
+    static async getDailyStepsGoal(){
+        const stepsGoalValue = await AsyncStorage.getItem("dailyStepsGoal");
+        if(stepsGoalValue != null){
+            return JSON.parse(stepsGoalValue);
+        }
+
+        let basicGoal = 3000;
+        await AsyncStorage.setItem("dailyStepsGoal", JSON.stringify(basicGoal));
+        return basicGoal;
+    }
 
     static async getUserCurrentWaterIntake(setIsAuthenticated, navigation, currentDate){
         const token = await AuthService.getToken();

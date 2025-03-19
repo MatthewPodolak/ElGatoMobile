@@ -7,6 +7,8 @@ import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableItem from '../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
+import { Pedometer } from 'expo-sensors';
+import { Platform } from 'react-native';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
@@ -22,6 +24,9 @@ import StepsCounter from '../../Components/Main/StepsCounter.js';
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
+  const [currentSteps, setCurrentSteps] = useState(0);
+  const [dailyStepsGoal, setDailyStepsGoal] = useState(0);
+  const [isPedometerAvaliable, setIsPedometerAvaliable] = useState(true);
   const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
   const [currentDailyIntake, setCurrentDailyIntake] = useState(null);
   const [userWaterIntake, setUserWaterIntake] = useState(null);
@@ -47,6 +52,7 @@ function HomeScreen({ navigation }) {
   useEffect(() => {
       getMaxDailyIntake();
       getCurrentDailyIntake();
+      getDailyStepsGoal();
       getUserMetricSystem();
       getWaterIntake();
       getUserLayoutData();
@@ -58,6 +64,20 @@ function HomeScreen({ navigation }) {
       }
   }, [userLayoutData]);
 
+  useEffect(() => {
+    let subscription;
+    const subscribe = async () => {
+      subscription = await getCurrentStepsFromPedometer();
+    };
+    subscribe();
+    
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
+  
 
   const getChartsData = async () => {
     setChartDataLoading(true);
@@ -108,6 +128,44 @@ function HomeScreen({ navigation }) {
       console.log(error);
       setSystemType("metric");
     }
+  };
+
+  const getDailyStepsGoal = async () => {
+    try{
+      const res = await UserDataService.getDailyStepsGoal();
+      setDailyStepsGoal(res);
+    }catch(error){
+      //el gato net
+    }
+  };
+
+  const getCurrentStepsFromPedometer = async () => {
+    if (Platform.OS !== 'ios') {
+      //Android implementation call using google fit.
+      return;
+    }
+  
+    const isAvailable = await Pedometer.isAvailableAsync();
+    if (!isAvailable) {
+      setIsPedometerAvaliable(false);
+      return;
+    }
+  
+    const subscription = Pedometer.watchStepCount(result => {
+      setCurrentSteps(result.steps);
+    });
+  
+    const end = new Date();
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+    try {
+      const { steps } = await Pedometer.getStepCountAsync(start, end);
+      setCurrentSteps(steps);
+    } catch (error) {
+      console.log("Error fetching", error);
+    }
+    
+    return subscription;
   };
 
   const getWaterIntake = async () => {
@@ -576,9 +634,15 @@ function HomeScreen({ navigation }) {
                   </View>
               </View>
 
-              <View style={styles.row}>
-                <StepsCounter dailyGoal={2410} currentSteps={540} />
-              </View>
+              {isPedometerAvaliable ? (
+                <>
+                  <View style={styles.row}>
+                    <StepsCounter dailyGoal={dailyStepsGoal} currentSteps={currentSteps} />
+                  </View>
+                </>
+              ):(
+                <></>
+              )}
 
               {userLayoutData ? (
                 <>
