@@ -17,6 +17,7 @@ import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 import HexagonalChart from '../../Components/Main/HexagonalChart.js';
 import BarChart from '../../Components/Main/BarChart.js';
 import CircleChartDist from '../../Components/Main/CircleChartDist.js';
+import StepsCounter from '../../Components/Main/StepsCounter.js';
 
 function HomeScreen({ navigation }) {
   const { setIsAuthenticated } = useContext(AuthContext);
@@ -573,6 +574,10 @@ function HomeScreen({ navigation }) {
                       <WaterContainer addWaterFunc={addWaterFunc} />
                     )}
                   </View>
+              </View>
+
+              <View style={styles.row}>
+                <StepsCounter dailyGoal={2410} currentSteps={540} />
               </View>
 
               {userLayoutData ? (
