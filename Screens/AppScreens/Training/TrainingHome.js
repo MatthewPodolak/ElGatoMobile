@@ -811,7 +811,7 @@ function TrainingHome({ navigation, route }) {
   };
 
   const navigateToStartCardio = () => {
-    
+    navigation.navigate('CardioStartScreen');
   };
 
   return (

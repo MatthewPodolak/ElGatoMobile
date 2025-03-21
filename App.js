@@ -36,6 +36,8 @@ import AddExerciseScreen from './Screens/AppScreens/Training/AddExercise';
 import InspectExerciseScreen from './Screens/AppScreens/Training/InspectExercise';
 import LoadExercises from './Screens/AppScreens/Training/LoadExercises';
 
+import CardioStartScreen from './Screens/AppScreens/Training/CardioStart';
+
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
 import * as Font from 'expo-font';
@@ -115,6 +117,7 @@ function App() {
             <Stack.Screen name="SavedMeals" component={SavedMealsScreen}/>
             <Stack.Screen name="InspectExercise" component={InspectExerciseScreen}/>
             <Stack.Screen name="LoadExercises" component={LoadExercises} />
+            <Stack.Screen name="CardioStartScreen" component={CardioStartScreen} />
           </>
         )}
       </Stack.Navigator>
