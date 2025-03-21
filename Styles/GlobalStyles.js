@@ -4,6 +4,12 @@ export const GlobalStyles = StyleSheet.create({
     flex: {
         flex: 1,
     },
+    column: {
+        flexDirection: 'column',
+    },
+    row:{
+        flexDirection: 'row',
+    },
     text12:{
         fontSize: 12,
         fontFamily: 'Helvetica',

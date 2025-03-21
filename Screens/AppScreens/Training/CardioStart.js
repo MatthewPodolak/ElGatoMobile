@@ -1,14 +1,23 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image } from 'react-native';
 import { activities } from '../../../assets/Data/activities.js';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { checkAndRequestLocationPermission } from '../../../Services/Helpers/Location/LocationPermissionHelper.js';
+import MapView, { UrlTile, Marker } from 'react-native-maps';
+import * as Location from 'expo-location';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import StartIcon from '../../../assets/main/Activities/play-fill.svg';
 import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
+import MapMarkerStatic from '../../../assets/main/Navigation/gps_icon.png';
 
 function CardioStart({ navigation }) {
+  const [currentLocation, setCurrentLocation] = useState(null);
+  const [locationError, setLocationError] = useState(false);
+  const [locationWarning, setLocationWarining] = useState(false);
+  const [checkingLocationPermissions, setCheckingLocationPermissions] = useState(true);
+  const [isLocationPermitted, setIsLocationPermitted] = useState(false);
   const [activityType, setActivityType] = useState("Running");
   const [activitySelectorModalVisible, setActivitySelectorModalVisible] = useState(false);
   const activeActivity = activities.find(activity => activity.name === activityType);
@@ -19,8 +28,63 @@ function CardioStart({ navigation }) {
     acc[activity.Group].push(activity);
     return acc;
   }, {});
+  
+  useEffect(() => {
+    let subscription;
+    (async () => {
+      try {
+        const permitted = await checkAndRequestLocationPermission();
+        setIsLocationPermitted(permitted);
+        setCheckingLocationPermissions(false);
+        if (permitted) {
+          try {
+            const location = await Location.getCurrentPositionAsync({ accuracy: Location.Accuracy.High, maximumAge: 10000, timeout: 15000 });
+            const { latitude, longitude, heading } = location.coords;
 
+            setCurrentLocation({
+              latitude,
+              longitude,
+              heading: heading || 0,
+              latitudeDelta: 0.0922,
+              longitudeDelta: 0.0421,
+            });
 
+          } catch (error) {
+            setCurrentLocation({latitude: 37.78825, longitude: -122.4324, heading: 0, latitudeDelta: 0.0922, longitudeDelta: 0.0421,});
+            setLocationError(true);
+          }
+
+          subscription = await Location.watchPositionAsync(
+            {
+              accuracy: Location.Accuracy.High,
+              timeInterval: 5000, //per 5 sec -- CHECK!
+              distanceInterval: 1, //per meter moved.
+            },
+            (newLocation) => {
+              const { latitude, longitude, heading } = newLocation.coords;
+              setCurrentLocation({
+                latitude,
+                longitude,
+                heading: heading || 0,
+                latitudeDelta: 0.0922,
+                longitudeDelta: 0.0421,
+              });
+            }
+          );
+        }
+      } catch (error) {
+        setCheckingLocationPermissions(false);
+        setLocationError(true);
+      }
+    })();
+
+    return () => {
+      if (subscription) {
+        subscription.remove();
+      }
+    };
+  }, []);
+  
   const navigateBack = () => {
     navigation.goBack();
   };
@@ -42,7 +106,68 @@ function CardioStart({ navigation }) {
             </View>
         </View> 
         <View style={GlobalStyles.flex}>
-            <View style={styles.mapContainer}></View>
+
+            <View style={styles.mapContainer}>
+              {checkingLocationPermissions ? (
+                    <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                      <ActivityIndicator size="large" color="#FF8303" />
+                    </View>
+                  ):(
+                    <>
+                      {isLocationPermitted ? (
+                    <>
+                      {currentLocation ? (
+                        <>
+                          <MapView style={GlobalStyles.flex} initialRegion={currentLocation}>
+                            <UrlTile
+                              urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                              maximumZ={19}
+                              flipY={false}
+                            />
+                            <Marker coordinate={currentLocation}>
+                              <Image
+                                source={MapMarkerStatic}
+                                style={{
+                                  width: 30,
+                                  height: 30,
+                                  transform: [{ rotate: `${currentLocation.heading}deg` }],
+                                }}
+                              />
+                            </Marker>
+                          </MapView>
+                          {locationError && (
+                            <View style={[styles.mapInfoContainer, styles.errorBackground]}>
+                              <Text style={[GlobalStyles.text16,{textAlign: 'center'}]}>Unable to fetch location. Check your internet connection.</Text>
+                            </View>
+                          )}
+                          {locationWarning && (
+                            <View style={[styles.mapInfoContainer, styles.warningBackground]}>
+                              <Text style={[GlobalStyles.text16,{textAlign: 'center'}]}>GPS SIGNAL LOST</Text>
+                            </View>
+                          )}
+                        </>
+                      ):(
+                        <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                            <ActivityIndicator size="large" color="#FF8303" />
+                        </View>
+                      )}
+                    </>
+                  ):(
+                    <>
+                      <View style={[GlobalStyles.flex, GlobalStyles.column]}>
+                        <View style={[{flex: 0.8}]}>
+                          {/*EL - GATO ERROR VIEW - LOCATION OFF. */}
+                        </View>
+                        <View style={[{flex: 0.2, padding: 10}, GlobalStyles.center]}>
+                          <Text style={[GlobalStyles.text18, {textAlign: 'center'}]}>We won't be able to track your training without <Text style={[GlobalStyles.orange]}>location permissions</Text>.</Text>
+                        </View>
+                      </View>
+                    </>
+                  )}
+                </>
+              )}            
+            </View>
+
             <View style={styles.hudContainer}>
                 <TouchableOpacity onPress={() => setActivitySelectorModalVisible(true)} style={styles.smallCircle}>
                     {activeActivity && (
@@ -176,7 +301,7 @@ const styles = StyleSheet.create({
   },
   mapContainer: {
     flex: 0.8,
-    backgroundColor: 'red',
+    position: 'relative',
   },
   hudContainer: {
     flex: 0.2,
@@ -283,6 +408,24 @@ const styles = StyleSheet.create({
     marginBottom: 5,
   },
   
+  mapInfoContainer: {
+    minHeight: 50,
+    backgroundColor: 'red',
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 999,
+    padding: 10,
+  },
+  errorBackground: {
+    backgroundColor: 'red',
+  },
+  warningBackground: {
+    backgroundColor: '#98D8EF',
+  },
 });
 
 export default CardioStart;

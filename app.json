@@ -19,11 +19,17 @@
       "supportsTablet": true,
       "infoPlist": {
         "NSCameraUsageDescription": "Allow ElGatoMobile to access the camera to scan barcodes.",
-        "NSMotionUsageDescription": "Allow ElGatoMobile to access motion data to track your daily step count."
+        "NSMotionUsageDescription": "Allow ElGatoMobile to access motion data to track your daily step count.",
+        "NSLocationWhenInUseUsageDescription": "Allow ElGatoMobile to access your location while you use the app.",
+        "NSLocationAlwaysUsageDescription": "Allow ElGatoMobile to access your location in the background."
       }
     },
     "android": {
-      "permissions": ["CAMERA"],
+      "permissions": [
+        "CAMERA",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ],
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
