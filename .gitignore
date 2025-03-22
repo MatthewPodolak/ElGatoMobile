@@ -10,6 +10,11 @@ secrets.json
 .env
 *.env
 
+android/app/build/
+android/build/
+
+android/app/debug.keystore
+
 # Expo
 .expo/
 dist/
