@@ -6,6 +6,10 @@ node_modules/
 #sec
 secrets.json
 
+# Ignore env vars
+.env
+*.env
+
 # Expo
 .expo/
 dist/
