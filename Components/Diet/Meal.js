@@ -112,7 +112,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
   };
 
   return (
-    <SafeAreaView style={MealStyles.safeArea}>
+    <View style={MealStyles.safeArea}>
       <View style={MealStyles.mainContainer}>
         <BlurView style={MealStyles.glassEffect} intensity={125} tint="light">
           <View style={MealStyles.topRow}>
@@ -222,7 +222,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
       </View>
       <View style={MealStyles.spacing}></View>
           
-    </SafeAreaView>
+    </View>
   );
 };
 

@@ -152,7 +152,7 @@ const SavedMeal = ({ meal, addMeal, updateIngridient, isSetted }) => {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.mainContainer}>
       <BlurView style={isSetted ? styles.pickedGlassEffect : styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
@@ -265,7 +265,7 @@ const SavedMeal = ({ meal, addMeal, updateIngridient, isSetted }) => {
           </Animated.View>
         </BlurView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

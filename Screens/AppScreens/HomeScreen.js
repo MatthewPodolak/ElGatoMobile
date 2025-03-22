@@ -9,6 +9,7 @@ import DraggableItem from '../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
 import { Pedometer } from 'expo-sensors';
 import { Platform } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
@@ -22,6 +23,7 @@ import CircleChartDist from '../../Components/Main/CircleChartDist.js';
 import StepsCounter from '../../Components/Main/StepsCounter.js';
 
 function HomeScreen({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
   const [currentSteps, setCurrentSteps] = useState(0);
@@ -84,7 +86,7 @@ function HomeScreen({ navigation }) {
 
     let exerciseNames = [];
 
-    if (userLayoutData && Array.isArray(userLayoutData.chartStack)) {
+    if (userLayoutData && Array.isArray(userLayoutData.chartStack)) {     
       userLayoutData.chartStack.forEach(element => {
         if (element.chartDataType === "Exercise") {
           exerciseNames.push(element.name);
@@ -92,7 +94,6 @@ function HomeScreen({ navigation }) {
       });
     }
     exerciseNames = [...new Set(exerciseNames)];
-
     if (exerciseNames.length > 0) {
       await getPastExerciseData(exerciseNames);
     }
@@ -225,7 +226,7 @@ function HomeScreen({ navigation }) {
   const getUserLayoutData = async () => {
     try{
       const res = await UserDataService.getUserLayout(setIsAuthenticated, navigation);
-      if(!res){
+      if(!res){        
         setMainErrors(true);
         setUserLayoutError("");
         return;
@@ -436,6 +437,14 @@ function HomeScreen({ navigation }) {
           </View>
         );
       }
+
+      if (!userLayoutData.chartStack || userLayoutData.chartStack === 0) {
+        return (
+          <View style={[GlobalStyles.flex, GlobalStyles.center, { height: 250 }]}>
+            <Text>EL GATO ERROR - CHARTS STACK EMPTY - NO CHARTAS.</Text>
+          </View>
+        );
+      }
     
       userLayoutData.chartStack.forEach((element, index) => {
         const key = `${index}`;
@@ -600,8 +609,9 @@ function HomeScreen({ navigation }) {
 
   return (
     <GestureHandlerRootView style={{ flex: 1 }}>
-    <SafeAreaView style={styles.container}>
-    <StatusBar backgroundColor="#000" barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
         {mainErrors ? (
           <>
             <View style={[GlobalStyles.flex, GlobalStyles.center]}>
@@ -634,14 +644,12 @@ function HomeScreen({ navigation }) {
                   </View>
               </View>
 
-              {isPedometerAvaliable ? (
+              {isPedometerAvaliable && (
                 <>
                   <View style={styles.row}>
                     <StepsCounter dailyGoal={dailyStepsGoal} currentSteps={currentSteps} />
                   </View>
                 </>
-              ):(
-                <></>
               )}
 
               {userLayoutData ? (

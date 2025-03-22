@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator } from 'react-native';
+import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import AccountHeader from '../../../Components/Account/AccountHeader';
@@ -20,6 +21,7 @@ function chunkArray(array, size) {
 }
 
 function AccountHome({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState(null);
   const [activeTab, setActiveTab] = useState("Challenges");
@@ -238,7 +240,10 @@ function AccountHome({ navigation }) {
 };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
+
       <AccountHeader />
 
       <ScrollView>

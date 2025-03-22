@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useContext, useRef } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator, ScrollView } from 'react-native';
 import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
@@ -11,6 +12,7 @@ import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
 function LoadExercises({ navigation, route  }) {
+const insets = useSafeAreaInsets();
 const recivedDate = route.params?.recivedDate;
 
 const { setIsAuthenticated } = useContext(AuthContext);
@@ -238,8 +240,10 @@ useEffect(() => {
 }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+        <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+        <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
         <View style={styles.titleCont}>
           <TouchableOpacity style = {styles.titleLeft} onPress={() => NavigateBack()}>
             <ChevronLeft width={28} height={28} fill={"#fff"} />

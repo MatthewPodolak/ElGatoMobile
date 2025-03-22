@@ -70,7 +70,7 @@ const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises, addSave
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.mainContainer}>
       <BlurView style={isSetted ? styles.pickedGlassEffect : styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
@@ -145,7 +145,7 @@ const SavedTrainingDay = ({ data, isSetted, updateName, removeExercises, addSave
           </Animated.View>
         </BlurView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

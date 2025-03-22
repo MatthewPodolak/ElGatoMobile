@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ScrollView, ImageBackground, TextInput, Switch } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -18,6 +19,7 @@ import { doubleValidator, intValidator } from '../../../Services/Conversion/Numb
 import AchievmentModal from '../../../Components/ElGato/AchievmentModal.js';
 
 function AddMealForm({ navigation }) {
+    const insets = useSafeAreaInsets();
     const { setIsAuthenticated } = useContext(AuthContext);
 
     const [recipeName, setRecipeName] = useState(null);
@@ -376,8 +378,10 @@ function AddMealForm({ navigation }) {
     };
 
     return (
-        <SafeAreaView style={styles.cont}>
-            <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+         <SafeAreaView style={styles.cont} edges={['left', 'right', 'bottom']}>
+            <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+            <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+            
             <View style={styles.titleCont}>
                 <TouchableOpacity onPress={() => NavigateBack()} style = {styles.titleLeft}>
                     <ChevronLeft width={28} height={28} fill={"#fff"}/>

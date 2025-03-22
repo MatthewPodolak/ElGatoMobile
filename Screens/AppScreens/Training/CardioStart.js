@@ -4,6 +4,7 @@ import { activities } from '../../../assets/Data/activities.js';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { checkAndRequestLocationPermission } from '../../../Services/Helpers/Location/LocationPermissionHelper.js';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import MapView, { UrlTile, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
 
@@ -13,6 +14,7 @@ import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
 import MapMarkerStatic from '../../../assets/main/Navigation/gps_icon.png';
 
 function CardioStart({ navigation }) {
+  const insets = useSafeAreaInsets();
   const [currentLocation, setCurrentLocation] = useState(null);
   const [locationError, setLocationError] = useState(false);
   const [locationWarning, setLocationWarining] = useState(false);
@@ -90,8 +92,10 @@ function CardioStart({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-        <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
         <View style={styles.topContainer}>
             <View style = {styles.topContIngBack}>
                 <TouchableOpacity style={styles.topBack} onPress={navigateBack}>

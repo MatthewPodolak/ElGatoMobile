@@ -19,7 +19,7 @@ const LikedExercise = ({ indexx, exercise, isSetted, isPicked, pickExercise }) =
   }, [isPicked]);
   
   return (
-    <SafeAreaView style={styles.container}>
+    <View style={styles.container}>
       <View style={styles.mainContainer}>
         <BlurView style={isPicked ? styles.pickedGlassEffect : isSetted ? styles.settedGlassEffect: styles.normalGlassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
@@ -47,7 +47,7 @@ const LikedExercise = ({ indexx, exercise, isSetted, isPicked, pickExercise }) =
           </View>
         </BlurView>
       </View>
-    </SafeAreaView>
+    </View>
   );
 };
 

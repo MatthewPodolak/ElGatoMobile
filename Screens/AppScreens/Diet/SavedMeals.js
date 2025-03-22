@@ -4,6 +4,7 @@ import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-ge
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import SavedMeal from '../../../Components/Diet/SavedMeal.js';
@@ -12,6 +13,7 @@ import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
 import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
 
 function SavedMeals({ navigation }) {
+const insets = useSafeAreaInsets();
 const { setIsAuthenticated } = useContext(AuthContext);
 const [isScreenLoading, setIsScreenLoading] = useState(false);
 const [mealsData, setMealsData] = useState([]);
@@ -113,8 +115,10 @@ useEffect(() => {
 }, []);
 
   return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
+
         <View style={styles.titleCont}>
           <TouchableOpacity style = {styles.titleLeft} onPress={() => NavigateBack()}>
             <ChevronLeft width={28} height={28} fill={"#fff"} />

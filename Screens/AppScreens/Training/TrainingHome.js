@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useContext } from 'react';
-import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView } from 'react-native';
+import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { useFocusEffect } from '@react-navigation/native';
 import { useCallback } from 'react';
@@ -15,6 +16,7 @@ import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 
 
 function TrainingHome({ navigation, route }) {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState("Gym");
   const [measureType, setMeasureType] = useState("metric");
@@ -815,7 +817,10 @@ function TrainingHome({ navigation, route }) {
   };
 
   return (
-    <SafeAreaView style={styles.container}>
+    <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
       <Calendar onDateSelect={handleDateSelect} />  
       <View style={styles.categoryContainer}>
         <TouchableOpacity style={styles.option} onPress={() => setActiveTabFunc("Gym")} ><Text style={[styles.optionTextSecondary, activeTab === "Gym" && styles.activeTab]}>Gym</Text></TouchableOpacity>

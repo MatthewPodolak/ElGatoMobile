@@ -54,7 +54,7 @@ function Calendar({ onDateSelect }) {
     };
 
     return (
-        <SafeAreaView style={DietCalendarStyles.mainCalendarContainer}>
+        <View style={DietCalendarStyles.mainCalendarContainer}>
             <StatusBar backgroundColor="#FF8303" barStyle="light-content" />          
             <View style={DietCalendarStyles.monthContainer}>
             </View>
@@ -90,7 +90,7 @@ function Calendar({ onDateSelect }) {
                     </TouchableOpacity>
                 ))}
             </View>           
-        </SafeAreaView>
+        </View>
     );
 }
 

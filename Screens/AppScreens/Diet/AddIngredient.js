@@ -2,6 +2,7 @@ import React, { useState, useEffect,useContext } from 'react';
 import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback  } from 'react-native';
 import { ScrollView,View, Text, TextInput, StatusBar, ActivityIndicator } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
 
 import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
@@ -24,6 +25,7 @@ import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 
 const AddIngredient = ({ route, navigation }) => {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('Search');
 
@@ -671,8 +673,10 @@ const AddIngredient = ({ route, navigation }) => {
 
 
   return (
-    <SafeAreaView style={AddIngredientStyles.container}>
-      <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <SafeAreaView style={AddIngredientStyles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
       <View style={AddIngredientStyles.topContainer}>
         <View style = {AddIngredientStyles.topContIngBack}>
           <TouchableOpacity style={AddIngredientStyles.topBack} onPress={() => passSelectedIngredients()}>

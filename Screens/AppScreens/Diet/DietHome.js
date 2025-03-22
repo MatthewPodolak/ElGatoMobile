@@ -1,5 +1,6 @@
 import React, { useState, useEffect,useContext, useRef } from 'react';
-import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity } from 'react-native';
+import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StatusBar } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
 import MakroMenu from '../../../Components/Diet/MakroMenu.js';
@@ -21,8 +22,8 @@ import ErrorPopup from '../../../Components/Error/ErrorPopup.js';
 import DietDataService from '../../../Services/ApiCalls/DietData/DietDataService.js';
 
 function DietHome({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
-  
   const [optionsVisible, setOptionsVisible] = useState(false);
   const optionsAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
@@ -645,15 +646,15 @@ function DietHome({ navigation }) {
 
     if(error != null && !dietData){
       return (
-        <SafeAreaView>
+        <View>
           <Text>ERROR VIEW!</Text>
           <Text>{error}</Text>
-        </SafeAreaView>
+        </View>
       );
     }
 
     return (
-      <SafeAreaView>       
+      <View>       
         <View style = {DietHomeStyles.topMargin}></View>
         {dietData.meals.map((meal, index) => (      
           <Meal key={index} meal={meal} onRemoveMeal={onRemoveMeal} onChangeMealName={handleMealNameChange} navigation={navigation}
@@ -665,12 +666,15 @@ function DietHome({ navigation }) {
             />
         ))}
         <View style={DietHomeStyles.bottomSpacing}></View>
-      </SafeAreaView>
+      </View>
     );
   };
 
   return (
-    <SafeAreaView style={DietHomeStyles.container}>
+    <SafeAreaView style={DietHomeStyles.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
+
       <Calendar onDateSelect={handleDateSelect} />
       <ScrollView
         style={DietHomeStyles.scrollContainer}

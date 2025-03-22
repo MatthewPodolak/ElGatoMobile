@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, StatusBar, TouchableOpacity, ActivityIndicator,
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 
@@ -13,6 +14,7 @@ import MealDisplayBig from '../../../Components/Meals/MealDisplayBig.js';
 import InspectMealModal from '../../../Components/Meals/InspectMealModal.js';
 
 function StartersDisplay({ navigation, route }) {
+    const insets = useSafeAreaInsets();
     const { requestType } = route.params || {};
     const { setIsAuthenticated } = useContext(AuthContext);
 
@@ -88,8 +90,10 @@ function StartersDisplay({ navigation, route }) {
     }, [requestType]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+            <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+            <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
             <View style={styles.titleCont}>
                 <TouchableOpacity onPress={() => NavigateBack()} style = {styles.titleLeft}>
                     <ChevronLeft width={28} height={28} fill={"#fff"}/>

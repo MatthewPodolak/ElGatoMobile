@@ -2,7 +2,7 @@ import React, { useState, useContext, useEffect, useRef } from 'react';
 import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ScrollView, ImageBackground, Animated } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import ChevUp from '../../../assets/main/Diet/chevron-up.svg';
@@ -16,6 +16,7 @@ import TrainingDataService from '../../../Services/ApiCalls/TrainingData/Trainin
 
 
 function InspectExercise({ navigation, route }) { 
+    const insets = useSafeAreaInsets();
     const { setIsAuthenticated } = useContext(AuthContext);
     const { exercise, isLiked } = route.params;
     const [currentImage, setCurrentImage] = useState(`${config.ipAddress}${exercise.image}`);
@@ -141,8 +142,10 @@ function InspectExercise({ navigation, route }) {
     }, [exercise.image, exercise.imgGifPart]);
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+            <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+            <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
             <View style={styles.topContainer}>
                 <View style = {styles.topContIngBack}>
                 <TouchableOpacity style={styles.topBack} onPress={navigateBack}>

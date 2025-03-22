@@ -1,5 +1,6 @@
 import React, { useState, useContext, useEffect } from 'react';
 import { View, StatusBar, Text, TouchableOpacity, StyleSheet, ActivityIndicator, TextInput, ScrollView, ImageBackground } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GestureHandlerRootView, LongPressGestureHandler } from 'react-native-gesture-handler';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -18,6 +19,7 @@ import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
 function AddExercise({ navigation, route }) { 
+    const insets = useSafeAreaInsets();
     const { setIsAuthenticated } = useContext(AuthContext);
     const currentDate = route.params?.selectedDate;
     const [selectedDatee, setSelectedDatee] = useState(currentDate);
@@ -722,8 +724,10 @@ function AddExercise({ navigation, route }) {
     };
 
     return (
-        <SafeAreaView style={styles.container}>
-            <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+        <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
+          <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+          <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
             <View style={styles.topContainer}>
                 <View style = {styles.topContIngBack}>
                 <TouchableOpacity style={styles.topBack} onPress={navigateBack}>

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useContext } from 'react';
 import { View, Text, StyleSheet, StatusBar, ScrollView, Dimensions, TouchableOpacity, ActivityIndicator, TextInput, FlatList } from 'react-native';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
@@ -21,6 +22,7 @@ import MealDataService from '../../../Services/ApiCalls/MealData/MealDataService
 
 
 function MealsHome({ navigation }) {
+  const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
 
   const [isLoading, setIsLoading] = useState(true);
@@ -612,8 +614,10 @@ function MealsHome({ navigation }) {
 
   if (isLoading) {
     return (
-      <SafeAreaView style={AllRecepies.container}>
-        <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+      <SafeAreaView style={AllRecepies.container} edges={['left', 'right', 'bottom']}>
+        <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+        <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+        
         <View style={AllRecepies.titleCont}>
           <View style = {AllRecepies.titleLeft}></View>
           <View style = {AllRecepies.titleMid}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recipes</Text></View>
@@ -632,8 +636,10 @@ function MealsHome({ navigation }) {
   }
 
   return (
-    <SafeAreaView style={AllRecepies.container}>
-      <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
+    <SafeAreaView style={AllRecepies.container} edges={['left', 'right', 'bottom']}>
+      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+      <StatusBar style="light"  backgroundColor="#fff" translucent={false} hidden={false} />
+
       <View style={AllRecepies.titleCont}>
         <View style = {AllRecepies.titleLeft}></View>
         <View style = {AllRecepies.titleMid}><Text style={[GlobalStyles.bold, GlobalStyles.text22]}>Recipes</Text></View>

@@ -257,7 +257,7 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
   }, [pastExerciseData, exercise, updateFlag]); 
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <View style={styles.safeArea}>
       <View style={styles.mainContainer}>
         <BlurView style={styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
@@ -413,7 +413,7 @@ const TrainingDayExerciseDisplay = ({ exercise, pastExerciseData, measureType, s
         </BlurView>
       </View>
       <View style={styles.spacing}></View>
-    </SafeAreaView>
+    </View>
   );
 };
 
