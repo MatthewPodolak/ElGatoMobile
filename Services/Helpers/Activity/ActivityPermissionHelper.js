@@ -16,7 +16,6 @@ export const checkHealthConnectPermissionsStatus = async (permissionType) => {
 
   try{
     const permissions = await getGrantedPermissions();
-    console.log("granted --> " + JSON.stringify(permissions));
     return permissions.some((perm) => perm.recordType === permissionType);
     
   } catch(error){
@@ -32,7 +31,6 @@ export const acessReadPermissionHealthConnect = async (permissionType) => {
   try {
     const isInitialized = await initialize();
     if (!isInitialized) {
-      console.log("NOT INIT");
       return false;
     }
 
@@ -40,11 +38,9 @@ export const acessReadPermissionHealthConnect = async (permissionType) => {
       { accessType: 'read', recordType: permissionType },
     ]);
 
-    console.log("USER DID -> " + JSON.stringify(grantedPermissions));
     return grantedPermissions.some((perm) => perm.recordType === permissionType);
 
   } catch (error) {
-    console.log("ERROR ??? " + error);
     return false;
   }
 };

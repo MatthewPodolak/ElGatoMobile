@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image } from 'react-native';
+import React, { useState, useEffect, useRef } from 'react';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { UrlTile, Marker } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -29,6 +29,13 @@ function CardioStart({ navigation }) {
   const [trainingStartedHud, setTrainingStartedHud] = useState(false);
   const [trainingSessionActive, setTrainingSessionActive] = useState(false);
   const [trainingDataVisible, setTrainingDataVisible] = useState(false);
+
+  //Timer
+  const [startTime, setStartTime] = useState(null);
+  const [accumulatedTime, setAccumulatedTime] = useState(0);
+  const [displayTime, setDisplayTime] = useState(0);
+  const [timerActive, setTimerActive] = useState(false);
+  const intervalRef = useRef(null);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -102,16 +109,70 @@ function CardioStart({ navigation }) {
     };
   }, []);
 
+  useEffect(() => {
+    if (timerActive && startTime !== null) {
+      intervalRef.current = setInterval(() => {
+        const now = Date.now();
+        const elapsed = accumulatedTime + (now - startTime) / 1000;
+        setDisplayTime(Math.floor(elapsed));
+      }, 1000);
+    } else {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    }
+    return () => {
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, [timerActive, startTime, accumulatedTime]);
+
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", nextAppState => {
+      if (nextAppState === "active" && timerActive && startTime) {
+        const now = Date.now();
+        const elapsed = accumulatedTime + (now - startTime) / 1000;
+        setDisplayTime(Math.floor(elapsed));
+      }
+    });
+    return () => subscription.remove();
+  }, [timerActive, startTime, accumulatedTime]);
+
+  const formatTime = (secs) => {
+    const hours = Math.floor(secs / 3600);
+    const minutes = Math.floor((secs % 3600) / 60);
+    const seconds = secs % 60;
+
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+  };
+
   const startTraining = () => {
     console.log("Training started");
     setTrainingDataVisible(true);
     setTrainingStartedHud(true);
     setTrainingSessionActive(true);
+
+    //timer
+    if (!startTime) {
+      setStartTime(Date.now());
+    }
+    setTimerActive(true);
+
   };
 
   const pauseTraining = () => {
     console.log("Training paused");
     setTrainingStartedHud(false);
+    
+    //timer
+    setTimerActive(false);
+    if (startTime) {
+      const elapsed = (Date.now() - startTime) / 1000;
+      setAccumulatedTime(prev => prev + elapsed);
+      setStartTime(null);
+    }
+
   };
 
   const endTraining = () => {
@@ -119,6 +180,13 @@ function CardioStart({ navigation }) {
     setTrainingDataVisible(false);
     setTrainingSessionActive(false);
     setTrainingStartedHud(false);
+
+    //timner -- final -> displayTime.
+    setTimerActive(false);
+    setStartTime(null);
+    setAccumulatedTime(0);
+    setDisplayTime(0);
+    
   };
 
   const navigateBack = () => {
@@ -210,7 +278,7 @@ function CardioStart({ navigation }) {
           <View style={styles.trainingDataContainer}>
             <View style={[styles.trainingDataRow, GlobalStyles.center]}>
               <Text style={[GlobalStyles.text16]}>TIME</Text>
-              <Text style={[GlobalStyles.text48, GlobalStyles.bold]}>00:00:21</Text>
+              <Text style={[GlobalStyles.text48, GlobalStyles.bold]}>{formatTime(displayTime)}</Text>
             </View>
 
             <View style={[styles.trainingDataRow, GlobalStyles.center]}>

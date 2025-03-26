@@ -50,6 +50,14 @@ export const GlobalStyles = StyleSheet.create({
         fontFamily: 'Helvetica',
         fontSize: 32,
     },
+    text48: {
+        fontFamily: 'Helvetica',
+        fontSize: 48,
+    },
+    text72:{
+        fontFamily: 'Helvetica',
+        fontSize: 72,
+    },
     bold: {
         fontWeight: '700',
     },
