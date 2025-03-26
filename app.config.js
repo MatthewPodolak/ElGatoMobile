@@ -74,6 +74,7 @@ export default {
         }
       ],
       "./plugins/withHealthConnectPermissionDelegate",
+      "./plugins/withGoogleMapsKey",
     ],
     extra: {
       eas: {
