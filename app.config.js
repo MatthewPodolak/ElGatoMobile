@@ -3,8 +3,8 @@ import 'dotenv/config';
 
 export default {
   expo: {
-    name: "eject",
-    slug: "eject",
+    name: "elgatomobile",
+    slug: "elgatomobile",
     newArchEnabled: true,
     version: "1.0.0",
     orientation: "portrait",
@@ -72,7 +72,8 @@ export default {
             minSdkVersion: 26
           }
         }
-      ]
+      ],
+      "./plugins/withHealthConnectPermissionDelegate",
     ],
     extra: {
       eas: {

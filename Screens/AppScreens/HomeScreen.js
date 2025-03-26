@@ -7,9 +7,10 @@ import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableItem from '../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
-import { Pedometer } from 'expo-sensors';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus } from '../../Services/Helpers/Activity/ActivityPermissionHelper.js';
+import { readStepsToday } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
@@ -28,7 +29,9 @@ function HomeScreen({ navigation }) {
   const [systemType, setSystemType] = useState("metric");
   const [currentSteps, setCurrentSteps] = useState(0);
   const [dailyStepsGoal, setDailyStepsGoal] = useState(0);
-  const [isPedometerAvaliable, setIsPedometerAvaliable] = useState(true);
+  const [isPedometerAvaliable, setIsPedometerAvaliable] = useState(true); //If not used in further pedometer kt impl. remove, and update comp vis.
+  const [stepsPermissionsGranted, setStepsPermissionsGranted] = useState(true);
+
   const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
   const [currentDailyIntake, setCurrentDailyIntake] = useState(null);
   const [userWaterIntake, setUserWaterIntake] = useState(null);
@@ -67,19 +70,35 @@ function HomeScreen({ navigation }) {
   }, [userLayoutData]);
 
   useEffect(() => {
-    let subscription;
-    const subscribe = async () => {
-      subscription = await getCurrentStepsFromPedometer();
-    };
-    subscribe();
-    
-    return () => {
-      if (subscription) {
-        subscription.remove();
-      }
-    };
+    getCurrentSteps();
   }, []);
   
+  const getCurrentSteps = async () => {
+    if (Platform.OS === 'ios') {
+      //TODO IOS IMP.
+      return;
+    } 
+    else if (Platform.OS === 'android') {
+      const perms = await checkHealthConnectPermissionsStatus("Steps");
+      if(perms){
+        const todaySteps = await readStepsToday();
+        //TODO
+        //IF 0 --- FALBACK TO kt background pedmoeter task...
+        setCurrentSteps(todaySteps);
+        return;
+      }
+
+      const granted = await acessReadPermissionHealthConnect("Steps");
+      if(granted){
+        const todaySteps = await readStepsToday();
+        //TODO
+        //IF 0 --- FALBACK TO kt background pedmoeter task...
+        setCurrentSteps(todaySteps);
+        return;
+      }
+      setStepsPermissionsGranted(false);
+    }
+  };
 
   const getChartsData = async () => {
     setChartDataLoading(true);
@@ -109,6 +128,7 @@ function HomeScreen({ navigation }) {
     if(userLayoutData.chartStack.find(a=>a.chartType === "Circle" && a.chartDataType === "MakroDist")){
       await getMakroDailyDistData();
     }
+
     //here get the rest data based on layout.
 
     setChartDataLoading(false);
@@ -140,34 +160,6 @@ function HomeScreen({ navigation }) {
     }
   };
 
-  const getCurrentStepsFromPedometer = async () => {
-    if (Platform.OS !== 'ios') {
-      //Android implementation call using health connect.
-      return;
-    }
-  
-    const isAvailable = await Pedometer.isAvailableAsync();
-    if (!isAvailable) {
-      setIsPedometerAvaliable(false);
-      return;
-    }
-  
-    const subscription = Pedometer.watchStepCount(result => {
-      setCurrentSteps(result.steps);
-    });
-  
-    const end = new Date();
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
-    try {
-      const { steps } = await Pedometer.getStepCountAsync(start, end);
-      setCurrentSteps(steps);
-    } catch (error) {
-      console.log("Error fetching", error);
-    }
-    
-    return subscription;
-  };
 
   const getWaterIntake = async () => {
     try{
@@ -647,7 +639,7 @@ function HomeScreen({ navigation }) {
               {isPedometerAvaliable && (
                 <>
                   <View style={styles.row}>
-                    <StepsCounter dailyGoal={dailyStepsGoal} currentSteps={currentSteps} />
+                    <StepsCounter dailyGoal={dailyStepsGoal} currentSteps={currentSteps} permissionsGranted={stepsPermissionsGranted} />
                   </View>
                 </>
               )}

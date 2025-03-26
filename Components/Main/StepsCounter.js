@@ -5,13 +5,19 @@ import { GlobalStyles } from '../../Styles/GlobalStyles';
 
 import feetImg from '../../assets/main/Photos/steps.png';
 
-function StepsCounter({ dailyGoal = 2500, currentSteps = 0 }) {
+function StepsCounter({ dailyGoal = 2500, currentSteps = 0, permissionsGranted = true }) {
   return (
     <BlurView style={styles.container} intensity={125} tint="light">
       <View style={[styles.content, GlobalStyles.center]}>
         <Text style={[GlobalStyles.text18, GlobalStyles.bold]}>
-          <Text style={styles.orangeHighlitgh}>{currentSteps} / {dailyGoal}</Text>
-          <Text style={styles.blackHighligth}> steps made!</Text>
+          {permissionsGranted ? (
+            <>
+              <Text style={styles.orangeHighlitgh}>{currentSteps} / {dailyGoal}</Text>
+              <Text style={styles.blackHighligth}> steps made!</Text>
+            </>
+          ):(
+            <Text style={styles.orangeHighlitgh}>gato needs permission to track!</Text>
+          )}
         </Text>
       </View>
       <View style={[styles.imageContainer, GlobalStyles.center]}>
