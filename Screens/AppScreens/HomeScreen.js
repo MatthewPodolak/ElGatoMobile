@@ -79,6 +79,7 @@ function HomeScreen({ navigation }) {
       return;
     } 
     else if (Platform.OS === 'android') {
+      console.log("Here");
       const perms = await checkHealthConnectPermissionsStatus("Steps");
       if(perms){
         const todaySteps = await readStepsToday();
