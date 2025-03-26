@@ -35,7 +35,9 @@ export default {
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.health.READ_STEPS",
-        "android.permission.health.READ_ACTIVE_CALORIES_BURNED"
+        "android.permission.health.WRITE_STEPS",
+        "android.permission.health.READ_ACTIVE_CALORIES_BURNED",
+        "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
       ],
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",
