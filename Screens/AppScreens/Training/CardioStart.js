@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import MapView, { UrlTile, Marker } from 'react-native-maps';
+import MapView, { UrlTile, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
@@ -36,6 +36,18 @@ function CardioStart({ navigation }) {
   const [displayTime, setDisplayTime] = useState(0);
   const [timerActive, setTimerActive] = useState(false);
   const intervalRef = useRef(null);
+
+  //Routes
+  const [routeCoordinates, setRouteCoordinates] = useState([]);
+  const timerActiveRef = useRef();
+  const trainingSessionActiveRef = useRef(trainingSessionActive);
+  useEffect(() => {
+    timerActiveRef.current = timerActive;
+  }, [timerActive]);
+  useEffect(() => {
+    trainingSessionActiveRef.current = trainingSessionActive;
+  }, [trainingSessionActive]);
+  
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -93,6 +105,15 @@ function CardioStart({ navigation }) {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
               });
+
+              if(trainingSessionActiveRef.current){
+                let locationRecord = {
+                  latitude: latitude,
+                  longitude: longitude,
+                  break: !timerActiveRef.current,
+                };
+                setRouteCoordinates(prevCoords => [...prevCoords, locationRecord]);
+              }
             }
           );
         }
@@ -193,6 +214,31 @@ function CardioStart({ navigation }) {
     navigation.goBack();
   };
 
+  const getRouteSegments = (coords) => {
+    if (!coords.length) return [];
+    const segments = [];
+    let currentSegment = [coords[0]];
+
+    for (let i = 1; i < coords.length; i++) {
+      if (coords[i].break !== coords[i - 1].break) {
+        segments.push({
+          coordinates: currentSegment,
+          color: coords[i - 1].break ? 'black' : '#FF4500'
+        });
+        currentSegment = [coords[i]];
+      } else {
+        currentSegment.push(coords[i]);
+      }
+    }
+    segments.push({
+      coordinates: currentSegment,
+      color: currentSegment[0].break ? 'black' : '#FF6600'
+    });
+    return segments;
+  };
+
+  const segments = getRouteSegments(routeCoordinates);
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
@@ -242,6 +288,9 @@ function CardioStart({ navigation }) {
                             }}
                           />
                         </Marker>
+                        {segments.map((segment, index) => (
+                          <Polyline key={index} coordinates={segment.coordinates} strokeColor={segment.color} strokeWidth={6} />
+                        ))}
                       </MapView>
                       {locationError && (
                         <View style={[styles.mapInfoContainer, styles.errorBackground]}>
