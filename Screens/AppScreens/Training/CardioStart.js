@@ -48,6 +48,9 @@ function CardioStart({ navigation }) {
   useEffect(() => {
     trainingSessionActiveRef.current = trainingSessionActive;
   }, [trainingSessionActive]);
+
+  //Dist
+  const [distance, setDistance] = useState(0);
   
 
   const activeActivity = activities.find(activity => activity.name === activityType);
@@ -106,15 +109,30 @@ function CardioStart({ navigation }) {
                 latitudeDelta: 0.0922,
                 longitudeDelta: 0.0421,
               });
-
-              if(trainingSessionActiveRef.current){
-                let locationRecord = {
+          
+              if (trainingSessionActiveRef.current) {
+                const locationRecord = {
                   latitude: latitude,
                   longitude: longitude,
                   break: !timerActiveRef.current,
                   timestamp: newLocation.timestamp,
                 };
-                setRouteCoordinates(prevCoords => [...prevCoords, locationRecord]);
+          
+                setRouteCoordinates((prevCoords) => {
+                  if (timerActiveRef.current) {
+                    const lastActive = getLastActiveCoord(prevCoords);
+                    if (lastActive) {
+                      const d = haversineDistance(
+                        lastActive.latitude,
+                        lastActive.longitude,
+                        latitude,
+                        longitude
+                      );
+                      setDistance((prevDistance) => prevDistance + d);
+                    }
+                  }
+                  return [...prevCoords, locationRecord];
+                });
               }
             }
           );
@@ -277,6 +295,25 @@ function CardioStart({ navigation }) {
 
   const segments = getRouteSegments(routeCoordinates);
 
+  //DIST HELPERS
+  const haversineDistance = (lat1, lon1, lat2, lon2) => {
+    const toRad = (value) => (value * Math.PI) / 180;
+    const R = 6371000;
+    const dLat = toRad(lat2 - lat1);
+    const dLon = toRad(lon2 - lon1);
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(toRad(lat1)) *  Math.cos(toRad(lat2)) *  Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  };
+  
+  const getLastActiveCoord = (coords) => {
+    for (let i = coords.length - 1; i >= 0; i--) {
+      if (!coords[i].break) return coords[i];
+    }
+    return null;
+  };
+  
+
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
       <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
@@ -376,7 +413,7 @@ function CardioStart({ navigation }) {
 
             <View style={[styles.trainingDataRow, GlobalStyles.center]}>
               <Text style={[GlobalStyles.text16]}>DISTANCE</Text>
-              <Text style={[GlobalStyles.text48, GlobalStyles.bold]}>2040</Text>
+              <Text style={[GlobalStyles.text48, GlobalStyles.bold]}>{Math.floor(distance)}</Text>
               <Text style={[GlobalStyles.text16]}>M</Text>
             </View>
 
