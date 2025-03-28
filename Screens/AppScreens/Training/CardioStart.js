@@ -51,7 +51,9 @@ function CardioStart({ navigation }) {
 
   //Dist
   const [distance, setDistance] = useState(0);
-  
+
+  //speed
+  const [speed, setSpeed] = useState(0);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -97,11 +99,11 @@ function CardioStart({ navigation }) {
           subscription = await Location.watchPositionAsync(
             {
               accuracy: Location.Accuracy.High,
-              timeInterval: 5000,
+              timeInterval: 2000,
               distanceInterval: 1,
             },
             (newLocation) => {
-              const { latitude, longitude, heading } = newLocation.coords;
+              const { latitude, longitude, heading, speed: rawSpeed } = newLocation.coords;
               setCurrentLocation({
                 latitude,
                 longitude,
@@ -110,6 +112,9 @@ function CardioStart({ navigation }) {
                 longitudeDelta: 0.0421,
               });
           
+              const speedKmH = rawSpeed ? rawSpeed * 3.6 : 0;
+              setSpeed(speedKmH);
+
               if (trainingSessionActiveRef.current) {
                 const locationRecord = {
                   latitude: latitude,
@@ -226,7 +231,7 @@ function CardioStart({ navigation }) {
     //TODO background-location-task
     await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
       accuracy: Location.Accuracy.High,
-      timeInterval: 5000,
+      timeInterval: 2000,
       distanceInterval: 1,
       foregroundService: {
         notificationTitle: "Training in Progress",
@@ -407,7 +412,7 @@ function CardioStart({ navigation }) {
 
             <View style={[styles.trainingDataRow, GlobalStyles.center]}>
               <Text style={[GlobalStyles.text16]}>SPEED</Text>
-              <Text style={[GlobalStyles.text72, GlobalStyles.bold]}>40</Text>
+              <Text style={[GlobalStyles.text72, GlobalStyles.bold]}>{Math.floor(speed)}</Text>
               <Text style={[GlobalStyles.text16]}>KM/H</Text>
             </View>
 
