@@ -24,7 +24,8 @@ export default {
         NSCameraUsageDescription: "Allow ElGatoMobile to access the camera to scan barcodes.",
         NSMotionUsageDescription: "Allow ElGatoMobile to access motion data to track your daily step count.",
         NSLocationWhenInUseUsageDescription: "Allow ElGatoMobile to access your location while you use the app.",
-        NSLocationAlwaysUsageDescription: "Allow ElGatoMobile to access your location in the background."
+        NSLocationAlwaysUsageDescription: "Allow ElGatoMobile to access your location in the background.",
+        UIBackgroundModes: ["location"]
       }
     },
     android: {
@@ -32,6 +33,7 @@ export default {
         "CAMERA",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
+        "android.permission.ACCESS_BACKGROUND_LOCATION",
         "android.permission.CAMERA",
         "android.permission.RECORD_AUDIO",
         "android.permission.health.READ_STEPS",
