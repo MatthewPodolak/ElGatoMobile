@@ -599,7 +599,6 @@ function DietHome({ navigation }) {
             MealName: meal.name,
             Date: dietDayVMO.date,
           };
-          console.log("CHUJJ " + addNewMealModel);
 
           try{
             const mealAddRes = await DietDataService.AddNewMeal(setIsAuthenticated, navigation, addNewMealModel);           

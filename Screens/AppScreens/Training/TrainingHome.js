@@ -966,7 +966,7 @@ const styles = StyleSheet.create({
 
   addExerciseButton: {
     position: 'absolute',
-    bottom: 65,
+    bottom: 85,
     right: 10,
     width: 60,
     height: 60,
@@ -981,7 +981,7 @@ const styles = StyleSheet.create({
     position: 'absolute',
     paddingLeft: 15,
     paddingRight: 15,
-    bottom: 130,
+    bottom: 150,
     right: 0,
     justifyContent: 'space-around',
     alignItems: 'flex-end',   

@@ -20,7 +20,7 @@ export const DietHomeStyles = StyleSheet.create({
     position: 'absolute',
     paddingLeft: 15,
     paddingRight: 15,
-    bottom: 195,
+    bottom: 215,
     right: 0,
     justifyContent: 'space-around',
     alignItems: 'flex-end',   
@@ -43,7 +43,7 @@ export const DietHomeStyles = StyleSheet.create({
   },
   addMealButton: {
     position: 'absolute',
-    bottom: 130,
+    bottom: 150,
     right: 10,
     width: 60,
     height: 60,
