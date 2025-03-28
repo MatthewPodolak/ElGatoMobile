@@ -9,5 +9,13 @@ export const checkAndRequestLocationPermission = async () => {
     finalStatus = status;
   }
 
+  if (finalStatus === 'granted') {
+    const { status: bgStatus } = await Location.getBackgroundPermissionsAsync();
+    if (bgStatus !== 'granted') {
+      const { status: requestedBgStatus } = await Location.requestBackgroundPermissionsAsync();
+      finalStatus = requestedBgStatus;
+    }
+  }
+
   return finalStatus === 'granted';
 };

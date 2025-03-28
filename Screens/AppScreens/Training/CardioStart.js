@@ -8,6 +8,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { activities } from '../../../assets/Data/activities.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { checkAndRequestLocationPermission } from '../../../Services/Helpers/Location/LocationPermissionHelper.js';
+import { BACKGROUND_LOCATION_TASK } from '../../../Services/Tasks/Location/BackgroundLocationTask.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import PulseIcon from '../../../assets/main/Diet/heart-pulse.svg';
@@ -111,6 +112,7 @@ function CardioStart({ navigation }) {
                   latitude: latitude,
                   longitude: longitude,
                   break: !timerActiveRef.current,
+                  timestamp: newLocation.timestamp,
                 };
                 setRouteCoordinates(prevCoords => [...prevCoords, locationRecord]);
               }
@@ -168,7 +170,30 @@ function CardioStart({ navigation }) {
     return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
 
-  const startTraining = () => {
+  //TODO background-location-task
+  useEffect(() => {
+    const subscription = AppState.addEventListener("change", async nextAppState => {
+      if (nextAppState === "active") {
+        const stored = await AsyncStorage.getItem('routeLocations');
+        if (stored) {
+          const backgroundLocations = JSON.parse(stored);
+          const newLocations = backgroundLocations.filter(bgLoc => {
+            return !routeCoordinates.some(rc =>
+              rc.timestamp === bgLoc.timestamp
+            );
+          });
+          if (newLocations.length > 0) {
+            setRouteCoordinates(prev => [...prev, ...newLocations]);
+          }
+          await AsyncStorage.removeItem('routeLocations');
+        }
+      }
+    });
+    return () => subscription.remove();
+  }, [routeCoordinates]);
+  
+
+  const startTraining = async () => {
     console.log("Training started");
     setTrainingDataVisible(true);
     setTrainingStartedHud(true);
@@ -180,6 +205,17 @@ function CardioStart({ navigation }) {
     }
     setTimerActive(true);
 
+    //TODO background-location-task
+    await Location.startLocationUpdatesAsync(BACKGROUND_LOCATION_TASK, {
+      accuracy: Location.Accuracy.High,
+      timeInterval: 5000,
+      distanceInterval: 1,
+      foregroundService: {
+        notificationTitle: "Training in Progress",
+        notificationBody: "Your location is being tracked in the background.",
+        notificationColor: "#FF4500",
+      },
+    });
   };
 
   const pauseTraining = () => {
@@ -196,7 +232,7 @@ function CardioStart({ navigation }) {
 
   };
 
-  const endTraining = () => {
+  const endTraining = async () => {
     console.log("Training ended");
     setTrainingDataVisible(false);
     setTrainingSessionActive(false);
@@ -208,6 +244,8 @@ function CardioStart({ navigation }) {
     setAccumulatedTime(0);
     setDisplayTime(0);
     
+    //TODO - background-location-task
+    await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
   };
 
   const navigateBack = () => {
@@ -312,7 +350,7 @@ function CardioStart({ navigation }) {
               ) : (
                 <View style={[GlobalStyles.flex, GlobalStyles.column]}>
                   <View style={{ flex: 0.8 }}>
-                    {/*EL - GATO ERROR VIEW - LOCATION OFF. */}
+                    {/*EL - GATO ERROR VIEW - LOCATION OFF.  --- musi byc wzmianka ze potrzeba allow all the time. TODO */}
                   </View>
                   <View style={[{ flex: 0.2, padding: 10 }, GlobalStyles.center]}>
                     <Text style={[GlobalStyles.text18, {textAlign: 'center'}]}>We won't be able to track your training without <Text style={[GlobalStyles.orange]}>location permissions</Text>.</Text>
