@@ -16,11 +16,15 @@ import GlobeIcon from '../../../assets/main/Diet/globe.svg';
 import StartIcon from '../../../assets/main/Diet/play-fill.svg';
 import StopIcon from '../../../assets/main/Diet/stop-fill.svg';
 import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
+import MapLayers from '../../../assets/main/Diet/layer.svg';
+import PointMap from '../../../assets/main/Diet/point.svg';
 import MapMarkerStatic from '../../../assets/main/Navigation/gps_icon.png';
 
 function CardioStart({ navigation }) {
   const insets = useSafeAreaInsets();
   const [currentLocation, setCurrentLocation] = useState(null);
+  const mapRef = useRef(null);
+  const [mapLayer, setMapLayer] = useState("normal");
   const [locationError, setLocationError] = useState(false);
   const [locationWarning, setLocationWarning] = useState(false);
   const [checkingLocationPermissions, setCheckingLocationPermissions] = useState(true);
@@ -274,6 +278,19 @@ function CardioStart({ navigation }) {
   const navigateBack = () => {
     navigation.goBack();
   };
+  
+  //map settings
+  const centerMap = () => {
+    if (mapRef.current && currentLocation) {
+      const zoomedInRegion = { ...currentLocation, latitudeDelta: 0.005, longitudeDelta: 0.005 };
+      mapRef.current.animateToRegion(zoomedInRegion, 1000);
+    }
+  };
+  
+  const toggleMapLayer = () => {
+    setMapLayer(prevLayer => (prevLayer === "normal" ? "satellite" : "normal"));
+  };
+  
 
   const getRouteSegments = (coords) => {
     if (!coords.length) return [];
@@ -352,11 +369,18 @@ function CardioStart({ navigation }) {
                 <>
                   {currentLocation ? (
                     <>
-                      <MapView style={GlobalStyles.flex} initialRegion={currentLocation}>
+                      <MapView ref={mapRef} style={GlobalStyles.flex} initialRegion={currentLocation}>
                         <UrlTile
                           urlTemplate="https://a.tile.openstreetmap.org/{z}/{x}/{y}.png"
                           maximumZ={19}
                           flipY={false}
+                          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: mapLayer === "normal" ? 1 : 0 }}
+                        />
+                        <UrlTile
+                          urlTemplate="https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}"
+                          maximumZ={19}
+                          flipY={false}
+                          style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: mapLayer === "satellite" ? 1 : 0 }}
                         />
                         <Marker coordinate={currentLocation}>
                           <Image
@@ -382,6 +406,12 @@ function CardioStart({ navigation }) {
                           <Text style={[GlobalStyles.text16, { textAlign: 'center' }]}> GPS SIGNAL LOST </Text>
                         </View>
                       )}
+                      <TouchableOpacity onPress={toggleMapLayer} style={[styles.mapRoundButton, {bottom: 10}, GlobalStyles.center]}>
+                        <MapLayers width={22} height={22} />
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={centerMap} style={[styles.mapRoundButton, {bottom: 60}, GlobalStyles.center]}>
+                        <PointMap width={22} height={22} />
+                      </TouchableOpacity>
                     </>
                   ) : (
                     <View style={[GlobalStyles.flex, GlobalStyles.center]}>
@@ -655,6 +685,21 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.3,
     shadowRadius: 4,
     elevation: 5,
+  },
+  mapRoundButton:{
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: 'whitesmoke',
+    position: 'absolute',
+    borderColor: 'black',
+    borderWidth: 1,
+    right: 10,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3,
+    elevation: 4,
   },
   iconWrapper: {
     flex: 1,
