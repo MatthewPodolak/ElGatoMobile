@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef, useContext } from 'react';
 import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { UrlTile, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import { activities } from '../../../assets/Data/activities.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import {checkHealthConnectPermissionsStatus, acessReadPermissionHealthConnect} from '../../../Services/Helpers/Activity/ActivityPermissionHelper.js';
@@ -21,8 +22,10 @@ import CloseIcon from '../../../assets/main/Diet/x-lg.svg';
 import MapLayers from '../../../assets/main/Diet/layer.svg';
 import PointMap from '../../../assets/main/Diet/point.svg';
 import MapMarkerStatic from '../../../assets/main/Navigation/gps_icon.png';
+import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
 
 function CardioStart({ navigation }) {
+  const { setIsAuthenticated } = useContext(AuthContext);
   const insets = useSafeAreaInsets();
   const [currentLocation, setCurrentLocation] = useState(null);
   const mapRef = useRef(null);
@@ -61,6 +64,7 @@ function CardioStart({ navigation }) {
   const [measureDeviceEnabled, setMeasureDeviceEnabled] = useState(false);
   const [caloriePermissionGranted, setCaloriePermissionGranted] = useState(false);
   const [heartRatePermissionGranted, setHeartRatePermissionGranted] = useState(false);
+  const [userWeight, setUserWeight] = useState(80);
   const [caloriesBurnt, setCaloriesBurnt] = useState(0);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
@@ -94,8 +98,18 @@ function CardioStart({ navigation }) {
         //TODO IOS impl. perm.
       }
     };
+
+    const getUserWeight = async () => {
+      try{
+        const weightVal = await UserDataService.getCurrentUserWeight(setIsAuthenticated, navigation);
+        setUserWeight(weightVal);
+      }catch(error){
+        setUserWeight(80);
+      }
+    };
   
     requestPermissions();
+    getUserWeight();
   }, []);
   
 
@@ -193,7 +207,7 @@ function CardioStart({ navigation }) {
   useEffect(() => {
     if(trainingSessionActive){
       const timeInMinutes = displayTime / 60;
-      const calculatedCalories = calculateBurntCalories(activityType, 81, distance, speed, timeInMinutes);
+      const calculatedCalories = calculateBurntCalories(activityType, userWeight, distance, speed, timeInMinutes);
       setCaloriesBurnt(calculatedCalories);
     }
   }, [displayTime, distance, speed, activityType, trainingSessionActive]);
@@ -309,7 +323,7 @@ function CardioStart({ navigation }) {
     setStartTime(null);
     setAccumulatedTime(0);
     setDisplayTime(0);
-    
+
     setCaloriesBurnt(0);
     
     //TODO - background-location-task

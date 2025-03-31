@@ -60,6 +60,40 @@ export default class UserDataService {
         return response;
     };
 
+    static async getCurrentUserWeight(setIsAuthenticated, navigation){
+        const value = await AsyncStorage.getItem("currentWeight");
+        if(value != null){
+            return value;
+        }
+
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetUserWeight`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        if(!response.ok){
+            return 0;
+        }
+
+        const weightValue = await response.json();
+        await AsyncStorage.setItem("currentWeight", JSON.stringify(weightValue));
+
+        return weightValue;
+    };
+
     static async getUserWeightType(setIsAuthenticated, navigation){
         const value = await AsyncStorage.getItem("measureType");
         if(value != null){
