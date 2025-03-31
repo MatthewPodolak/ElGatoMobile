@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { UrlTile, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
@@ -7,8 +7,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 import { activities } from '../../../assets/Data/activities.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import {checkHealthConnectPermissionsStatus, acessReadPermissionHealthConnect} from '../../../Services/Helpers/Activity/ActivityPermissionHelper.js';
 import { checkAndRequestLocationPermission } from '../../../Services/Helpers/Location/LocationPermissionHelper.js';
 import { BACKGROUND_LOCATION_TASK } from '../../../Services/Tasks/Location/BackgroundLocationTask.js';
+import { calculateBurntCalories } from '../../../Services/Conversion/TrainingDataToBurntCalories.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import PulseIcon from '../../../assets/main/Diet/heart-pulse.svg';
@@ -34,6 +36,8 @@ function CardioStart({ navigation }) {
   const [trainingStartedHud, setTrainingStartedHud] = useState(false);
   const [trainingSessionActive, setTrainingSessionActive] = useState(false);
   const [trainingDataVisible, setTrainingDataVisible] = useState(false);
+  const [distance, setDistance] = useState(0);
+  const [speed, setSpeed] = useState(0);
 
   //Timer
   const [startTime, setStartTime] = useState(null);
@@ -53,11 +57,11 @@ function CardioStart({ navigation }) {
     trainingSessionActiveRef.current = trainingSessionActive;
   }, [trainingSessionActive]);
 
-  //Dist
-  const [distance, setDistance] = useState(0);
-
-  //speed
-  const [speed, setSpeed] = useState(0);
+  //measuring
+  const [measureDeviceEnabled, setMeasureDeviceEnabled] = useState(false);
+  const [caloriePermissionGranted, setCaloriePermissionGranted] = useState(false);
+  const [heartRatePermissionGranted, setHeartRatePermissionGranted] = useState(false);
+  const [caloriesBurnt, setCaloriesBurnt] = useState(0);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -67,6 +71,33 @@ function CardioStart({ navigation }) {
     acc[activity.Group].push(activity);
     return acc;
   }, {});
+
+  useEffect(() => {
+    const requestPermissions = async () => {
+      if (Platform.OS === 'android') {
+        const permissionsToCheck = [
+          { type: "ActiveCaloriesBurned", setter: setCaloriePermissionGranted },
+          { type: "HeartRate", setter: setHeartRatePermissionGranted }
+        ];
+  
+        for (const { type, setter } of permissionsToCheck) {
+          const granted = await checkHealthConnectPermissionsStatus(type);
+          if (!granted) {
+            const requested = await acessReadPermissionHealthConnect(type);
+            setter(requested);
+          } else {
+            setter(true);
+          }
+        }
+  
+      } else if (Platform.OS === 'ios') {
+        //TODO IOS impl. perm.
+      }
+    };
+  
+    requestPermissions();
+  }, []);
+  
 
   useEffect(() => {
     let subscription;
@@ -158,6 +189,14 @@ function CardioStart({ navigation }) {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if(trainingSessionActive){
+      const timeInMinutes = displayTime / 60;
+      const calculatedCalories = calculateBurntCalories(activityType, 81, distance, speed, timeInMinutes);
+      setCaloriesBurnt(calculatedCalories);
+    }
+  }, [displayTime, distance, speed, activityType, trainingSessionActive]);
 
   useEffect(() => {
     if (timerActive && startTime !== null) {
@@ -270,6 +309,8 @@ function CardioStart({ navigation }) {
     setStartTime(null);
     setAccumulatedTime(0);
     setDisplayTime(0);
+    
+    setCaloriesBurnt(0);
     
     //TODO - background-location-task
     await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
@@ -455,12 +496,16 @@ function CardioStart({ navigation }) {
             <View style={[styles.trainingDataRowDivided]}>
               <View style={[{flex: 0.5}, GlobalStyles.center]}>
                 <Text style={[GlobalStyles.text16]}>CALORIES</Text>
-                <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>321</Text>
+                <Text style={[GlobalStyles.text32, GlobalStyles.bold, GlobalStyles.orange]}>{Math.floor(caloriesBurnt)}</Text>
               </View>
               <View style={styles.verticalDivider} />
               <View style={[{flex: 0.5}, GlobalStyles.center]}>
                 <Text style={[GlobalStyles.text16]}>PULSE</Text>
-                <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>90</Text>
+                {measureDeviceEnabled ? (
+                  <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>333</Text>
+                ):(
+                  <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>--|--</Text>
+                )}               
               </View>
             </View>
 
