@@ -319,6 +319,7 @@ function CardioStart({ navigation }) {
     setTrainingStartedHud(false);
 
     //timner -- final -> displayTime.
+    setRouteCoordinates([]);
     setTimerActive(false);
     setStartTime(null);
     setAccumulatedTime(0);
