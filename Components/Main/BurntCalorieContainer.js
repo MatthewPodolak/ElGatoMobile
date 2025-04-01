@@ -6,7 +6,7 @@ import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { BlurView } from 'expo-blur';
 import LottieView from "lottie-react-native";
 
-const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate }) => {
+const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate, permissionsGranted }) => {
   const [burntCalories, setBurntCalories] = useState(totalBurnt);
   const [isActive, setIsActive] = useState(canAnimate??false);
 

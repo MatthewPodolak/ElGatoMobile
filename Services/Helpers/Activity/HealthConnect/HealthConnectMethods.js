@@ -44,13 +44,13 @@ export const readStepsToday = async () => {
   }
 };
 
-export const readBurntCaloriesPeriod = async (from, to) => {
-  if (!(from instanceof Date) || !(to instanceof Date)) {
+export const readRecordPeriod = async (type, from, to) => {
+  if (!(from instanceof Date) || !(to instanceof Date) || (type === null)) {
     return 0;
   }
 
   try {
-    const { records } = await readRecords('ActiveCaloriesBurned', {
+    const { records } = await readRecords(type, {
       timeRangeFilter: {
         operator: 'between',
         startTime: from.toISOString(),

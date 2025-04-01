@@ -11,6 +11,7 @@ import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus } from '../../Services/Helpers/Activity/ActivityPermissionHelper.js';
 import { readStepsToday } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
+import { readRecordPeriod } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
@@ -27,10 +28,12 @@ function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
-  const [currentSteps, setCurrentSteps] = useState(0);
+  const [currentSteps, setCurrentSteps] = useState(0); //per 24
+  const [currentCaloriesBurnt, setCurrentCaloriesBurnt] = useState(0); //per 24
   const [dailyStepsGoal, setDailyStepsGoal] = useState(0);
   const [isPedometerAvaliable, setIsPedometerAvaliable] = useState(true); //If not used in further pedometer kt impl. remove, and update comp vis.
   const [stepsPermissionsGranted, setStepsPermissionsGranted] = useState(true);
+  const [caloriePermissionGranted, setCaloriePermissionGranted] = useState(false);
 
   const [dailyMaxIntake, setDailyMaxIntake] = useState(null);
   const [currentDailyIntake, setCurrentDailyIntake] = useState(null);
@@ -69,36 +72,68 @@ function HomeScreen({ navigation }) {
       }
   }, [userLayoutData]);
 
-  useEffect(() => {
-    getCurrentSteps();
-  }, []);
-  
-  const getCurrentSteps = async () => {
-    if (Platform.OS === 'ios') {
-      //TODO IOS IMP.
-      return;
-    } 
-    else if (Platform.OS === 'android') {
-      const perms = await checkHealthConnectPermissionsStatus("Steps");
-      if(perms){
-        const todaySteps = await readStepsToday();
-        //TODO
-        //IF 0 --- FALBACK TO kt background pedmoeter task...
-        setCurrentSteps(todaySteps);
-        return;
-      }
 
-      const granted = await acessReadPermissionHealthConnect("Steps");
-      if(granted){
-        const todaySteps = await readStepsToday();
-        //TODO
-        //IF 0 --- FALBACK TO kt background pedmoeter task...
-        setCurrentSteps(todaySteps);
-        return;
-      }
-      setStepsPermissionsGranted(false);
-    }
-  };
+  useEffect(() => {
+      const requestPermissions = async () => {
+        if (Platform.OS === 'android') {
+          const permissionsToCheck = [
+            { type: "ActiveCaloriesBurned", setter: setCaloriePermissionGranted },
+            { type: "Steps", setter: setStepsPermissionsGranted }
+          ];
+    
+          for (const { type, setter } of permissionsToCheck) {
+            const granted = await checkHealthConnectPermissionsStatus(type);
+            if (!granted) {
+              const requested = await acessReadPermissionHealthConnect(type);
+              setter(requested);
+            } else {
+              setter(true);
+            }
+          }
+    
+        } else if (Platform.OS === 'ios') {
+          //TODO IOS impl. perm.
+        }
+      };
+      
+      requestPermissions(); 
+    }, []);
+  
+    useEffect(() => {
+      const getCurrentSteps = async () => {
+        if (Platform.OS === 'ios') {
+          //TODO IOS IMP.
+          return;
+        } 
+        else if (Platform.OS === 'android') {
+          if(stepsPermissionsGranted){
+            const todaySteps = await readStepsToday();
+            //TODO
+            //IF 0 --- FALBACK TO kt background pedmoeter task...
+            setCurrentSteps(todaySteps);
+            return;
+          }
+        }
+      };
+
+      const getCurrentBurntCalories = async () => {
+        if (Platform.OS === 'ios') {
+          //TODO IOS IMP.
+          return;
+        } 
+        else if (Platform.OS === 'android') {
+          if(caloriePermissionGranted){
+            const todayCalories = await readRecordPeriod('ActiveCaloriesBurned', new Date().setHours(0, 0, 0, 0), new Date());
+            setCurrentCaloriesBurnt(todayCalories);
+            return;
+          }
+        }
+      };
+
+      getCurrentSteps();
+      getCurrentBurntCalories();
+    }, [caloriePermissionGranted, stepsPermissionsGranted]);
+  
 
   const getChartsData = async () => {
     setChartDataLoading(true);
@@ -625,7 +660,7 @@ function HomeScreen({ navigation }) {
 
               <View style={styles.row}>
                   <View style={styles.block}>
-                    <BurntCalorieContainer totalBurnt={100} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."}/>
+                    <BurntCalorieContainer totalBurnt={currentCaloriesBurnt} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."} permissionsGranted={caloriePermissionGranted}/>
                   </View>
                   <View style={styles.block}>
                     {userWaterIntake ? (
