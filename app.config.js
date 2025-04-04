@@ -25,6 +25,8 @@ export default {
         NSMotionUsageDescription: "Allow ElGatoMobile to access motion data to track your daily step count.",
         NSLocationWhenInUseUsageDescription: "Allow ElGatoMobile to access your location while you use the app.",
         NSLocationAlwaysUsageDescription: "Allow ElGatoMobile to access your location in the background.",
+        NSBluetoothAlwaysUsageDescription: "Allow ElGatoMobile to access Bluetooth to connect with fitness devices.",
+        NSBluetoothPeripheralUsageDescription: "Allow ElGatoMobile to connect with Bluetooth peripherals.",
         UIBackgroundModes: ["location"]
       }
     },
@@ -42,6 +44,11 @@ export default {
         "android.permission.health.WRITE_ACTIVE_CALORIES_BURNED",
         "android.permission.health.READ_HEART_RATE",
         "android.permission.health.WRITE_HEART_RATE",
+        "android.permission.BLUETOOTH",
+        "android.permission.BLUETOOTH_ADMIN",
+        "android.permission.BLUETOOTH_SCAN",
+        "android.permission.BLUETOOTH_CONNECT",
+        "android.permission.BLUETOOTH_ADVERTISE",
       ],
       adaptiveIcon: {
         foregroundImage: "./assets/adaptive-icon.png",

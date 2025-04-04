@@ -1,9 +1,10 @@
 import React, { useState, useEffect, useRef, useContext } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState, Platform } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, FlatList, StatusBar, Modal, TouchableWithoutFeedback, ScrollView, Image, AppState, Platform } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import MapView, { UrlTile, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import LottieView from "lottie-react-native";
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import { activities } from '../../../assets/Data/activities.js';
@@ -12,6 +13,9 @@ import {checkHealthConnectPermissionsStatus, acessReadPermissionHealthConnect} f
 import { checkAndRequestLocationPermission } from '../../../Services/Helpers/Location/LocationPermissionHelper.js';
 import { BACKGROUND_LOCATION_TASK } from '../../../Services/Tasks/Location/BackgroundLocationTask.js';
 import { calculateBurntCalories } from '../../../Services/Conversion/TrainingDataToBurntCalories.js';
+import { checkAndRequestBluetoothPermissionAndroid } from '../../../Services/Helpers/Bluetooth/BluetoothPermissionHelper.js';
+import { BleManager } from 'react-native-ble-plx';
+import { Buffer } from 'buffer';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import PulseIcon from '../../../assets/main/Diet/heart-pulse.svg';
@@ -60,12 +64,26 @@ function CardioStart({ navigation }) {
     trainingSessionActiveRef.current = trainingSessionActive;
   }, [trainingSessionActive]);
 
-  //measuring
+  //devices
+  const [deviceModalVisible, setDeviceModalVisible] = useState(false);
+  const [blePermissionEbabled, setBlePermissionEbabled] = useState(false);
+  const [searchingForDevices, setSearchingForDevices] = useState(true);
+  const [avbDevices, setAvbDevices] = useState([]);
+  const [selectedDeviceId, setSelectedDeviceId] = useState(null);
+  const [connectedDeviceName, setConnectedDeviceName] = useState("device");
+  const [connectingToDevice, setConntectingToDevice] = useState(false);
+  const bleManagerRef = useRef(new BleManager());
+  const heartRateSubscriptionRef = useRef(null);
+  const [deviceConnectionError, setDeviceConnectionError] = useState(false);
+  const [deviceConnectionErrorMsg, setDeviceConnectionErrorMsg] = useState(null);
   const [measureDeviceEnabled, setMeasureDeviceEnabled] = useState(false);
+
+  //measuring
   const [caloriePermissionGranted, setCaloriePermissionGranted] = useState(false);
   const [heartRatePermissionGranted, setHeartRatePermissionGranted] = useState(false);
   const [userWeight, setUserWeight] = useState(80);
   const [caloriesBurnt, setCaloriesBurnt] = useState(0);
+  const [currentHeartRate, setCurrentHeartRate] = useState(0);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -112,6 +130,117 @@ function CardioStart({ navigation }) {
     getUserWeight();
   }, []);
   
+
+  const handleDeviceModal = async () => {
+    if (Platform.OS === 'android') {
+      const granted = await checkAndRequestBluetoothPermissionAndroid();
+      setBlePermissionEbabled(granted);
+    }else if (Platform.OS === 'ios'){
+      //TODO ios
+    }
+
+    setDeviceModalVisible(prev => !prev);
+    if(!measureDeviceEnabled){
+      scanForBleDevices();
+    }
+  };
+  
+  const scanForBleDevices = () => {
+    setDeviceConnectionError(false);
+    setDeviceConnectionErrorMsg(null);
+    setSelectedDeviceId(null);
+    setConntectingToDevice(false);
+    setSearchingForDevices(true);
+    setAvbDevices([]);
+    
+    bleManagerRef.current.startDeviceScan(null, null, (error, device) => {
+      if (error) {
+        return;
+      }
+
+      if (device && device.name) {
+        setAvbDevices((prevDevices) => {
+          if (!prevDevices.find((d) => d.id === device.id)) {
+            return [...prevDevices, device];
+          }
+          return prevDevices;
+        });
+      }
+    });
+
+    setTimeout(() => {
+      bleManagerRef.current.stopDeviceScan();
+      setSearchingForDevices(false);
+    }, 10000);
+  };
+
+  //dispose ble
+  useEffect(() => {
+    return () => {
+      if (heartRateSubscriptionRef.current) {
+        heartRateSubscriptionRef.current.remove();
+      }
+      bleManagerRef.current.destroy();
+    };
+  }, []);
+
+  const handleDeviceConnect = async () => {
+    setConntectingToDevice(true);
+    try{
+      const device = await bleManagerRef.current.connectToDevice(selectedDeviceId);
+      const connectedDevice = await device.discoverAllServicesAndCharacteristics();
+      if (!connectedDevice?.serviceUUIDs.find(uuid => uuid === "0000180d-0000-1000-8000-00805f9b34fb")) {
+        bleManagerRef.current.cancelDeviceConnection(selectedDeviceId);
+        setDeviceConnectionError(true);
+        setDeviceConnectionErrorMsg("This device does not support heart rate measuring.");
+        return;
+      }else{
+        subscribeToHeartRate(device);
+      }
+
+      setConnectedDeviceName(avbDevices.find((device) => device.id === selectedDeviceId)?.name);
+      setMeasureDeviceEnabled(true);
+    }catch(error){
+      setDeviceConnectionError(true);
+    }
+  };
+
+  const subscribeToHeartRate = async (device) => {
+    const serviceUUID = "0000180d-0000-1000-8000-00805f9b34fb";
+    const characteristicUUID = "00002a37-0000-1000-8000-00805f9b34fb";
+
+    try {
+      const subscription = device.monitorCharacteristicForService(serviceUUID, characteristicUUID,
+        (error, characteristic) => {
+          if (error) {
+            if (error.message && error.message.includes("Operation was cancelled")) {
+              return;
+            }
+            return;
+          }
+
+          const base64Value = characteristic.value;
+          if (!base64Value) return;
+          const decodedBytes = Buffer.from(base64Value, 'base64');
+          const flags = decodedBytes[0];
+          let heartRate;
+          if ((flags & 0x01) === 0) {
+            heartRate = decodedBytes[1];
+          } else {
+            heartRate = decodedBytes.readUInt16LE(1);
+          }
+          setCurrentHeartRate(heartRate);
+        }
+      );
+
+      heartRateSubscriptionRef.current = subscription;
+
+    } catch (error) {
+      await bleManagerRef.current.cancelDeviceConnection(selectedDeviceId);
+      setDeviceConnectionError(true);
+      setDeviceConnectionErrorMsg("This device does not support heart rate measuring.");
+    }
+  };
 
   useEffect(() => {
     let subscription;
@@ -517,7 +646,7 @@ function CardioStart({ navigation }) {
               <View style={[{flex: 0.5}, GlobalStyles.center]}>
                 <Text style={[GlobalStyles.text16]}>PULSE</Text>
                 {measureDeviceEnabled ? (
-                  <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>333</Text>
+                  <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>{currentHeartRate}</Text>
                 ):(
                   <Text style={[GlobalStyles.text32, GlobalStyles.bold]}>--|--</Text>
                 )}               
@@ -560,7 +689,7 @@ function CardioStart({ navigation }) {
         </View>
 
         {!trainingSessionActive ? (
-          <TouchableOpacity style={[styles.smallCircleRight, GlobalStyles.center]}>
+          <TouchableOpacity style={[styles.smallCircleRight, GlobalStyles.center]} onPress={() => handleDeviceModal()}>
             <PulseIcon width={32} height={32} fill="#000" style={{ marginTop: 5 }} />
           </TouchableOpacity>
         ) : (
@@ -620,6 +749,126 @@ function CardioStart({ navigation }) {
           </View>
         </TouchableWithoutFeedback>
       </Modal>
+
+      <Modal 
+        animationType="slide"
+        transparent={true}
+        visible={deviceModalVisible}
+        onRequestClose={() => setDeviceModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setDeviceModalVisible(false)}>
+          <View style={styles.modalContainer}>
+            <TouchableWithoutFeedback>
+              <View style={styles.modalContent}>
+                <View
+                  style={GlobalStyles.flex}
+                  contentContainerStyle={{ flexGrow: 1, justifyContent: 'center' }}
+                >
+                 <View style={[GlobalStyles.center, {padding: 5,}]}>
+                    <Text style={[GlobalStyles.text16]}>DEVICES</Text>
+                 </View>
+                 <View style={[styles.devicesDisplayContainer, GlobalStyles.center]}>
+                    {blePermissionEbabled ? (
+                      <>
+                      {connectingToDevice ? (
+                        <>                     
+                          <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                          {(measureDeviceEnabled && !deviceConnectionError) ? (
+                            <>
+                              <LottieView
+                                source={require("../../../assets/main/Lottie/ble_connected.json")}
+                                autoPlay
+                                loop={false}
+                                style={[styles.lottie]}
+                              />
+                              <Text style={[GlobalStyles.text16, {marginTop: 15}]}>connected to <Text style={[GlobalStyles.bold]}>{connectedDeviceName}</Text></Text>
+                            </>
+                          ) : deviceConnectionError && !measureDeviceEnabled ? (
+                            <>
+                              <LottieView
+                                source={require("../../../assets/main/Lottie/ble_cancelled.json")}
+                                autoPlay
+                                loop={false}
+                                style={[styles.lottie]}
+                              />
+                              <Text style={[GlobalStyles.text18, {marginTop: 20}]}>Connection failed. <Text style={[GlobalStyles.orange]}>Try another device.</Text></Text>
+                              <Text style={[GlobalStyles.text16, {marginTop: 5, textAlign: 'center'}]}>{deviceConnectionErrorMsg}</Text>
+                            </>
+                          ) : (
+                            <>
+                              <LottieView
+                                source={require("../../../assets/main/Lottie/ble_connected.json")}
+                                style={[styles.lottie]}
+                              />
+                              <Text style={[GlobalStyles.text16, {marginTop: 15}]}>connecting to {connectedDeviceName}</Text>
+                            </>
+                          )}                           
+                          </View>
+                        </>
+                      ):(
+                        <>
+                          {searchingForDevices && avbDevices.length === 0 ? (
+                            <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                              <ActivityIndicator size="large" color="#FF8303" />
+                            </View>
+                          ):(
+                            <>
+                              <FlatList
+                                data={avbDevices}
+                                keyExtractor={(item) => item.id}
+                                renderItem={({ item }) => {
+                                  const isSelected = item.id === selectedDeviceId;
+                                  return (
+                                    <TouchableOpacity onPress={() => setSelectedDeviceId(item.id)}>
+                                      <View
+                                        style={{
+                                          padding: 10,
+                                          alignItems: 'flex-start',
+                                          backgroundColor: isSelected ? '#FF8303' : 'transparent',
+                                          borderRadius: 5,
+                                          marginVertical: 5,
+                                        }}
+                                      >
+                                        <Text
+                                          style={[
+                                            GlobalStyles.text16,
+                                            { color: isSelected ? '#fff' : '#000' },
+                                          ]}
+                                        >
+                                          {item.name}
+                                        </Text>
+                                      </View>
+                                    </TouchableOpacity>
+                                  );
+                                }}
+                                ListFooterComponent={searchingForDevices ? () => (<ActivityIndicator size="large" color="#FF8303" style={{ marginVertical: 20 }}/> ): null}
+                              />
+                            </>
+                          )}
+                        </>
+                      )}                    
+                      </>
+                    ):(
+                      <>
+                        <Text>NOT ENABLED</Text>
+                        {/* EL GATO ERROR VIEW - BLE NOT ENABLED */}
+                      </>
+                    )}
+                 </View>
+
+                 {(selectedDeviceId && !connectingToDevice) && (
+                  <TouchableOpacity onPress={() => handleDeviceConnect()} style={[styles.connectButton, GlobalStyles.center]}>
+                    <Text style={[GlobalStyles.text16, GlobalStyles.white]}>connect</Text>
+                  </TouchableOpacity>
+                 )}
+
+                </View>
+              </View>
+            </TouchableWithoutFeedback>
+          </View>
+        </TouchableWithoutFeedback>
+      </Modal>
+
     </SafeAreaView>
   );
 }
@@ -834,6 +1083,33 @@ const styles = StyleSheet.create({
     backgroundColor: 'black',
     marginHorizontal: 10,
   },
+
+
+  devicesDisplayContainer: {
+    flex: 1,
+    borderTopColor: 'gray',
+    borderTopWidth: 1,
+    marginTop: 10,
+  },
+  connectButton: {
+    width: '90%',
+    minHeight: 50,
+    borderRadius: 25,
+    backgroundColor: '#ff6600',
+    marginLeft: '5%',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.3,
+    shadowRadius: 3.84,
+    elevation: 5,
+  },
+  lottie: {
+    width: 250, 
+    height: 250,
+    marginTop: -50,
+    alignSelf: 'center'
+  },
+  
 });
 
 export default CardioStart;
