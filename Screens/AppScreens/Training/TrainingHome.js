@@ -10,6 +10,7 @@ import TrainingDataService from '../../../Services/ApiCalls/TrainingData/Trainin
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
 import TrainingDayExerciseDisplay from '../../../Components/Training/TrainingDayExerciseDisplay.js';
+import CardioTrainingDayDisplay from '../../../Components/Training/CardioTrainingDayDisplay.js';
 import Calendar from '../../../Components/Diet/Calendar';
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
@@ -34,7 +35,7 @@ function TrainingHome({ navigation, route }) {
   const [temporarlyRemovedSeries, setTemporarlyRemovedSeries] = useState([]);
 
   //cardio variables
-  const [cardioTrainingData, setCardioTrainingData] = useState(null);
+  const [cardioTrainingData, setCardioTrainingData] = useState({exercises: ["aaa"]});
 
   const [optionsVisible, setOptionsVisible] = useState(false);
   const optionsAnimation = useRef(new Animated.Value(0)).current;
@@ -878,7 +879,7 @@ function TrainingHome({ navigation, route }) {
           ):(
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
               <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
-               
+                <CardioTrainingDayDisplay exercise={{aaa: "aaa"}} />
               </ScrollView>
             ) : (
               <View style={[GlobalStyles.center, GlobalStyles.flex]}>
