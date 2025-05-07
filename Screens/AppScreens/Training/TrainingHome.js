@@ -14,6 +14,7 @@ import CardioTrainingDayDisplay from '../../../Components/Training/CardioTrainin
 import Calendar from '../../../Components/Diet/Calendar';
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataService.js';
 
 
 function TrainingHome({ navigation, route }) {
@@ -35,7 +36,7 @@ function TrainingHome({ navigation, route }) {
   const [temporarlyRemovedSeries, setTemporarlyRemovedSeries] = useState([]);
 
   //cardio variables
-  const [cardioTrainingData, setCardioTrainingData] = useState({exercises: ["aaa"]});
+  const [cardioTrainingData, setCardioTrainingData] = useState(null);
 
   const [optionsVisible, setOptionsVisible] = useState(false);
   const optionsAnimation = useRef(new Animated.Value(0)).current;
@@ -44,15 +45,25 @@ function TrainingHome({ navigation, route }) {
   const timeoutRefRemoval = useRef(null);
   const timeoutRefUpdate = useRef(null);
 
-  const setActiveTabFunc = (value) => {
+  const setActiveTabFunc = async (value) => {
     setActiveTab(value);
+    if(value !== activeTab){
+      if(value === 'Gym'){
+        await getTrainingDay(selectedDate);
+      }else{
+        await getTrainingDayCardio(selectedDate);
+      }
+    }
   };
 
   useFocusEffect(
     useCallback(() => {
       if (route.params?.shouldReload) {
-        
-        getTrainingDay(selectedDate);
+        if(activeTab === 'Gym'){
+          getTrainingDay(selectedDate);
+        }else{
+          getTrainingDayCardio(selectedDate);
+        }
 
         navigation.setParams({ shouldReload: false });
       }
@@ -637,7 +648,11 @@ function TrainingHome({ navigation, route }) {
     setSelectedDate(date + 'T00:00:00Z');
     
     if (selectedDate !== null) {
-      await getTrainingDay(date + 'T00:00:00Z');
+      if(activeTab === 'Gym'){
+        await getTrainingDay(date + 'T00:00:00Z');
+      }else{
+        await getTrainingDayCardio(date + 'T00:00:00Z');
+      }
     }
   }
 
@@ -699,7 +714,11 @@ function TrainingHome({ navigation, route }) {
       }
 
       if (!selectedDate) {
-        getTrainingDay();
+        if(activeTab === 'Gym'){
+          getTrainingDay();
+        }else{
+          getTrainingDayCardio();
+        }
       }
       
   }, []);
@@ -793,7 +812,38 @@ function TrainingHome({ navigation, route }) {
 
     }catch(error){
       console.log(error);
-      //Error
+      //Error -> display no net
+    }
+  };
+
+  const getTrainingDayCardio = async (specifiedDate, canBeBlocked = true) => {
+    let dates;
+
+    if(specifiedDate){
+      dates = specifiedDate;
+    }else{
+      let date = new Date();
+      dates = date.toISOString().split("T")[0] + "T00:00:00Z";
+    }
+    
+    if(canBeBlocked){
+      setIsCarioLoading(true);
+    }
+
+    try{
+      const res = await CardioDataService.getCardioTrainingDay(setIsAuthenticated, navigation, dates);
+      if(!res.ok){
+        //Error
+        return;
+      }
+
+      const data = await res.json();
+      setIsCarioLoading(false);
+      setCardioTrainingData(data);
+
+    }catch(error){
+      console.log(error);
+      //Error -> display no net
     }
   };
 
@@ -879,7 +929,9 @@ function TrainingHome({ navigation, route }) {
           ):(
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
               <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
-                <CardioTrainingDayDisplay exercise={{aaa: "aaa"}} />
+                {cardioTrainingData.exercises.map((training, index) => (
+                  <CardioTrainingDayDisplay key={index} exercise={training} measureType={"measureType"}/>
+                ))}
               </ScrollView>
             ) : (
               <View style={[GlobalStyles.center, GlobalStyles.flex]}>

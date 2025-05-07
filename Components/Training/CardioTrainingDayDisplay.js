@@ -13,21 +13,54 @@ import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const CardioTrainingDayDisplay = ({ exercise }) => {
+const CardioTrainingDayDisplay = ({ exercise, measureType }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProgress, setIsProgess] = useState(true);
   const [isPrivate, setIsPrivate] = useState(true);
 
-  const [encodedRoute, setRoute] = useState("s}hcFzyzuO}@nHz@pGh@tE~@dDv@lCz@rCh@dBd@tBz@rCh@xCl@hBdArCn@pB");
+  const [feeling, setFeeling] = useState(exercise.exerciseData.feelingPercentage || 0);
+  const [encodedRoute, setRoute] = useState(exercise.exerciseData.route || null);
   const [routePoints, setRoutePoints] = useState([]);
 
   useEffect(() => {
-    const points = routeDecoder(encodedRoute);
-    setRoutePoints(points);
-    console.log("POINTS ---> " + JSON.stringify(points));
+    if(encodedRoute){
+      const points = routeDecoder(encodedRoute);
+      setRoutePoints(points);
+    }
   }, [encodedRoute]);
 
-  const feeling = 24;
+  useEffect(() => {
+    calculateProgression();
+  }, [exercise]);
+
+  const calculateProgression = () => {
+    if(!exercise.exerciseData || exercise.pastData){ return; }
+
+    let points = 0;
+
+    if(exercise.exerciseData.distanceMeters > exercise.pastData.distanceMeters){
+      points += 1;
+    }
+
+    if(exercise.exerciseData.speedKmH >= exercise.pastData.speedKmH){
+      points += 1;
+    }else{
+      points -= 0.5;
+    }
+
+    if((exercise.exerciseData.duration >= exercise.pastData.duration) && (exercise.exerciseData.speedKmH >= exercise.pastData.speedKmH)){
+      points += 0.5;
+    }else{
+      points -= 0.5;
+    }
+
+    if(points >= 1.5){
+      setIsProgess(true);
+      return;
+    }
+
+    setIsProgess(false);
+  };
 
   const handleVisilibtyChange = () => {
     setIsPrivate(!isPrivate);
@@ -40,7 +73,7 @@ const CardioTrainingDayDisplay = ({ exercise }) => {
         <BlurView style={styles.glassEffect} intensity={125} tint="light">
           <View style={styles.topRow}>
             <View style={styles.headerText}>
-              <Text style={styles.mealText}>Swimming</Text>
+              <Text style={styles.mealText}>{exercise.exerciseData.activityType}</Text>
             </View>
 
             <View style={styles.headerClose}>
@@ -64,21 +97,34 @@ const CardioTrainingDayDisplay = ({ exercise }) => {
             <View style={styles.alwaysExpandedRow}>
               <View style={styles.valueWrapper}>
                 <Text style={styles.valueLabel}>Time</Text>
-                <Text style={styles.valueText}>24:24</Text>
+                <Text style={styles.valueText}>{exercise.exerciseData.duration}</Text>
               </View>
               <View style={styles.valueWrapper}>
                 <Text style={styles.valueLabel}>Distance</Text>
-                <Text style={styles.valueText}>2402 <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>m</Text></Text>
+                {measureType === "metric" ? (
+                  <Text style={styles.valueText}>{exercise.exerciseData.distanceMeters} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>m</Text></Text>
+                ):(
+                  <Text style={styles.valueText}>{Number(exercise.exerciseData.distanceFeet).toFixed(2)} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>f</Text></Text>
+                )}
+
               </View>
             </View>
             <View style={styles.alwaysExpandedRow}>
               <View style={styles.valueWrapper}>
                 <Text style={styles.valueLabel}>Avg. Speed</Text>
-                <Text style={styles.valueText}>24 <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>km/h</Text></Text>
+                {measureType === "metric" ? (
+                  <Text style={styles.valueText}>{exercise.exerciseData.speedKmH} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>km/h</Text></Text>
+                ):(
+                  <Text style={styles.valueText}>{Number(exercise.exerciseData.speedMph).toFixed(1)} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>mph</Text></Text>
+                )}
               </View>
               <View style={styles.valueWrapper}>
                 <Text style={styles.valueLabel}>Avg. Heart Rate</Text>
-                <Text style={styles.valueText}>123 <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>bpm</Text></Text>
+                {exercise.exerciseData.avgHeartRate === 0 ? (
+                  <Text style={styles.valueText}>---</Text>
+                ):(
+                  <Text style={styles.valueText}>{exercise.exerciseData.avgHeartRate} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>bpm</Text></Text>
+                )}
               </View>
             </View>
           </View>
@@ -145,16 +191,21 @@ const CardioTrainingDayDisplay = ({ exercise }) => {
                             <View style={styles.detailsTitleRow}><Text style={[GlobalStyles.bold, {marginBottom: 10,}]}>Description: </Text></View>
                             <View style={[styles.sectionCard, {marginBottom: 20,}]}>
                               <Text style={styles.sectionText}>
-                                gasoikgjasoigjaoi aspigjaoigjoia agjapgajipgjip aopgjapgapgjpa agjaopgjaopgjop agjaopgjaopgjaop aogjaopgjapjgoop ggggggg
+                                {exercise.exerciseData.desc}
                               </Text>
                             </View>
 
-                            <View style={styles.detailsTitleRow}><Text style={[GlobalStyles.bold, {marginBottom: 10,}]}>Private notes: </Text></View>
-                            <View style={styles.sectionCard}>
-                              <Text style={styles.sectionText}>
-                                gasoikgjasoigjaoi aspigjaoigjoia agjapgajipgjip aopgjapgapgjpa agjaopgjaopgjop agjaopgjaopgjaop aogjaopgjapjgoop ggggggg
-                              </Text>
-                            </View>
+                            {exercise.exerciseData.privateNotes && (
+                              <>
+                                <View style={styles.detailsTitleRow}><Text style={[GlobalStyles.bold, {marginBottom: 10,}]}>Private notes: </Text></View>
+                                <View style={styles.sectionCard}>
+                                  <Text style={styles.sectionText}>
+                                  {exercise.exerciseData.privateNotes}
+                                  </Text>
+                                </View>
+                              </>
+                            )}
+                            
     
                         </View>
 
@@ -182,7 +233,7 @@ const CardioTrainingDayDisplay = ({ exercise }) => {
           )}
 
           <View style={[styles.summaryRow]}>
-            <Text style={[GlobalStyles.text16]}> Burnt calories: <Text style={GlobalStyles.orange}>321</Text></Text>
+            <Text style={[GlobalStyles.text16]}> Burnt calories: <Text style={GlobalStyles.orange}>{exercise.exerciseData.caloriesBurnt}</Text></Text>
             {isProgress ? (
                 <ArrowUpIcon width={16} height={16} color={'#3E7B27'} />
             ):(
