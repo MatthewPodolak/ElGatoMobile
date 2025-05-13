@@ -1012,6 +1012,7 @@ function TrainingHome({ navigation, route }) {
       )}
                 
         <Animated.View
+          pointerEvents={optionsVisible ? 'auto' : 'none'}
           style={[
             styles.buttonOptionContainer,
             { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
@@ -1038,6 +1039,7 @@ function TrainingHome({ navigation, route }) {
 
         <TouchableOpacity style={styles.addExerciseButton} onPress={optionButtonPressed}>
         <Animated.View
+          pointerEvents={optionsVisible ? 'auto' : 'none'}
           style={{
             transform: [
               {

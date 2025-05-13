@@ -63,5 +63,4 @@ export const DietHomeStyles = StyleSheet.create({
     flex: 1,
     height: 80,
   },
-
  });

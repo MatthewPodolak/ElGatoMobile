@@ -670,8 +670,14 @@ function DietHome({ navigation }) {
   };
 
   return (
-    <SafeAreaView style={DietHomeStyles.container} edges={['left', 'right', 'bottom']}>
-      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
+    <SafeAreaView style={DietHomeStyles.container} edges={['left', 'right', 'bottom', 'top']}>
+      <View
+        style={{ position: 'absolute', top: 0, left: 0, right: 0,
+          height: insets.top,
+          backgroundColor: '#FF8303',
+          zIndex: 100,
+        }}
+      />
       <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
 
       <Calendar onDateSelect={handleDateSelect} />
@@ -684,6 +690,7 @@ function DietHome({ navigation }) {
       </ScrollView>
 
       <Animated.View
+          pointerEvents={optionsVisible ? 'auto' : 'none'}
           style={[
             DietHomeStyles.buttonOptionContainer,
             { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
@@ -721,7 +728,6 @@ function DietHome({ navigation }) {
         message={errorMsg}
         onClose={closeErrorPopup}
       />
-
       <MakroMenu CalorieCounter={dietData ? dietData.calorieCounter : []} navigation={navigation} />
       <NavigationMenu navigation={navigation} currentScreen="DietHome" />
     </SafeAreaView>

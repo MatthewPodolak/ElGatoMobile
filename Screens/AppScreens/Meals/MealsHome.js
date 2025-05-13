@@ -800,7 +800,7 @@ const styles = StyleSheet.create({
   hoverButton: {
     width: 60,
     height: 60,
-    bottom: 65,
+    bottom: 85,
     right: 5,
     position: 'absolute',
     borderRadius: 30,
