@@ -115,4 +115,27 @@ export default class CardioDataService {
 
         return response;
       }
+
+      static async removeCardioExercises(setIsAuthenticated, navigation, model){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+            await AuthService.logout(setIsAuthenticated, navigation);
+            return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Cardio/DeleteExercisesFromCardioTrainingDay`,
+            {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,                   
+                },
+                body: JSON.stringify(model),
+            },
+            config.timeout
+        );
+
+        return response;
+      }
 }

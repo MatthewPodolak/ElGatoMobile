@@ -13,7 +13,7 @@ import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity }) => {
+const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, removeCardioExercise }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProgress, setIsProgess] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
@@ -84,6 +84,10 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity }) =
     changeVisilibity(exercise.exerciseData.publicId, newStatus);
   };
 
+  const handleRemoval = () => {
+    removeCardioExercise(exercise.exerciseData);
+  };
+
   return (
     <View style={styles.safeArea}>
       <View style={styles.mainContainer}>
@@ -102,8 +106,8 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity }) =
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity>
-                <TrashIcon fill="#000" width={22} height={26} />
+              <TouchableOpacity onPress={() => handleRemoval()}>
+                <TrashIcon fill="#000" width={22} height={26}/>
               </TouchableOpacity>
             </View>
           </View>

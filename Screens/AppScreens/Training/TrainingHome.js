@@ -866,6 +866,51 @@ function TrainingHome({ navigation, route }) {
     }
   };
 
+  const removeCardioExercise = async (exercise) => {
+  let removedEntry;
+
+  setCardioTrainingData(prev => {
+    if (!prev?.exercises) return prev;
+
+    removedEntry = prev.exercises.find(
+      entry => entry.exerciseData.publicId === exercise.publicId
+    );
+
+    const filtered = prev.exercises.filter(
+      entry => entry.exerciseData.publicId !== exercise.publicId
+    );
+    return { ...prev, exercises: filtered };
+  });
+
+  const model = {
+    date: selectedDate,
+    exercisesIdToRemove: [exercise.publicId],
+  };
+
+  try {
+    const res = await CardioDataService.removeCardioExercises(setIsAuthenticated, navigation, model);
+
+    if (!res.ok) {
+      setCardioTrainingData(prev => ({
+        ...prev,
+        exercises: removedEntry
+          ? [...prev.exercises, removedEntry]
+          : prev.exercises
+      }));
+      return;
+    }
+
+  } catch (error) {
+    setCardioTrainingData(prev => ({
+      ...prev,
+      exercises: removedEntry
+        ? [...prev.exercises, removedEntry]
+        : prev.exercises
+    }));
+  }
+};
+
+
   const optionButtonPressed = () => {
     if (optionsVisible) {
       closeOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
@@ -949,7 +994,7 @@ function TrainingHome({ navigation, route }) {
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
               <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
                 {cardioTrainingData.exercises.map((training, index) => (
-                  <CardioTrainingDayDisplay key={index} exercise={training} measureType={"measureType"} changeVisilibity={changeVisilibity}/>
+                  <CardioTrainingDayDisplay key={training.exerciseData.publicId} exercise={training} measureType={"measureType"} changeVisilibity={changeVisilibity} removeCardioExercise={removeCardioExercise}/>
                 ))}
               </ScrollView>
             ) : (
