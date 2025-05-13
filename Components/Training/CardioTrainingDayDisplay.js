@@ -13,10 +13,10 @@ import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const CardioTrainingDayDisplay = ({ exercise, measureType }) => {
+const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProgress, setIsProgess] = useState(true);
-  const [isPrivate, setIsPrivate] = useState(true);
+  const [isPublic, setIsPublic] = useState(false);
 
   const [feeling, setFeeling] = useState(exercise.exerciseData.feelingPercentage || 0);
   const [encodedRoute, setRoute] = useState(exercise.exerciseData.route || null);
@@ -31,7 +31,17 @@ const CardioTrainingDayDisplay = ({ exercise, measureType }) => {
 
   useEffect(() => {
     calculateProgression();
+    getVisilibityStatus();
   }, [exercise]);
+
+  const getVisilibityStatus = () => {
+    if(exercise.exerciseData.exerciseVisilibity === "Public"){
+      setIsPublic(true);
+      return;
+    }
+
+    setIsPublic(false);
+  };
 
   const calculateProgression = () => {
     if(!exercise.exerciseData || exercise.pastData){ return; }
@@ -63,8 +73,15 @@ const CardioTrainingDayDisplay = ({ exercise, measureType }) => {
   };
 
   const handleVisilibtyChange = () => {
-    setIsPrivate(!isPrivate);
-    //POST
+    let newStatus;
+    if(isPublic){
+      newStatus = 0;
+    }else{
+      newStatus = 1;
+    }
+    setIsPublic(!isPublic);
+    
+    changeVisilibity(exercise.exerciseData.publicId, newStatus);
   };
 
   return (
@@ -219,9 +236,9 @@ const CardioTrainingDayDisplay = ({ exercise, measureType }) => {
                             <Switch
                                 style={styles.switch}
                                 onValueChange={() => handleVisilibtyChange()}
-                                value={isPrivate}
+                                value={isPublic}
                                 trackColor={{ false: '#ccc', true: '#FFA500' }}
-                                thumbColor={isPrivate ? '#FF8303' : '#FF8303'}
+                                thumbColor={isPublic ? '#FF8303' : '#FF8303'}
                             />
                           </View>
                         </View>

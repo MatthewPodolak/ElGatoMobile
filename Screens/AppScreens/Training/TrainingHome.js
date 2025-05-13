@@ -847,6 +847,25 @@ function TrainingHome({ navigation, route }) {
     }
   };
 
+  const changeVisilibity = async (exerciseId, newStatus) => {
+    let model = {
+      date: selectedDate,
+      state: newStatus,
+      exerciseId: exerciseId,
+    };
+
+    try{
+      const res = await CardioDataService.changeExerciseVisilibity(setIsAuthenticated, navigation, model);
+      if(!res.ok){
+        //error
+        return;
+      }
+
+    }catch(error){
+      //error
+    }
+  };
+
   const optionButtonPressed = () => {
     if (optionsVisible) {
       closeOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
@@ -930,7 +949,7 @@ function TrainingHome({ navigation, route }) {
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
               <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
                 {cardioTrainingData.exercises.map((training, index) => (
-                  <CardioTrainingDayDisplay key={index} exercise={training} measureType={"measureType"}/>
+                  <CardioTrainingDayDisplay key={index} exercise={training} measureType={"measureType"} changeVisilibity={changeVisilibity}/>
                 ))}
               </ScrollView>
             ) : (
