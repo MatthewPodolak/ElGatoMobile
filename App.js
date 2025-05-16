@@ -37,6 +37,7 @@ import InspectExerciseScreen from './Screens/AppScreens/Training/InspectExercise
 import LoadExercises from './Screens/AppScreens/Training/LoadExercises';
 
 import CardioStartScreen from './Screens/AppScreens/Training/CardioStart';
+import CardioSummaryScreen from './Screens/AppScreens/Training/CardioSummary';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -118,6 +119,7 @@ function App() {
             <Stack.Screen name="InspectExercise" component={InspectExerciseScreen}/>
             <Stack.Screen name="LoadExercises" component={LoadExercises} />
             <Stack.Screen name="CardioStartScreen" component={CardioStartScreen} />
+            <Stack.Screen name="CardioSummary" component={CardioSummaryScreen} />
           </>
         )}
       </Stack.Navigator>

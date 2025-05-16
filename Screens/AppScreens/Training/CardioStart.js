@@ -457,7 +457,17 @@ function CardioStart({ navigation }) {
     setCaloriesBurnt(0);
     
     //TODO - background-location-task
-    await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+    //check imp.
+    try {
+      await Location.stopLocationUpdatesAsync(BACKGROUND_LOCATION_TASK);
+    } catch (e) {
+      console.warn("Failed to stop location updates:", e);
+    }
+
+    let data = {
+      test: "aaa",
+    };
+    navigation.navigate('CardioSummary', { data });
   };
 
   const navigateBack = () => {
