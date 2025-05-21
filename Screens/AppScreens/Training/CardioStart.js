@@ -5,6 +5,7 @@ import MapView, { UrlTile, Marker, Polyline } from 'react-native-maps';
 import * as Location from 'expo-location';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import LottieView from "lottie-react-native";
+import routeEncoder from '../../../Services/Helpers/Location/RouteEncoder.js';
 
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import { activities } from '../../../assets/Data/activities.js';
@@ -34,6 +35,7 @@ function CardioStart({ navigation }) {
   const [currentLocation, setCurrentLocation] = useState(null);
   const mapRef = useRef(null);
   const [mapLayer, setMapLayer] = useState("normal");
+  const [invalidTrainingModal, setInvalidTrainingModalVisible] = useState(false);
   const [locationError, setLocationError] = useState(false);
   const [locationWarning, setLocationWarning] = useState(false);
   const [checkingLocationPermissions, setCheckingLocationPermissions] = useState(true);
@@ -84,6 +86,12 @@ function CardioStart({ navigation }) {
   const [userWeight, setUserWeight] = useState(80);
   const [caloriesBurnt, setCaloriesBurnt] = useState(0);
   const [currentHeartRate, setCurrentHeartRate] = useState(0);
+
+  const trainingStartTimestampRef = useRef(null);
+  const [heartRateTimeline, setHeartRateTimeline] = useState([]);
+  const [speedTimeline, setSpeedTimeline] = useState([]);
+  const lastLoggedHeartRateRef = useRef(null);
+  const lastLoggedSpeedRef = useRef(null);
 
   const activeActivity = activities.find(activity => activity.name === activityType);
   const groupedActivities = activities.reduce((acc, activity) => {
@@ -230,6 +238,17 @@ function CardioStart({ navigation }) {
             heartRate = decodedBytes.readUInt16LE(1);
           }
           setCurrentHeartRate(heartRate);
+          if (timerActiveRef.current && heartRate !== lastLoggedHeartRateRef.current) {
+            const now = Date.now();
+            const elapsedSinceStart = Math.floor((now - trainingStartTimestampRef.current) / 1000);
+            const formattedTime = formatTime(elapsedSinceStart);
+
+            setHeartRateTimeline(prev => [
+              ...prev,
+              { time: formattedTime, value: heartRate }
+            ]);
+            lastLoggedHeartRateRef.current = heartRate;
+          }
         }
       );
 
@@ -292,6 +311,18 @@ function CardioStart({ navigation }) {
           
               const speedKmH = rawSpeed ? rawSpeed * 3.6 : 0;
               setSpeed(speedKmH);
+              if (timerActiveRef.current) {
+                const elapsedSinceStart = Math.floor((newLocation.timestamp - trainingStartTimestampRef.current) / 1000);
+                const formattedTime = formatTime(elapsedSinceStart);
+
+                if (speedKmH !== lastLoggedSpeedRef.current) {
+                  setSpeedTimeline(prev => [
+                    ...prev,
+                    { time: formattedTime, value: speedKmH }
+                  ]);
+                  lastLoggedSpeedRef.current = speedKmH;
+                }
+              }
 
               if (trainingSessionActiveRef.current) {
                 const locationRecord = {
@@ -403,10 +434,14 @@ function CardioStart({ navigation }) {
   
 
   const startTraining = async () => {
-    console.log("Training started");
     setTrainingDataVisible(true);
     setTrainingStartedHud(true);
     setTrainingSessionActive(true);
+    setHeartRateTimeline([]);
+    setSpeedTimeline([]);
+    lastLoggedHeartRateRef.current = null;
+    lastLoggedSpeedRef.current = null;
+    trainingStartTimestampRef.current = Date.now();
 
     //timer
     if (!startTime) {
@@ -428,7 +463,6 @@ function CardioStart({ navigation }) {
   };
 
   const pauseTraining = () => {
-    console.log("Training paused");
     setTrainingStartedHud(false);
     
     //timer
@@ -442,18 +476,36 @@ function CardioStart({ navigation }) {
   };
 
   const endTraining = async () => {
-    console.log("Training ended");
+    if(distance === 0 || accumulatedTime < 10){
+      setInvalidTrainingModalVisible(true);
+      return;
+    }
+
     setTrainingDataVisible(false);
     setTrainingSessionActive(false);
     setTrainingStartedHud(false);
 
-    //timner -- final -> displayTime.
+    const encodedRoute = routeEncoder(routeCoordinates.filter(coord => !coord.break));
+    
+    let data = {
+      distance: distance,
+      duration: displayTime,
+      calories: caloriesBurnt,
+      heartRateTimeline: heartRateTimeline,
+      speedTimeline: speedTimeline,
+      encodedRoute: encodedRoute,
+      activityType: activityType
+    };
+
     setRouteCoordinates([]);
     setTimerActive(false);
     setStartTime(null);
     setAccumulatedTime(0);
     setDisplayTime(0);
-
+    setHeartRateTimeline([]);
+    setSpeedTimeline([]);
+    lastLoggedHeartRateRef.current = null;
+    lastLoggedSpeedRef.current = null;
     setCaloriesBurnt(0);
     
     //TODO - background-location-task
@@ -464,9 +516,6 @@ function CardioStart({ navigation }) {
       console.warn("Failed to stop location updates:", e);
     }
 
-    let data = {
-      test: "aaa",
-    };
     navigation.navigate('CardioSummary', { data });
   };
 
@@ -879,6 +928,28 @@ function CardioStart({ navigation }) {
         </TouchableWithoutFeedback>
       </Modal>
 
+      <Modal
+        transparent={true}
+        visible={invalidTrainingModal}
+        onRequestClose={() => setInvalidTrainingModalVisible(false)}
+      >
+        <TouchableWithoutFeedback onPress={() => setInvalidTrainingModalVisible(false)}>
+        <View style={styles.invalidTrainingDataModalCont}>
+                 <View style={styles.invalidTrainingDataModalContentCont}>
+                    <Text style={[GlobalStyles.text18, GlobalStyles.bold]}>Are you done yet?</Text>
+                    <Text style={[GlobalStyles.text14, {marginTop: 5}]}>ElGato needs more data to properly aknowladge your training. Just move a little or discard your current progress.</Text>
+                    <View style={styles.invalidTrainingContentOptionRow}>
+                      <TouchableOpacity onPress={() => navigateBack()}>
+                        <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>Discard</Text>
+                      </TouchableOpacity>
+                      <TouchableOpacity onPress={() => setInvalidTrainingModalVisible(false)}>
+                        <Text style={[GlobalStyles.text14, GlobalStyles.orange, GlobalStyles.bold]}>Continue</Text>
+                      </TouchableOpacity>
+                    </View>
+                 </View>
+        </View>
+        </TouchableWithoutFeedback>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -1120,6 +1191,26 @@ const styles = StyleSheet.create({
     alignSelf: 'center'
   },
   
+  invalidTrainingDataModalCont: {
+  flex: 1,
+  position: 'relative',
+  backgroundColor: 'rgba(0,0,0,0.5)',
+  justifyContent: 'center',
+  alignItems: 'center',
+},
+invalidTrainingDataModalContentCont: {
+  width: '70%',
+  height: '20%',
+  minHeight: 100,
+  backgroundColor: 'whitesmoke',
+  position: 'absolute',
+  padding: 15,
+},
+invalidTrainingContentOptionRow: {
+  justifyContent: 'space-between',
+  flexDirection: 'row',
+  marginTop: 10,
+}
 });
 
 export default CardioStart;

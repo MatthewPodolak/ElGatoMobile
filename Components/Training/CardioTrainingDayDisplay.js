@@ -157,12 +157,12 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                     <View style={styles.expandedContainer}>
                         <View style={styles.expandedContainerTitle}><Text style={GlobalStyles.text18}>Map</Text></View>
                         <View style={styles.expandedContainerContentMap}>
-                          {routePoints.length > 0 && (
+                          {routePoints.length > 0 && routePoints && (
                             <MapView
                               style={{ flex: 1 }}
                               initialRegion={{
-                                latitude:   routePoints[(routePoints.length / 2)].latitude,
-                                longitude:  routePoints[(routePoints.length / 2)].longitude,
+                                latitude: routePoints[Math.floor(routePoints.length / 2)].latitude,
+                                longitude: routePoints[Math.floor(routePoints.length / 2)].longitude,
                                 latitudeDelta:  0.01,
                                 longitudeDelta: 0.01,
                               }}
