@@ -994,7 +994,7 @@ function TrainingHome({ navigation, route }) {
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
               <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
                 {cardioTrainingData.exercises.map((training, index) => (
-                  <CardioTrainingDayDisplay key={training.exerciseData.publicId} exercise={training} measureType={"measureType"} changeVisilibity={changeVisilibity} removeCardioExercise={removeCardioExercise}/>
+                  <CardioTrainingDayDisplay key={training.exerciseData.publicId} exercise={training} measureType={measureType} changeVisilibity={changeVisilibity} removeCardioExercise={removeCardioExercise}/>
                 ))}
               </ScrollView>
             ) : (

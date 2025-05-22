@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Switch } from 'react-native';
+import { View, Text, TouchableOpacity, StyleSheet, Switch, ScrollView  } from 'react-native';
+import { VictoryChart, VictoryAxis, VictoryTheme, VictoryArea } from 'victory-native';
 import { BlurView } from 'expo-blur';
 import { LinearGradient } from 'expo-linear-gradient';
 import MapView, { Polyline } from 'react-native-maps';
 import { routeDecoder } from '../../Services/Helpers/Location/RouteDecoder.js';
+import { Dimensions } from 'react-native';
 
 import TrashIcon from '../../assets/main/Diet/trash3.svg';
 import ChevronDown from '../../assets/main/Diet/chevron-down.svg';
@@ -18,9 +20,53 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
   const [isProgress, setIsProgess] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
 
+  const [sppedInTime, setSpeedInTime] = useState(exercise.exerciseData.speedInTime || []);
+  const [hrInTime, setHrInTime] = useState(exercise.exerciseData.heartRateInTime || []);
   const [feeling, setFeeling] = useState(exercise.exerciseData.feelingPercentage || 0);
   const [encodedRoute, setRoute] = useState(exercise.exerciseData.route || null);
   const [routePoints, setRoutePoints] = useState([]);
+
+  const screenWidth = Dimensions.get('window').width;
+  const chartContainerWidth = screenWidth * 0.9;
+  const chartWidth = chartContainerWidth * 1.8;
+  
+  const parseMinutes = (timestamp) => {
+    const [hh, mm, ss] = timestamp.split(':').map(Number);
+    return hh * 60 + mm + ss / 60;
+  };
+
+  const transformSpeedDataForStepChart = (data) => {
+    const transformed = [];
+
+    for (let i = 0; i < data.length; i++) {
+      const curr = data[i];
+      const time = parseMinutes(curr.timeStamp);
+      const speed = curr.speedKmh;
+
+      if (i > 0) {
+        const prevSpeed = data[i - 1].speedKmh;
+
+        transformed.push({ x: time, y: prevSpeed });
+      }
+
+      transformed.push({ x: time, y: speed });
+    }
+
+    return transformed;
+  };
+
+  const chartData = transformSpeedDataForStepChart(sppedInTime);
+  const lastX = chartData.length > 0 ? chartData[chartData.length - 1].x : 0;
+  const paddedMaxX = lastX + 0.1;
+
+  const heartRateChartData = hrInTime.map(d => ({
+    x: parseMinutes(d.timeStamp),
+    y: Math.round(d.heartRate),
+  }));
+
+  const maxHrTime = heartRateChartData.length > 0
+    ? Math.max(...heartRateChartData.map(d => d.x))
+    : 1;
 
   useEffect(() => {
     if(encodedRoute){
@@ -123,7 +169,7 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
               <View style={styles.valueWrapper}>
                 <Text style={styles.valueLabel}>Distance</Text>
                 {measureType === "metric" ? (
-                  <Text style={styles.valueText}>{exercise.exerciseData.distanceMeters} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>m</Text></Text>
+                  <Text style={styles.valueText}>{Number(exercise.exerciseData.distanceMeters).toFixed()} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>m</Text></Text>
                 ):(
                   <Text style={styles.valueText}>{Number(exercise.exerciseData.distanceFeet).toFixed(2)} <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>f</Text></Text>
                 )}
@@ -231,6 +277,117 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                         </View>
 
                     </View>
+                    
+                    <View style={styles.expandedContainer}>
+                        <View style={styles.expandedContainerTitle}><Text style={GlobalStyles.text18}>Speed</Text></View>
+                        <View style={styles.expandedContainerContentElevated}>
+                            {!sppedInTime || sppedInTime.length === 0 ? (
+                              <Text style={[GlobalStyles.text18, GlobalStyles.bold, GlobalStyles.orange]}>No data avaliable :c</Text>
+                            ):(
+                              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
+                                <VictoryChart
+                                  theme={VictoryTheme.material}
+                                  width={chartWidth}
+                                  domain={{ x: [0, paddedMaxX] }}
+                                  domainPadding={{ x: 30, y: 10 }}
+                                >
+                                  <VictoryAxis
+                                    tickFormat={(t) => `${t} min`}
+                                    style={{
+                                      axis: { stroke: 'black' },
+                                      tickLabels: { fill: '#000' },
+                                      ticks: { stroke: 'black' },
+                                    }}
+                                  />
+                                  <VictoryAxis
+                                    dependentAxis
+                                    label={measureType === 'metric' ? 'km/h' : 'mph'}
+                                    style={{
+                                      axis: { stroke: 'black' },
+                                      tickLabels: { fill: '#000' },
+                                      ticks: { stroke: 'black' },
+                                      axisLabel: {
+                                        padding: 37,
+                                        fill: '#000'
+                                      }
+                                    }}
+                                    tickFormat={(t) =>
+                                      measureType === 'metric'
+                                        ? `${t.toFixed(1)}`
+                                        : `${(t * 0.621371).toFixed(1)}`
+                                    }
+                                  />
+                                  <VictoryArea
+                                    data={chartData.map(d => ({
+                                      x: d.x,
+                                      y: measureType === 'metric' ? parseFloat(d.y.toFixed(1)) : parseFloat((d.y * 0.621371).toFixed(1))
+                                    }))}
+                                    interpolation="stepAfter"
+                                    style={{
+                                      data: {
+                                        fill: "rgba(255, 131, 3, 0.2)",
+                                        stroke: "#FF8303",
+                                        strokeWidth: 3
+                                      }
+                                    }}
+                                  />
+                                </VictoryChart>
+                              </ScrollView>
+                            )}
+                        </View>
+                    </View>
+
+                    <View style={styles.expandedContainer}>
+                        <View style={styles.expandedContainerTitle}><Text style={GlobalStyles.text18}>Heart rate</Text></View>
+                        <View style={styles.expandedContainerContentElevated}>
+                            {!hrInTime || hrInTime.length === 0 ? (
+                              <Text style={[GlobalStyles.text18, GlobalStyles.bold, GlobalStyles.orange]}>No data avaliable :c</Text>
+                            ):(
+                              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ paddingHorizontal: 10 }}>
+                                <VictoryChart
+                                  theme={VictoryTheme.material}
+                                  width={chartWidth}
+                                  domain={{ x: [0, maxHrTime] }}
+                                  domainPadding={{ x: 30, y: 10 }}
+                                >
+                                  <VictoryAxis
+                                    tickFormat={(t) => `${Number.isInteger(t) ? t : t.toFixed(1)} min`}
+                                    style={{
+                                      axis: { stroke: 'black' },
+                                      tickLabels: { fill: '#000' },
+                                      ticks: { stroke: 'black' },
+                                    }}
+                                  />
+                                  <VictoryAxis
+                                    dependentAxis
+                                    label="bpm"
+                                    style={{
+                                      axis: { stroke: 'black' },
+                                      tickLabels: { fill: '#000' },
+                                      ticks: { stroke: 'black' },
+                                      axisLabel: {
+                                        padding: 35,
+                                        fill: '#000'
+                                      }
+                                    }}
+                                    tickFormat={(t) => Math.round(t)}
+                                  />
+                                  <VictoryArea
+                                    data={heartRateChartData}
+                                    interpolation="monotoneX"
+                                    style={{
+                                      data: {
+                                        fill: "rgba(169, 29, 58, 0.2)",
+                                        stroke: "#A91D3A",
+                                        strokeWidth: 3
+                                      }
+                                    }}
+                                  />
+                                </VictoryChart>
+                              </ScrollView>
+                            )}
+                        </View>
+                    </View>
 
                     <View style={styles.expandedContainer}>
                         <View style={styles.expandedContainerTitle}><Text style={GlobalStyles.text18}>Visibility</Text></View>
@@ -247,6 +404,7 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                           </View>
                         </View>
                     </View>
+
                 </View>
 
                 <View style={styles.hrLine} />
@@ -400,6 +558,23 @@ const styles = StyleSheet.create({
     borderRadius: 15,
     overflow: 'hidden',
   },
+  expandedContainerContentElevated: {
+  paddingVertical: 10,
+  minHeight: 100,
+  borderRadius: 15,
+  margin: 10,
+  overflow: 'hidden',
+  textAlign: 'center',
+  justifyContent: 'center',
+  alignItems: 'center',
+  backgroundColor: 'white',
+  elevation: 5,
+
+  shadowColor: '#000',
+  shadowOffset: { width: 0, height: 2 },
+  shadowOpacity: 0.25,
+  shadowRadius: 3.84,
+}
 });
 
 export default CardioTrainingDayDisplay;
