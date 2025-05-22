@@ -122,10 +122,12 @@ function AccountHome({ navigation }) {
 
     try{
       const res = await CardioDataService.joinChallenge(setIsAuthenticated, navigation, challengeId);
-      if(res.ok){
+      if(!res.ok){
         setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
         return;
       }
+      
+      await getActiveChallenges();
     }catch(error){
       setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
     }
@@ -155,17 +157,20 @@ function AccountHome({ navigation }) {
                           </View>
                         </>
                         ):(
-                          chunkArray(challengesList, 2).map((row, rowIndex) => (
-                            <View style={[styles.challangeRow]} key={rowIndex}>
-                              {row.map((challenge, challengeIndex) => (
-                                <Challange
-                                  key={challengeIndex}
-                                  data={challenge}
-                                  joinChallengeFunc={joinChallange}
-                                />
-                              ))}
-                            </View>
-                          ))
+                          <>
+                            {chunkArray(challengesList, 2).map((row, rowIndex) => (
+                              <View style={[styles.challangeRow]} key={rowIndex}>
+                                {row.map((challenge, challengeIndex) => (
+                                  <Challange
+                                    key={challengeIndex}
+                                    data={challenge}
+                                    joinChallengeFunc={joinChallange}
+                                  />
+                                ))}
+                              </View>
+                            ))}
+                            <View style={[{height: 30}]}></View>
+                          </>
                         )}                
                       </>
                     ):(
