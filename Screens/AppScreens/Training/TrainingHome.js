@@ -996,6 +996,7 @@ function TrainingHome({ navigation, route }) {
                 {cardioTrainingData.exercises.map((training, index) => (
                   <CardioTrainingDayDisplay key={training.exerciseData.publicId} exercise={training} measureType={measureType} changeVisilibity={changeVisilibity} removeCardioExercise={removeCardioExercise}/>
                 ))}
+                <View style={styles.cardioSpacing}></View>
               </ScrollView>
             ) : (
               <View style={[GlobalStyles.center, GlobalStyles.flex]}>
@@ -1150,6 +1151,9 @@ const styles = StyleSheet.create({
     borderBottomWidth: 2,
     paddingBottom: 5,
   },
+  cardioSpacing: {
+    height: 75,
+  }
 });
 
 export default TrainingHome;
