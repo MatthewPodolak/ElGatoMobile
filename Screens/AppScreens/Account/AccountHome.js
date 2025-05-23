@@ -12,6 +12,9 @@ import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataS
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
 import ActiveChallenge from '../../../Components/Account/ActiveChallenge';
 
+import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
+import ChevronUp from '../../../assets/main/Diet/chevron-up.svg';
+
 function chunkArray(array, size) {
   const chunkedArr = [];
   for (let i = 0; i < array.length; i += size) {
@@ -26,9 +29,18 @@ function AccountHome({ navigation }) {
   const [systemType, setSystemType] = useState(null);
   const [activeTab, setActiveTab] = useState("Challenges");
   const [challActiveTab, setChallActiveTab] = useState("Browse");
+  const [leaderboardsActiveTab, setLeaderboardsActiveTab] = useState("Friends");
   const [challengesList, setChallengesList] = useState(null);
   const [activeChallengesList, setActiveChallengesList] = useState(null);
-  
+
+  const [achievmentTypeDropdownVisible, setAchievmentTypeDropdownVisible] = useState(false);
+  const [selectedAchievmentType, setSelectedAchievmentType] = useState("Calories");
+  const [achievmentPeriodDropdownVisible, setAchievmentPeriodDropdownVisible] = useState(false);
+  const [selectedAchievmentPeriod, setSelectedAchievmentPeriod] = useState("All"); 
+  const [achievmentData, setAchievmentData] = useState([]);
+  const [achievmentDataError, setAchievmentDataError] = useState(false);
+  const [isAchievmentDataLoading, setIsAchievmentDataLoading] = useState(false);
+
   const setActiveTabFun = async (type) => {
     setActiveTab(type);
     switch(type){
@@ -126,11 +138,24 @@ function AccountHome({ navigation }) {
         setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
         return;
       }
-      
+
       await getActiveChallenges();
     }catch(error){
       setChallengesList((prevList) => [...prevList, { ...removedChallange }]);
     }
+  };
+
+  const setAchievmentDropdownVisible = (type) => {
+    switch(type){
+      case "period":
+        setAchievmentPeriodDropdownVisible(v => !v);
+        setAchievmentTypeDropdownVisible(false);
+        return;
+       case "type":
+        setAchievmentTypeDropdownVisible(v => !v);
+        setAchievmentPeriodDropdownVisible(false);
+        return;
+    };
   };
 
   const renderContent = () => { 
@@ -222,7 +247,132 @@ function AccountHome({ navigation }) {
         case "Leaderboards":
             return(
               <View style={[GlobalStyles.flex, GlobalStyles.center]}>
-                
+                <View style={styles.categoryContainer}>
+                  <TouchableOpacity style={styles.option} onPress={() => setLeaderboardsActiveTab("Friends")} ><Text style={[styles.optionTextSecondary, leaderboardsActiveTab === "Friends" && styles.activeTab]}>Friends</Text></TouchableOpacity>
+                  <TouchableOpacity style={styles.option} onPress={() => setLeaderboardsActiveTab("Global")} ><Text style={[styles.optionTextSecondary, leaderboardsActiveTab === "Global" && styles.activeTab]}>Global</Text></TouchableOpacity>
+                </View>
+                {leaderboardsActiveTab  === "Friends" ? (
+                  <>
+                    <View style={styles.leaderboardsDropdownContainer}>
+                      <TouchableOpacity style={styles.dropdownContainer} onPress={() => setAchievmentDropdownVisible("type")}>
+                        <Text style={[GlobalStyles.text14]}>Type</Text>
+                        {achievmentTypeDropdownVisible ? (
+                          <ChevronUp width={16} height={16} fill={'#000'} />
+                        ):(
+                          <ChevronDown width={16} height={16} fill={'#000'} />
+                        )}
+                      </TouchableOpacity>   
+                      <TouchableOpacity style={styles.dropdownContainer} onPress={() => setAchievmentDropdownVisible("period")}>
+                        <Text style={[GlobalStyles.text14]}>Period</Text>
+                        {achievmentPeriodDropdownVisible ? (
+                          <ChevronUp width={16} height={16} fill={'#000'} />
+                        ):(
+                          <ChevronDown width={16} height={16} fill={'#000'} />
+                        )}
+                      </TouchableOpacity>                      
+                    </View>
+                    {achievmentTypeDropdownVisible && (
+                      <View style={styles.dropdownMenu}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }}>
+                          {['Calories', 'Activity', 'Steps', 'Running', 'Swimming'].map(option => {
+                            const isSelected = option === selectedAchievmentType;
+                            return (
+                              <TouchableOpacity
+                                key={option}
+                                onPress={() => {setAchievmentDropdownVisible("type"), setSelectedAchievmentType(option)}}
+                                style={[styles.dropdownOption, isSelected]}
+                              >
+                                <Text style={[GlobalStyles.text14, isSelected && { color: '#FF8303', fontWeight: 'bold' }]}>
+                                  {option}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                    )}
+                    {achievmentPeriodDropdownVisible && (
+                      <View style={styles.dropdownMenu}>
+                        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }}>
+                          {['All', 'Year', 'Month', 'Week'].map(option => {
+                            const isSelected = option === selectedAchievmentPeriod;
+                            return (
+                              <TouchableOpacity
+                                key={option}
+                                onPress={() => {setAchievmentDropdownVisible("period"), setSelectedAchievmentPeriod(option)}}
+                                style={[styles.dropdownOption, isSelected]}
+                              >
+                                <Text style={[GlobalStyles.text14, isSelected && { color: '#FF8303', fontWeight: 'bold' }]}>
+                                  {option}
+                                </Text>
+                              </TouchableOpacity>
+                            );
+                          })}
+                        </ScrollView>
+                      </View>
+                    )}
+
+                    <View style={[GlobalStyles.flex]}>
+                      {isAchievmentDataLoading ? (
+                        <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 550}]}>
+                          <ActivityIndicator size="large" color="#FF8303" />
+                        </View>
+                      ):(
+                        <>
+                          {achievmentDataError ? (
+                            <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                                {/**GATO - ACHIEVMENT DATA LIST ERROR. */}
+                                <View style={styles.emptyGatoContainerShort}>
+
+                                </View>
+                                <View style={styles.centerText}>
+                                  <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something went wrong while trying to retrive leaderboards <Text style={[GlobalStyles.orange]}>data</Text>. Check your internet connection.</Text>
+                                </View>
+                                {achievmentPeriodDropdownVisible || achievmentTypeDropdownVisible && (
+                                  <View style={[{height: 20}]}></View>
+                                )}
+                            </View>
+                          ):(
+                            <>
+                              {(!achievmentData || achievmentData.length === 0) ? (
+                                <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                                  {/**GATO - ACHIEVMENT DATA LIST EMPTYYY. */}
+                                  <View style={styles.emptyGatoContainerShort}>
+
+                                  </View>
+                                  <View style={styles.centerText}>
+                                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Unfortunately there is not much to show. Invite some <Text style={[GlobalStyles.orange]}>friends</Text> and check again later.</Text>
+                                  </View>
+                                  {achievmentPeriodDropdownVisible || achievmentTypeDropdownVisible && (
+                                    <View style={[{height: 20}]}></View>
+                                  )}
+                                </View>
+                              ):(
+                                <>
+
+                                </>
+                              )}
+                            </>
+                          )}
+                        </>
+                      )}
+                    </View>
+                  </>
+                ):(
+                  <>
+                    <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+                      <>
+                        {/**GATO - FEATURE NOT AVB. (yet(never)) */}
+                        <View style={styles.emptyGatoContainer}>
+
+                        </View>
+                        <View style={styles.centerText}>
+                          <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>This feature is currently not <Text style={[GlobalStyles.orange]}>avaliable</Text>. It will come back as soon as possible.</Text>
+                        </View>
+                      </>
+                    </View>
+                  </>
+                )}
               </View>
             );
           break;
@@ -314,11 +464,37 @@ const styles = StyleSheet.create({
   emptyGatoContainer: {
     minHeight: 500,
   },
+  emptyGatoContainerShort: {
+    minHeight: 470,
+  },
   centerText: {
     textAlign: 'center',
     justifyContent: 'center',
     paddingLeft: 20,
     paddingRight: 20,
+  },
+
+  leaderboardsDropdownContainer: {
+    width: '100%',
+    flexDirection: 'row',
+  },
+  dropdownContainer: {
+    marginTop: 15,
+    marginLeft: 15,
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    position: 'relative',
+  },
+
+  dropdownMenu: {
+    backgroundColor: 'whitesmoke',
+    width: '100%',
+    flexDirection: 'row',
+    marginTop: 10,
+  },
+  dropdownOption: {
+
   },
 });
 

@@ -181,7 +181,6 @@ function HomeScreen({ navigation }) {
         setSystemType("metric");
       }
     }catch(error){
-      console.log(error);
       setSystemType("metric");
     }
   };
