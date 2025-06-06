@@ -7,6 +7,7 @@ import AccountHeader from '../../../Components/Account/AccountHeader';
 import { GlobalStyles } from '../../../Styles/GlobalStyles';
 import Challange from '../../../Components/Account/Challange';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import FollowerDisplay from '../../../Components/Community/FollowerDisplay.js'
 
 import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataService';
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
@@ -14,6 +15,7 @@ import ActiveChallenge from '../../../Components/Account/ActiveChallenge';
 
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 import ChevronUp from '../../../assets/main/Diet/chevron-up.svg';
+import CommunityDataService from '../../../Services/ApiCalls/CommunityData/CommunityDataService.js';
 
 function chunkArray(array, size) {
   const chunkedArr = [];
@@ -32,6 +34,10 @@ function AccountHome({ navigation }) {
   const [leaderboardsActiveTab, setLeaderboardsActiveTab] = useState("Friends");
   const [challengesList, setChallengesList] = useState(null);
   const [activeChallengesList, setActiveChallengesList] = useState(null);
+
+  const [followedLoading, setFollowedLoading] = useState(false);
+  const [followedList, setFollowedList] = useState(null);
+  const [followedError, setFollowedError] = useState(null);
 
   const [achievmentTypeDropdownVisible, setAchievmentTypeDropdownVisible] = useState(false);
   const [selectedAchievmentType, setSelectedAchievmentType] = useState("Calories");
@@ -53,7 +59,9 @@ function AccountHome({ navigation }) {
 
         break;
       case "Friends":
-
+        if(followedList?.length === 0 || !followedList){
+          await getFollowedList();
+        }
         break;
     }
   };
@@ -78,6 +86,7 @@ function AccountHome({ navigation }) {
       if(!challengesList){
         getChallengesList();
       }
+
       getUserSystemType();
   }, []);
 
@@ -96,6 +105,27 @@ function AccountHome({ navigation }) {
       setSystemType("metric");
     }
   }
+
+  const getFollowedList = async () => {
+    try{
+      setFollowedLoading(true);
+      const res = await CommunityDataService.getFollowedList(setIsAuthenticated, navigation);
+      if(!res.ok){
+        console.log("Error while trying to get followed list.");
+        setFollowedError(true);
+        return;
+      }
+
+      const data = await res.json();
+      console.log("data " + JSON.stringify(data));
+      setFollowedList(data);
+    }catch(error){
+      setFollowedError(true);
+      console.log("Followed err -> " + error);
+    }finally{
+      setFollowedLoading(false);
+    }
+  };
 
   const getChallengesList = async () => {
     try{
@@ -379,7 +409,60 @@ function AccountHome({ navigation }) {
         case "Friends":
             return(
               <View style={[GlobalStyles.flex, GlobalStyles.center]}>
-                
+                {followedLoading ? (
+                  <>
+                    <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 550}]}>
+                        <ActivityIndicator size="large" color="#FF8303" />
+                    </View>
+                  </>
+                ):(
+                  <>
+                    {followedError ? (
+                      <>
+                        {/**GATO - FRIENDS DATA LIST ERROR. */}
+                        <View style={styles.emptyGatoContainer}>
+
+                        </View>
+                        <View style={[styles.centerText, {marginTop: 25}]}>
+                            <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something went wrong while trying to retrive <Text style={[GlobalStyles.orange]}>friends</Text>. Check your internet connection.</Text>
+                        </View>
+                      </>
+                    ):(
+                      <>
+                      {(!followedList || followedList.length === 0) ? (
+                        <>
+                          {/**GATO - FRIENDS DATA LIST ERROR. */}
+                          <View style={styles.emptyGatoContainer}>
+
+                          </View>
+                          <View style={[styles.centerText, {marginTop: 25}]}>
+                              <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>You are not following anyone currently. Invite some <Text style={[GlobalStyles.orange]}>friends</Text> and make your journey better.</Text>
+                          </View>
+                        </>
+                      ):(
+                         <>
+                          <ScrollView style={[GlobalStyles.flex]} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                            {followedList.followed.map((user, index) => (
+                              <View key={user.userId} style={{ marginTop: index === 0 ? 10 : 0 }}>
+                                <FollowerDisplay
+                                  data={{
+                                    name: user.name,
+                                    pfpUrl: user.pfpUrl,
+                                    isFollowed: user.isFollowed,
+                                    userId: user.userId,
+                                  }}
+                                  setIsAuthenticated={setIsAuthenticated}
+                                  navigation={navigation}
+                                />
+                              </View>
+                            ))}
+                          </ScrollView>
+                        </>
+                      )}
+                      </>
+                    )}
+                  </>
+                )}
               </View>
             );
           break;
