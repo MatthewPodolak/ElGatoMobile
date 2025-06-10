@@ -65,8 +65,8 @@ const styles = StyleSheet.create({
   },
   glassEffect: {
     width: '90%',
-    minWidth: '90%',
-    marginLeft: '5%',
+    minWidth: '95%',
+    marginLeft: '2.5%',
     marginBottom: 10,
     padding: 10,
     borderRadius: 20,

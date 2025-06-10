@@ -8,6 +8,7 @@ import { GlobalStyles } from '../../../Styles/GlobalStyles';
 import Challange from '../../../Components/Account/Challange';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import FollowerDisplay from '../../../Components/Community/FollowerDisplay.js'
+import LeaderboardDisplay from '../../../Components/Community/LeaderboardDisplay.js';
 
 import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataService';
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
@@ -43,9 +44,10 @@ function AccountHome({ navigation }) {
   const [selectedAchievmentType, setSelectedAchievmentType] = useState("Calories");
   const [achievmentPeriodDropdownVisible, setAchievmentPeriodDropdownVisible] = useState(false);
   const [selectedAchievmentPeriod, setSelectedAchievmentPeriod] = useState("All"); 
-  const [achievmentData, setAchievmentData] = useState([]);
-  const [achievmentDataError, setAchievmentDataError] = useState(false);
-  const [isAchievmentDataLoading, setIsAchievmentDataLoading] = useState(false);
+
+  const [leaderboardList, setLeaderboardList] = useState(null);
+  const [leaderboardError, setLeaderboardError] = useState(false);
+  const [isLeaderboardDataLoading, setIsLeaderboardDataLoading] = useState(false);
 
   const setActiveTabFun = async (type) => {
     setActiveTab(type);
@@ -56,7 +58,9 @@ function AccountHome({ navigation }) {
         }
         break;
       case "Leaderboards":
-
+        if(leaderboardList?.length === 0 || !leaderboardList){
+          await getLeaderboardList();
+        }
         break;
       case "Friends":
         if(followedList?.length === 0 || !followedList){
@@ -106,6 +110,27 @@ function AccountHome({ navigation }) {
     }
   }
 
+  const getLeaderboardList = async () => {
+    try{
+      setIsLeaderboardDataLoading(true);
+
+      const res = await CommunityDataService.getFriendsLeaderboard(setIsAuthenticated, navigation);
+      if(!res.ok){
+        setLeaderboardError(true);
+        setLeaderboardList(null);
+        return;
+      }
+
+      const data = await res.json();
+      setLeaderboardList(data);
+
+    }catch(error){
+      setLeaderboardError(true);
+    }finally{
+      setIsLeaderboardDataLoading(false);
+    }
+  };
+
   const getFollowedList = async () => {
     try{
       setFollowedLoading(true);
@@ -117,11 +142,10 @@ function AccountHome({ navigation }) {
       }
 
       const data = await res.json();
-      console.log("data " + JSON.stringify(data));
       setFollowedList(data);
+
     }catch(error){
       setFollowedError(true);
-      console.log("Followed err -> " + error);
     }finally{
       setFollowedLoading(false);
     }
@@ -186,6 +210,145 @@ function AccountHome({ navigation }) {
         setAchievmentPeriodDropdownVisible(false);
         return;
     };
+  };
+
+  const leaderboardErrorGen = () => {
+    return (
+      <>
+        <View style={styles.emptyGatoContainer}>
+
+        </View>
+        <View style={[styles.centerText, {marginTop: -50}]}>
+          <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Looks like nothing here! Step up your game and do your <Text style={[GlobalStyles.orange]}>work</Text>. You might also need to invite some friends...</Text>
+        </View>
+      </>
+    );
+  };
+
+  const getSelectedFriendsLeaderboard = () => {
+    const boards = leaderboardList?.leaderboards;
+    if (!boards) {
+      return leaderboardErrorGen();
+    }
+
+    let periodKey = selectedAchievmentPeriod.toLowerCase(); 
+
+    switch(selectedAchievmentType){
+      case "Calories":
+        const calorieBoards = boards.find(b => b.type === 0);
+        if (!calorieBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const calorieItems = calorieBoards[periodKey] || [];
+        if (calorieItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return calorieItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={calorieBoards.type}
+              isMetric={systemType === "metric"} 
+            />
+          </View>
+        ));
+
+      case "Activity":
+        const activityBoards = boards.find(b => b.type === 1);
+        if (!activityBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const activityBoardItems = activityBoards[periodKey] || [];
+        if (activityBoardItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return activityBoardItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={activityBoards.type}
+              isMetric={systemType === "metric"} 
+            />
+          </View>        
+        ));
+
+        break;
+      case "Steps":
+        const stepsBoards = boards.find(b => b.type === 2);
+        if (!stepsBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const stepsBoardsItems = stepsBoards[periodKey] || [];
+        if (stepsBoardsItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return stepsBoardsItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={stepsBoards.type}
+              isMetric={systemType === "metric"} 
+            />
+          </View>
+        ));
+
+        break;
+      case "Running":
+        const runningBoards = boards.find(b => b.type === 3);
+        if (!runningBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const runningBoardsItems = runningBoards[periodKey] || [];
+        if (runningBoardsItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return runningBoardsItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={runningBoards.type}
+              isMetric={systemType === "metric"} 
+            />
+          </View>
+        ));
+
+        break;
+      case "Swimming":
+        const swimmingBoards = boards.find(b => b.type === 4);
+        if (!swimmingBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const swimmingBoardsItems = swimmingBoards[periodKey] || [];
+        if (swimmingBoardsItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return swimmingBoardsItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={swimmingBoards.type}
+              isMetric={systemType === "metric"} 
+            />
+          </View>
+        ));
+
+        break;
+    };    
   };
 
   const renderContent = () => { 
@@ -343,15 +506,15 @@ function AccountHome({ navigation }) {
                     )}
 
                     <View style={[GlobalStyles.flex]}>
-                      {isAchievmentDataLoading ? (
+                      {isLeaderboardDataLoading ? (
                         <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 550}]}>
                           <ActivityIndicator size="large" color="#FF8303" />
                         </View>
                       ):(
                         <>
-                          {achievmentDataError ? (
+                          {leaderboardError ? (
                             <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-                                {/**GATO - ACHIEVMENT DATA LIST ERROR. */}
+                                {/**GATO - leaderboards DATA LIST ERROR. */}
                                 <View style={styles.emptyGatoContainerShort}>
 
                                 </View>
@@ -364,9 +527,9 @@ function AccountHome({ navigation }) {
                             </View>
                           ):(
                             <>
-                              {(!achievmentData || achievmentData.length === 0) ? (
+                              {(!leaderboardList || leaderboardList.length === 0) ? (
                                 <View style={[GlobalStyles.center, GlobalStyles.flex]}>
-                                  {/**GATO - ACHIEVMENT DATA LIST EMPTYYY. */}
+                                  {/**GATO - leaderboard DATA LIST EMPTYYY. */}
                                   <View style={styles.emptyGatoContainerShort}>
 
                                   </View>
@@ -379,7 +542,9 @@ function AccountHome({ navigation }) {
                                 </View>
                               ):(
                                 <>
-
+                                  <ScrollView style={[GlobalStyles.flex]} contentContainerStyle={{ flexGrow: 1 }} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                                    {getSelectedFriendsLeaderboard()}
+                                  </ScrollView>
                                 </>
                               )}
                             </>
