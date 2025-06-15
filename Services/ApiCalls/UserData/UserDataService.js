@@ -342,4 +342,85 @@ export default class UserDataService {
 
         return response;
       }
+
+    static async updateProfileData(setIsAuthenticated, navigation, model){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const formData = new FormData();
+        if (model.newName !== undefined && model.newName !== null) {
+            formData.append('NewName', model.newName);
+        }
+        if (model.newDesc !== undefined && model.newDesc !== null) {
+            formData.append('NewDesc', model.newDesc);
+        }
+        if (model.isVisible !== undefined && model.isVisible !== null) {
+            formData.append('IsVisible', model.isVisible);
+        }
+
+        if (model.newImageUri) {
+            const fileName = model.newImageUri.split('/').pop();
+            const fileType = fileName.split('.').pop();
+
+            formData.append('NewImage', {
+                uri: model.newImageUri,
+                name: fileName,
+                type: `image/${fileType}`,
+            });
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/UpdateProfileInformation`,
+            {
+              method: 'PATCH',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+              },
+              body: formData,
+            },
+            (config.timeout)
+        );
+
+        return response;
+    }
+
+    static async setNewProfilePictureForUser(newUserPfp){
+        await AsyncStorage.setItem("currentPfp", newUserPfp);
+    }
+
+    static async getUserProfilePicture(setIsAuthenticated, navigation){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        let profilePicture = await AsyncStorage.getItem("currentPfp");
+        if(profilePicture){
+            return profilePicture;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Community/GetUserProfilePicture`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        if(response.ok){
+            const data = await response.text();
+            await this.setNewProfilePictureForUser(data);
+            return data;
+        }
+
+        return null;
+    }
 }

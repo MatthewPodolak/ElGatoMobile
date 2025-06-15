@@ -21,6 +21,7 @@ import LockedSvh from '../../../assets/main/Diet/lock.svg';
 
 import CommunityDataService from '../../../Services/ApiCalls/CommunityData/CommunityDataService.js';
 import MealDataService, { getUserRecipesData } from '../../../Services/ApiCalls/MealData/MealDataService.js';
+import PfpDisplayModal from '../../../Components/Community/PfpDisplayModal.js';
 
 function ProfileDisplay({ navigation }) {
     const route = useRoute();
@@ -49,6 +50,8 @@ function ProfileDisplay({ navigation }) {
     const [liftsTab, setLiftsTab] = useState("Recent lifts");
     const [activitiesTab, setActivitiesTab] = useState("Recent activities");
 
+    const [pfpDisplayVisible, setPfpDisplayVisible] = useState(false);
+
     useEffect(() => {
       if(profileData && !initialSynced){
         setIsPrivated(profileData?.generalProfileData?.isPrivate);
@@ -62,6 +65,13 @@ function ProfileDisplay({ navigation }) {
         setInitialSynced(true);
       }
     }, [profileData]);
+
+    useEffect(() => {
+      if (route.params?.shouldRefresh) {
+        getProfileData();
+        navigation.setParams({ shouldRefresh: false });
+      }
+    }, [route.params?.shouldRefresh]);
 
     useEffect(() => {
       getMeasureType();
@@ -207,9 +217,18 @@ function ProfileDisplay({ navigation }) {
     }
 
     /* END OF BTN BEHVS */
-
     const navigateBack = () => {
         navigation.goBack();
+    };
+
+    const navigateToEditScreen = () => {
+      navigation?.navigate('EditProfile', {
+        userId: profileData?.generalProfileData?.userId, 
+        oldPfp: userPfp,
+        oldName: profileData?.generalProfileData?.name,
+        oldDesc: profileData?.generalProfileData?.desc ?? "",
+        oldIsPrivate: isPrivate,
+      });
     };
 
     const renderContent = () => {
@@ -483,12 +502,12 @@ function ProfileDisplay({ navigation }) {
                 <>
                   <View style={styles.generalDataContainer}>
                     <View style={styles.topRow}>
-                      <View style={styles.avatarContainer}>
+                      <TouchableOpacity style={styles.avatarContainer} onPress={() => setPfpDisplayVisible(true)}>
                         <Image
                           source={userPfp}
                           style={styles.avatar}
                         />
-                      </View>
+                      </TouchableOpacity>
 
                       <View style={styles.infoContainer}>
                         <Text style={styles.username}>{profileData?.generalProfileData?.name}</Text>
@@ -512,7 +531,7 @@ function ProfileDisplay({ navigation }) {
 
                     <View style= {styles.followButtonContainer}>
                       {isOwn ? (
-                        <TouchableOpacity>
+                        <TouchableOpacity onPress={() => navigateToEditScreen()}>
                           <View style={[styles.editProfileButton, GlobalStyles.center]}><Text style={[GlobalStyles.text14, GlobalStyles.orange]}>Edit profile</Text></View>
                         </TouchableOpacity>
                       ):(
@@ -591,11 +610,19 @@ function ProfileDisplay({ navigation }) {
             </>
           )}
 
-          <ScrollView style={{flex: 1, padding: 15}} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+          {(isPrivate && !isFollowed) ? (
+            <>
+
+            </>
+          ):(
+            <ScrollView style={{flex: 1, padding: 15}} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
               {renderContent()}
-          </ScrollView>
+            </ScrollView>
+          )}
 
         </ScrollView>
+
+        <PfpDisplayModal visible={pfpDisplayVisible} onRequestClose={() => setPfpDisplayVisible(false)} pfp={userPfp} />
 
         <NavigationMenu navigation={navigation} currentScreen="AccountHome" />
         </SafeAreaView>

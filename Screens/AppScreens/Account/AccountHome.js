@@ -652,7 +652,7 @@ function AccountHome({ navigation }) {
       <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
       <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
 
-      <AccountHeader navigation={navigation}/>
+      <AccountHeader navigation={navigation} setIsAuth={setIsAuthenticated}/>
 
       <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
             <View style={styles.categoryContainer}>

@@ -1,13 +1,33 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { View, SafeAreaView, StyleSheet, StatusBar, Image, TouchableOpacity } from 'react-native';
 import SearchSvg from '../../assets/main/Diet/search.svg';
+import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 
-function AccountHeader({ pfp, navigation }) {
-    const userPfp = pfp  ? { uri: `http://192.168.0.143:5094${pfp}` } : require('../../assets/userPfpBase.png');
+function AccountHeader({ pfp, navigation, setIsAuth }) {
+   const [userPfp, setUserPfp] = useState(pfp ? { uri: `http://192.168.0.143:5094${pfp}` } : require('../../assets/userPfpBase.png'));
 
    const ownProfilePress = () => {
     navigation?.navigate('ProfileDisplay');
    };
+
+   useEffect(() => {
+    getUserPfp();
+   }, []);
+
+   const getUserPfp = async () => {
+    try{
+      const res = await UserDataService.getUserProfilePicture(setIsAuth, navigation);
+      if(!res){
+        userPfp = require('../../assets/userPfpBase.png');
+        return;
+      }
+
+      setUserPfp({ uri: `http://192.168.0.143:5094${res}` });
+
+    }catch(error){
+      userPfp = require('../../assets/userPfpBase.png');
+    }
+   }
 
   return (
     <SafeAreaView style={styles.container}>
