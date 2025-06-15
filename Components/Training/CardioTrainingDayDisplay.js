@@ -15,7 +15,7 @@ import ArrowDownIcon from '../../assets/main/Diet/arrow-down.svg';
 
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, removeCardioExercise }) => {
+const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, removeCardioExercise, profile = false }) => {
   const [isExpanded, setIsExpanded] = useState(false);
   const [isProgress, setIsProgess] = useState(true);
   const [isPublic, setIsPublic] = useState(false);
@@ -90,7 +90,7 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
   };
 
   const calculateProgression = () => {
-    if(!exercise.exerciseData || exercise.pastData){ return; }
+    if (!exercise.exerciseData || profile || !exercise.pastData) return;
 
     let points = 0;
 
@@ -137,7 +137,7 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
   return (
     <View style={styles.safeArea}>
       <View style={styles.mainContainer}>
-        <BlurView style={styles.glassEffect} intensity={125} tint="light">
+        <BlurView style={[styles.glassEffect, profile && { width: '98%' }]} intensity={125} tint="light">
           <View style={styles.topRow}>
             <View style={styles.headerText}>
               <Text style={styles.mealText}>{exercise.exerciseData.activityType}</Text>
@@ -152,9 +152,11 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                 )}
               </TouchableOpacity>
 
-              <TouchableOpacity onPress={() => handleRemoval()}>
-                <TrashIcon fill="#000" width={22} height={26}/>
-              </TouchableOpacity>
+              {!profile && (
+                <TouchableOpacity onPress={() => handleRemoval()}>
+                  <TrashIcon fill="#000" width={22} height={26}/>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
 
@@ -389,7 +391,8 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                         </View>
                     </View>
 
-                    <View style={styles.expandedContainer}>
+                    {!profile && (
+                      <View style={styles.expandedContainer}>
                         <View style={styles.expandedContainerTitle}><Text style={GlobalStyles.text18}>Visibility</Text></View>
                         <View style={styles.expandedContainerContent}>
                           <View style = {[styles.switchRow]}>
@@ -403,7 +406,8 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
                             />
                           </View>
                         </View>
-                    </View>
+                      </View>
+                    )}
 
                 </View>
 
@@ -413,10 +417,14 @@ const CardioTrainingDayDisplay = ({ exercise, measureType, changeVisilibity, rem
 
           <View style={[styles.summaryRow]}>
             <Text style={[GlobalStyles.text16]}> Burnt calories: <Text style={GlobalStyles.orange}>{exercise.exerciseData.caloriesBurnt}</Text></Text>
-            {isProgress ? (
-                <ArrowUpIcon width={16} height={16} color={'#3E7B27'} />
-            ):(
-                <ArrowDownIcon width={16} height={16} color={'#A91D3A'} />
+            {!profile && (
+              <>
+                {isProgress ? (
+                    <ArrowUpIcon width={16} height={16} color={'#3E7B27'} />
+                ):(
+                    <ArrowDownIcon width={16} height={16} color={'#A91D3A'} />
+                )}
+              </>
             )}
           </View>
 

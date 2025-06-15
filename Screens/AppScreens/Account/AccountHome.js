@@ -251,7 +251,8 @@ function AccountHome({ navigation }) {
             <LeaderboardDisplay 
               data={entry}
               type={calorieBoards.type}
-              isMetric={systemType === "metric"} 
+              isMetric={systemType === "metric"}
+              navigation={navigation} 
             />
           </View>
         ));
@@ -274,6 +275,7 @@ function AccountHome({ navigation }) {
               data={entry}
               type={activityBoards.type}
               isMetric={systemType === "metric"} 
+              navigation={navigation}
             />
           </View>        
         ));
@@ -297,6 +299,7 @@ function AccountHome({ navigation }) {
               data={entry}
               type={stepsBoards.type}
               isMetric={systemType === "metric"} 
+              navigation={navigation}
             />
           </View>
         ));
@@ -320,6 +323,7 @@ function AccountHome({ navigation }) {
               data={entry}
               type={runningBoards.type}
               isMetric={systemType === "metric"} 
+              navigation={navigation}
             />
           </View>
         ));
@@ -343,6 +347,7 @@ function AccountHome({ navigation }) {
               data={entry}
               type={swimmingBoards.type}
               isMetric={systemType === "metric"} 
+              navigation={navigation}
             />
           </View>
         ));
@@ -647,7 +652,7 @@ function AccountHome({ navigation }) {
       <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
       <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
 
-      <AccountHeader />
+      <AccountHeader navigation={navigation}/>
 
       <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
             <View style={styles.categoryContainer}>

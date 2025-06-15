@@ -206,4 +206,31 @@ export default class MealDataService {
 
       return response;
     }
+
+    static async getUserRecipesData(setIsAuthenticated, navigation, userId, count, skip){
+      const token = await AuthService.getToken();
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      let url = `${config.ipAddress}/api/Meal/GetUserRecipes?count=${count}&skip=${skip}`;
+      if (userId) {
+        url += `&userId=${userId}`;
+      }
+
+      const response = await fetchWithTimeout(
+       url,
+        {
+          method: 'GET',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+        },
+        config.timeout
+      );
+
+      return response;
+    }
 }

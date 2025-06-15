@@ -70,8 +70,30 @@ export default class CommunityDataService {
           return response;
     }
 
+    static async withdrawFollowRequest(setIsAuthenticated, navigation, userToUnFollowId){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/Community/RemoveFollowRequest?userIdToRemoveRequestFrom=${userToUnFollowId}`,
+            {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            },
+            (config.timeout)
+          );
+
+          return response;
+    }
+
     static async getFriendsLeaderboard(setIsAuthenticated, navigation){
-      const token = await AuthService.getToken();
+        const token = await AuthService.getToken();
         if (!token || AuthService.isTokenExpired(token)) {
           await AuthService.logout(setIsAuthenticated, navigation);
           return null;
@@ -90,5 +112,30 @@ export default class CommunityDataService {
           );
 
           return response;
+    }
+
+    static async getProfileData(setIsAuthenticated, navigation, userId = null){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+         const baseUrl = `${config.ipAddress}/api/Community/GetUserProfile`;
+         const url = userId ? `${baseUrl}?userId=${encodeURIComponent(userId)}`: baseUrl;
+
+          const response = await fetchWithTimeout(
+            url,
+            {
+              method: 'GET',
+              headers: {
+                'Authorization': `Bearer ${token}`,
+                'Content-Type': 'application/json',
+              },
+            },
+            config.timeout
+          );
+
+        return response;
     }
 }

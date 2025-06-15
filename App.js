@@ -39,6 +39,8 @@ import LoadExercises from './Screens/AppScreens/Training/LoadExercises';
 import CardioStartScreen from './Screens/AppScreens/Training/CardioStart';
 import CardioSummaryScreen from './Screens/AppScreens/Training/CardioSummary';
 
+import ProfileDisplayScreen from './Screens/AppScreens/Account/ProfileDisplay';
+
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
 import * as Font from 'expo-font';
@@ -120,6 +122,7 @@ function App() {
             <Stack.Screen name="LoadExercises" component={LoadExercises} />
             <Stack.Screen name="CardioStartScreen" component={CardioStartScreen} />
             <Stack.Screen name="CardioSummary" component={CardioSummaryScreen} />
+            <Stack.Screen name="ProfileDisplay" component={ProfileDisplayScreen} />
           </>
         )}
       </Stack.Navigator>

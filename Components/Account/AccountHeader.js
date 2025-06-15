@@ -1,9 +1,13 @@
 import React from 'react';
-import { View, SafeAreaView, StyleSheet, StatusBar, Image } from 'react-native';
+import { View, SafeAreaView, StyleSheet, StatusBar, Image, TouchableOpacity } from 'react-native';
 import SearchSvg from '../../assets/main/Diet/search.svg';
 
-function AccountHeader({ pfp }) {
+function AccountHeader({ pfp, navigation }) {
     const userPfp = pfp  ? { uri: `http://192.168.0.143:5094${pfp}` } : require('../../assets/userPfpBase.png');
+
+   const ownProfilePress = () => {
+    navigation?.navigate('ProfileDisplay');
+   };
 
   return (
     <SafeAreaView style={styles.container}>
@@ -13,12 +17,12 @@ function AccountHeader({ pfp }) {
           <SearchSvg width={26} height={26} fill="#FFF" />
         </View>
         <View style={styles.rightContainer}>
-          <View style={styles.circle}>
+          <TouchableOpacity style={styles.circle} onPress={() => ownProfilePress()}>
             <Image 
                 source={userPfp}
               style={styles.image}
             />
-          </View>
+          </TouchableOpacity>
         </View>
       </View>
     </SafeAreaView>

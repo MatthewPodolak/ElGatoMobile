@@ -3,7 +3,7 @@ import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const LeaderboardDisplay = ({ data, type, isMetric = true }) => {
+const LeaderboardDisplay = ({ data, type, isMetric = true, navigation }) => {
 
   const userPfp = data?.userData?.pfp? {uri: `http://192.168.0.143:5094${data.userData.pfp}`} : require('../../assets/userPfpBase.png');
   const userNickname = data?.userData?.name ?? "Unknown";
@@ -55,10 +55,20 @@ const LeaderboardDisplay = ({ data, type, isMetric = true }) => {
   const metricLabel = labels[type] || '';
   const isCardio = type === 3 || type === 4;
 
+  const goToTheProfile = () => {
+    if(data?.userData?.userId == null){
+      return;
+    }
+
+    navigation?.navigate('ProfileDisplay', {
+      userId: data?.userData?.userId ?? null
+    });
+  };
+
   return (
     <View style={styles.safeArea}>
       <View style={styles.mainContainer}>
-        <TouchableOpacity activeOpacity={1}>
+        <TouchableOpacity activeOpacity={1} onPress={() => goToTheProfile()}>
             <BlurView style={[styles.glassEffect, medalStyle]} intensity={125} tint="light">
             
             <View style={styles.profilePictureContainer}>

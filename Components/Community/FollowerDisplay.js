@@ -25,10 +25,20 @@ const FollowerDisplay = ({ data, setIsAuthenticated, navigation }) => {
     }
   };
 
+  const goToTheProfile = () => {
+    if(data?.userId == null){
+      return;
+    }
+
+    navigation?.navigate('ProfileDisplay', {
+      userId: data?.userId ?? null
+    });
+   };
+
   return (
     <View style={styles.safeArea}>
       <View style={styles.mainContainer}>
-        <TouchableOpacity activeOpacity={1}>
+        <TouchableOpacity activeOpacity={1} onPress={() => goToTheProfile()}>
             <BlurView style={styles.glassEffect} intensity={125} tint="light">
             
             <View style={styles.profilePictureContainer}>
