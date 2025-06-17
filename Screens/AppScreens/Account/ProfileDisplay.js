@@ -18,6 +18,7 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import SettingsSvg from '../../../assets/main/Diet/settings.svg';
 import DotsSvg from '../../../assets/main/Diet/dots.svg';
 import LockedSvh from '../../../assets/main/Diet/lock.svg';
+import PeopleSvg from '../../../assets/main/Diet/people.svg';
 
 import CommunityDataService from '../../../Services/ApiCalls/CommunityData/CommunityDataService.js';
 import MealDataService, { getUserRecipesData } from '../../../Services/ApiCalls/MealData/MealDataService.js';
@@ -39,6 +40,8 @@ function ProfileDisplay({ navigation }) {
     const [profileData, setProfileData] = useState(null);
     const [profileDataLoading, setProfileDataLoading] = useState(false);
     const [profileDataError, setProfileDataError] = useState(false);
+
+    const [followerRequestsData, setFollowerRequestsData] = useState(null);
 
     const [recipeData, setRecipeData] = useState(null);
     const [currentRecipeCount, setCurrentRecipeCount] = useState(15);
@@ -62,6 +65,11 @@ function ProfileDisplay({ navigation }) {
         if(profileData?.generalProfileData?.pfp){
           setUserPfp({uri: `http://192.168.0.143:5094${profileData.generalProfileData.pfp}`});
         }
+
+        if(profileData?.generalProfileData?.isPrivate){
+          getFollowerRequests();
+        }
+
         setInitialSynced(true);
       }
     }, [profileData]);
@@ -69,6 +77,7 @@ function ProfileDisplay({ navigation }) {
     useEffect(() => {
       if (route.params?.shouldRefresh) {
         getProfileData();
+        getFollowerRequests();
         navigation.setParams({ shouldRefresh: false });
       }
     }, [route.params?.shouldRefresh]);
@@ -107,6 +116,20 @@ function ProfileDisplay({ navigation }) {
         setProfileDataError(true);
       }finally{
         setProfileDataLoading(false);
+      }
+    };
+
+    const getFollowerRequests = async () => {
+      try{
+        const res = await CommunityDataService.getFollowersRequests(setIsAuthenticated, navigation);
+        if(res.ok){
+           const data = await res.json();
+           setFollowerRequestsData(data);
+           return;
+        }
+        return;
+      }catch(error){
+        return;
       }
     };
 
@@ -219,6 +242,13 @@ function ProfileDisplay({ navigation }) {
     /* END OF BTN BEHVS */
     const navigateBack = () => {
         navigation.goBack();
+    };
+
+    const navigateToRquests = () => {
+      navigation.navigate('FolowersRequests', {
+        userId: profileData?.generalProfileData?.userId,
+        initialRequests: followerRequestsData?.requests,
+      });
     };
 
     const navigateToEditScreen = () => {
@@ -468,13 +498,37 @@ function ProfileDisplay({ navigation }) {
             <View style={styles.topContIngTitle}>
 
             </View>
+
             <View style={styles.topContIngReport}>
+                {(isPrivate && isOwn) && (
+                  <TouchableOpacity onPress={() => navigateToRquests()} style={{ position: 'relative', left: -8 }}>
+                    <View style={styles.requestContainer}>
+                      <PeopleSvg width={28} height={28} fill="#FFF" />
+                    </View>
+                    {(followerRequestsData && followerRequestsData?.requests?.length > 0) && (
+                      <View style={styles.requestCountContainer}>
+                        <Text style={[GlobalStyles.text12, GlobalStyles.white, GlobalStyles.bold]}>{Math.min(followerRequestsData.requests.length, 9)}</Text>
+                      </View>
+                    )}
+                  </TouchableOpacity>
+                )}
                 {isOwn ? (
-                    <SettingsSvg width={28} height={28} fill="#FFF" />
+                    <>
+                      {isPrivate ? (
+                        <TouchableOpacity onPress={() => navigateToEditScreen()}>
+                          <SettingsSvg width={28} height={28} fill="#FFF" style={[{marginRight: 15}]} />
+                        </TouchableOpacity>
+                      ):(
+                        <TouchableOpacity onPress={() => navigateToEditScreen()}>
+                          <SettingsSvg width={28} height={28} fill="#FFF" />
+                        </TouchableOpacity>
+                      )}
+                    </>
                 ):(
                     <DotsSvg width={24} height={24} fill="#FFF" />
                 )}
             </View>
+
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -565,7 +619,7 @@ function ProfileDisplay({ navigation }) {
             </>
           )}           
 
-          {(isPrivate && !isFollowed) ? (
+          {(isPrivate && !isFollowed && !isOwn) ? (
             <>
               <View style={[GlobalStyles.center, GlobalStyles.flex,GlobalStyles.center]}>
                 <LockedSvh width={256} height={256} fill="#999F" opacity={0.3} marginTop={50} marginBottom={75}/>
@@ -610,7 +664,7 @@ function ProfileDisplay({ navigation }) {
             </>
           )}
 
-          {(isPrivate && !isFollowed) ? (
+          {(isPrivate && !isFollowed && !isOwn) ? (
             <>
 
             </>
@@ -665,7 +719,24 @@ const styles = StyleSheet.create({
     height: '100%',
     justifyContent: 'center',
     alignItems: 'center',
+    position: 'relative',
+    flexDirection: 'row',
   },
+  requestCountContainer: {
+    position: 'absolute',
+    top: -4,
+    right: -4,
+    backgroundColor: '#000',
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+    flexDirection: 'row',
+  },
+  requestContainer: {
+    position: 'relative',
+  }, 
   topBack: {
     position: 'absolute',
     left: 10,

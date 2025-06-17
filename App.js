@@ -41,6 +41,7 @@ import CardioSummaryScreen from './Screens/AppScreens/Training/CardioSummary';
 
 import ProfileDisplayScreen from './Screens/AppScreens/Account/ProfileDisplay';
 import EditProfileScreen from './Screens/AppScreens/Account/EditProfile';
+import FollowerRequestScreen from './Screens/AppScreens/Account/FollowerRequestsDisplay';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -125,6 +126,7 @@ function App() {
             <Stack.Screen name="CardioSummary" component={CardioSummaryScreen} />
             <Stack.Screen name="ProfileDisplay" component={ProfileDisplayScreen} />
             <Stack.Screen name="EditProfile" component={EditProfileScreen}/>
+            <Stack.Screen name="FolowersRequests" component={FollowerRequestScreen}/>
           </>
         )}
       </Stack.Navigator>

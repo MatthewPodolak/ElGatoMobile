@@ -2,8 +2,9 @@ import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, Image, StyleSheet } from 'react-native';
 import { BlurView } from 'expo-blur';
 import CommunityDataService from '../../Services/ApiCalls/CommunityData/CommunityDataService';
+import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const FollowerDisplay = ({ data, setIsAuthenticated, navigation }) => {
+const FollowerDisplay = ({ data, setIsAuthenticated, navigation, isRequest = false, onRequestDecission = null, requestId = null }) => {
 
   const [isFollowing, setIsFollowing] = useState(data.isFollowed??false);
   const userPfp = data.pfpUrl? {uri: `http://192.168.0.143:5094${data.pfpUrl}`} : require('../../assets/userPfpBase.png');
@@ -30,8 +31,8 @@ const FollowerDisplay = ({ data, setIsAuthenticated, navigation }) => {
       return;
     }
 
-    navigation?.navigate('ProfileDisplay', {
-      userId: data?.userId ?? null
+    navigation?.push('ProfileDisplay', {
+      userId: data?.userId
     });
    };
 
@@ -52,10 +53,23 @@ const FollowerDisplay = ({ data, setIsAuthenticated, navigation }) => {
             </View>
 
             <View style={styles.dataContainer}>
-                <Text style={styles.nameText} numberOfLines={1} ellipsizeMode="tail"> {data.name} </Text>
-                <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={onToggleFollow}>
+                <Text style={[GlobalStyles.text16, GlobalStyles.textShadow]} numberOfLines={1} ellipsizeMode="tail"> {data.name} </Text>
+                {isRequest ? (
+                  <>
+                    <View style={[styles.requestButtonsContainer]}>
+                        <TouchableOpacity style={[styles.requestButtonDecline]} onPress={() => onRequestDecission(0, requestId, data?.userId)}>
+                          <Text style={[GlobalStyles.text14, GlobalStyles.orange]}>Decline</Text>
+                        </TouchableOpacity>
+                        <TouchableOpacity style={[styles.requestButtonAccept]} onPress={() => onRequestDecission(1, requestId, data?.userId)}>
+                          <Text style={[GlobalStyles.text14, GlobalStyles.white]}>Accept</Text>
+                        </TouchableOpacity>
+                    </View>
+                  </>
+                ):(
+                  <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={onToggleFollow}>
                     <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>{isFollowing ? 'Following' : 'Follow'}</Text>
-                </TouchableOpacity>
+                  </TouchableOpacity>
+                )}
             </View>
 
             </BlurView>
@@ -141,6 +155,29 @@ const styles = StyleSheet.create({
   },
   followingButtonText: {
     color: '#FF8303',
+  },
+
+  requestButtonsContainer: {
+    flexDirection: 'column',
+    gap: 5,
+  },
+  requestButtonAccept: {
+    paddingVertical: 2,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    backgroundColor: '#FF8303',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  requestButtonDecline: {
+    paddingVertical: 2,
+    paddingHorizontal: 18,
+    borderRadius: 20,
+    borderColor: '#FF8303',
+    backgroundColor: 'whitesmoke',
+    borderWidth: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
 });
 
