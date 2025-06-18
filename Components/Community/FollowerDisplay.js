@@ -4,9 +4,10 @@ import { BlurView } from 'expo-blur';
 import CommunityDataService from '../../Services/ApiCalls/CommunityData/CommunityDataService';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
 
-const FollowerDisplay = ({ data, setIsAuthenticated, navigation, isRequest = false, onRequestDecission = null, requestId = null }) => {
+const FollowerDisplay = ({ data, setIsAuthenticated, navigation, isRequest = false, onRequestDecission = null, requestId = null, isPrivate = false, isFollowRequested = false }) => {
 
   const [isFollowing, setIsFollowing] = useState(data.isFollowed??false);
+  const [isRequested, setIsRequested] = useState(isFollowRequested??false);
   const userPfp = data.pfpUrl? {uri: `http://192.168.0.143:5094${data.pfpUrl}`} : require('../../assets/userPfpBase.png');
 
   const onToggleFollow = () => {
@@ -23,6 +24,26 @@ const FollowerDisplay = ({ data, setIsAuthenticated, navigation, isRequest = fal
         }catch(error){
             setIsFollowing((prev) => !prev)
         }
+    }
+  };
+
+  const onToggleRemoveRequest = () => {
+    setIsRequested(false);
+
+    try{
+      CommunityDataService.withdrawFollowRequest(setIsAuthenticated, navigation, data.userId);
+    }catch(error){
+      setIsRequested(true);
+    }
+  };
+
+  const onToggleRequestFollow = () => {
+    setIsRequested(true);
+
+    try{
+      CommunityDataService.followUser(setIsAuthenticated, navigation, data.userId);
+    }catch(error){
+        setIsRequested(false);
     }
   };
 
@@ -66,9 +87,25 @@ const FollowerDisplay = ({ data, setIsAuthenticated, navigation, isRequest = fal
                     </View>
                   </>
                 ):(
-                  <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={onToggleFollow}>
-                    <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>{isFollowing ? 'Following' : 'Follow'}</Text>
-                  </TouchableOpacity>
+                  <>
+                    {(isPrivate && !isFollowing) ? (
+                      <>
+                        {isRequested ? (
+                          <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={onToggleRemoveRequest}>
+                            <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>Remove request</Text>
+                          </TouchableOpacity>
+                        ):(
+                          <TouchableOpacity style={[styles.followButton]} onPress={onToggleRequestFollow}>
+                            <Text style={[styles.followButtonText]}>Follow</Text>
+                          </TouchableOpacity>
+                        )}
+                      </>
+                    ):(
+                      <TouchableOpacity style={[styles.followButton, isFollowing && styles.followingButton]} onPress={onToggleFollow}>
+                        <Text style={[styles.followButtonText, isFollowing && styles.followingButtonText]}>{isFollowing ? 'Following' : 'Follow'}</Text>
+                      </TouchableOpacity>
+                    )}
+                  </>
                 )}
             </View>
 

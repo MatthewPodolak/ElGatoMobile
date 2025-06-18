@@ -261,6 +261,15 @@ function ProfileDisplay({ navigation }) {
       });
     };
 
+    const navigateToFollowersScreen = () => {
+      if(isPrivate && !isFollowed && !isOwn) return;
+
+      navigation.navigate('UserFollowersDisplay', {
+        userId: profileData?.generalProfileData?.userId,
+        userName: profileData?.generalProfileData?.name,
+      });
+    };
+
     const renderContent = () => {
       switch(activeTab){
         case "Stats":
@@ -566,16 +575,29 @@ function ProfileDisplay({ navigation }) {
                       <View style={styles.infoContainer}>
                         <Text style={styles.username}>{profileData?.generalProfileData?.name}</Text>
 
-                        <View style={styles.countsContainer}>
-                          <View style={styles.countItem}>
-                            <Text style={styles.countNumber}>{profileData?.generalProfileData?.followersCounter}</Text>
-                            <Text style={styles.countLabel}>Followers</Text>
+                        {isPrivate && !isFollowed && !isOwn ? (
+                          <View style={styles.countsContainer}>
+                            <View style={styles.countItem}>
+                              <Text style={styles.countNumber}>{profileData?.generalProfileData?.followersCounter}</Text>
+                              <Text style={styles.countLabel}>Followers</Text>
+                            </View>
+                            <View style={styles.countItem}>
+                              <Text style={styles.countNumber}>{profileData?.generalProfileData?.followedCounter}</Text>
+                              <Text style={styles.countLabel}>Following</Text>
+                            </View>
                           </View>
-                          <View style={styles.countItem}>
-                            <Text style={styles.countNumber}>{profileData?.generalProfileData?.followedCounter}</Text>
-                            <Text style={styles.countLabel}>Following</Text>
-                          </View>
-                        </View>
+                        ):(
+                          <TouchableOpacity style={styles.countsContainer} activeOpacity={1} onPress={() => navigateToFollowersScreen()}>
+                            <View style={styles.countItem}>
+                              <Text style={styles.countNumber}>{profileData?.generalProfileData?.followersCounter}</Text>
+                              <Text style={styles.countLabel}>Followers</Text>
+                            </View>
+                            <View style={styles.countItem}>
+                              <Text style={styles.countNumber}>{profileData?.generalProfileData?.followedCounter}</Text>
+                              <Text style={styles.countLabel}>Following</Text>
+                            </View>
+                          </TouchableOpacity>
+                        )}
                       </View>
                     </View>
 

@@ -4,7 +4,7 @@ import { fetchWithTimeout } from '../../ApiCalls/fetchWithTimeout.js';
 
 export default class CommunityDataService {
 
-    static async getFollowedList(setIsAuthenticated, navigation){
+    static async getFollowedList(setIsAuthenticated, navigation, state = true){
         const token = await AuthService.getToken();
         if (!token || AuthService.isTokenExpired(token)) {
           await AuthService.logout(setIsAuthenticated, navigation);
@@ -12,7 +12,7 @@ export default class CommunityDataService {
         }
 
         const response = await fetchWithTimeout(
-            `${config.ipAddress}/api/Community/GetUserFollowers?onlyFollowed=${true}`,
+            `${config.ipAddress}/api/Community/GetUserFollowers?onlyFollowed=${state}`,
             {
               method: 'GET',
               headers: {

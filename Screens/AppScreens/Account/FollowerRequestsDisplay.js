@@ -1,11 +1,10 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, TextInput, ActivityIndicator ,Image, StatusBar } from 'react-native';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, StatusBar } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import { useRoute } from '@react-navigation/native';
-import basePfp from '../../../assets/userPfpBase.png';
 import FollowerDisplay from '../../../Components/Community/FollowerDisplay.js';
 
 import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
