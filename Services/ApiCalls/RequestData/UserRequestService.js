@@ -72,4 +72,27 @@ export default class UserRequestService {
 
       return response;
     };
+
+    static async reportUser(setIsAuthenticated, navigation, model){
+      const token = await AuthService.getToken();
+      if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+      }
+
+      const response = await fetchWithTimeout(
+        `${config.ipAddress}/api/UserRequest/ReportUser`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(model),
+        },
+        config.timeout
+      );
+
+      return response;
+    }
 }

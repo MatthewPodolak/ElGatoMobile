@@ -23,6 +23,8 @@ import PeopleSvg from '../../../assets/main/Diet/people.svg';
 import CommunityDataService from '../../../Services/ApiCalls/CommunityData/CommunityDataService.js';
 import MealDataService, { getUserRecipesData } from '../../../Services/ApiCalls/MealData/MealDataService.js';
 import PfpDisplayModal from '../../../Components/Community/PfpDisplayModal.js';
+import ActionModal from '../../../Components/Community/ActionModal.js';
+import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
 
 function ProfileDisplay({ navigation }) {
     const route = useRoute();
@@ -54,6 +56,7 @@ function ProfileDisplay({ navigation }) {
     const [activitiesTab, setActivitiesTab] = useState("Recent activities");
 
     const [pfpDisplayVisible, setPfpDisplayVisible] = useState(false);
+    const [actionModalVisible, setActionModalVisible] = useState(false);
 
     useEffect(() => {
       if(profileData && !initialSynced){
@@ -238,6 +241,32 @@ function ProfileDisplay({ navigation }) {
         setIsRequested(true);
       }
     }
+
+    const reportUser = async (reportCase) => {
+      if(!userId){ return; }
+
+      let model = {
+        reportedUserId: userId,
+        reportCase: reportCase
+      };
+
+      UserRequestService.reportUser(setIsAuthenticated, navigation, model);
+    };
+
+    const blockUser = async () => {
+      if(!userId) { return; }
+
+      try{
+        const res = await CommunityDataService.blockUser(setIsAuthenticated, navigation, userId);
+        if(!res.ok){
+          return;
+        }
+
+        navigation.navigate('Home');
+      }catch(error){
+        return;
+      }
+    };
 
     /* END OF BTN BEHVS */
     const navigateBack = () => {
@@ -534,7 +563,9 @@ function ProfileDisplay({ navigation }) {
                       )}
                     </>
                 ):(
-                    <DotsSvg width={24} height={24} fill="#FFF" />
+                  <TouchableOpacity>
+                    <DotsSvg width={24} height={24} fill="#FFF" onPress={() => setActionModalVisible(true)} />
+                  </TouchableOpacity>
                 )}
             </View>
 
@@ -699,6 +730,9 @@ function ProfileDisplay({ navigation }) {
         </ScrollView>
 
         <PfpDisplayModal visible={pfpDisplayVisible} onRequestClose={() => setPfpDisplayVisible(false)} pfp={userPfp} />
+        <ActionModal visible={actionModalVisible} onRequestClose={() => setActionModalVisible(false)} isFollowed={isFollowed} isPrivate={isPrivate} isRequested={isRequested}
+          onFollowRequest={followPressed} onUnfollowRequest={unfollowPressed} onRemoveRequest={removeFollowRequest} onReportRequest={reportUser} onBlockRequest={blockUser}
+          />
 
         <NavigationMenu navigation={navigation} currentScreen="AccountHome" />
         </SafeAreaView>
