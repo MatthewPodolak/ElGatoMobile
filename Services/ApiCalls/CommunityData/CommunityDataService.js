@@ -205,4 +205,28 @@ export default class CommunityDataService {
 
         return response;
     }
+
+    static async searchForUsers(setIsAuthenticated, navigation, query, limit = 5){
+      if(!query) { return null; }
+
+      const token = await AuthService.getToken();
+      if (!token || AuthService.isTokenExpired(token)) {
+        await AuthService.logout(setIsAuthenticated, navigation);
+        return null;
+      }
+
+      const response = await fetchWithTimeout(
+          `${config.ipAddress}/api/Community/SearchForUsers?query=${encodeURIComponent(query)}&limit=${limit}`,
+          {
+            method: 'GET',
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Content-Type': 'application/json',
+            },
+          },
+          config.timeout
+        );
+
+        return response;
+      }
 }

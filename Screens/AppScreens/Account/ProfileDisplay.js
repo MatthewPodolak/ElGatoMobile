@@ -25,6 +25,7 @@ import MealDataService, { getUserRecipesData } from '../../../Services/ApiCalls/
 import PfpDisplayModal from '../../../Components/Community/PfpDisplayModal.js';
 import ActionModal from '../../../Components/Community/ActionModal.js';
 import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
+import { isLoading } from 'expo-font';
 
 function ProfileDisplay({ navigation }) {
     const route = useRoute();
@@ -568,7 +569,6 @@ function ProfileDisplay({ navigation }) {
                   </TouchableOpacity>
                 )}
             </View>
-
         </View>
 
         <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
@@ -672,48 +672,52 @@ function ProfileDisplay({ navigation }) {
             </>
           )}           
 
-          {(isPrivate && !isFollowed && !isOwn) ? (
+          {!profileDataLoading && (
             <>
-              <View style={[GlobalStyles.center, GlobalStyles.flex,GlobalStyles.center]}>
-                <LockedSvh width={256} height={256} fill="#999F" opacity={0.3} marginTop={50} marginBottom={75}/>
-                <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>This user account is <Text style={[GlobalStyles.orange]}>private</Text>.</Text>
-              </View>
-            </>
-          ):(
-            <>
-              <View style={styles.categoryContainer}>
-                <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Stats")} ><Text style={[styles.optionText, activeTab === "Stats" && styles.activeTab]}>Stats</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Activities")} ><Text style={[styles.optionText, activeTab === "Activities" && styles.activeTab]}>Activities</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Lifts")} ><Text style={[styles.optionText, activeTab === "Lifts" && styles.activeTab]}>Lifts</Text></TouchableOpacity>
-                <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Recipes")} ><Text style={[styles.optionText, activeTab === "Recipes" && styles.activeTab]}>Recipes</Text></TouchableOpacity>
-              </View>
-              {(activeTab === "Stats" || activeTab === "Lifts" || activeTab === "Activities") && (
+              {(isPrivate && !isFollowed && !isOwn) ? (
                 <>
-                  {activeTab === "Stats" ? (
+                  <View style={[GlobalStyles.center, GlobalStyles.flex,GlobalStyles.center]}>
+                    <LockedSvh width={256} height={256} fill="#999F" opacity={0.3} marginTop={50} marginBottom={75}/>
+                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>This user account is <Text style={[GlobalStyles.orange]}>private</Text>.</Text>
+                  </View>
+                </>
+              ):(
+                <>
+                  <View style={styles.categoryContainer}>
+                    <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Stats")} ><Text style={[styles.optionText, activeTab === "Stats" && styles.activeTab]}>Stats</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Activities")} ><Text style={[styles.optionText, activeTab === "Activities" && styles.activeTab]}>Activities</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Lifts")} ><Text style={[styles.optionText, activeTab === "Lifts" && styles.activeTab]}>Lifts</Text></TouchableOpacity>
+                    <TouchableOpacity style={styles.option} onPress={() => setActiveTab("Recipes")} ><Text style={[styles.optionText, activeTab === "Recipes" && styles.activeTab]}>Recipes</Text></TouchableOpacity>
+                  </View>
+                  {(activeTab === "Stats" || activeTab === "Lifts" || activeTab === "Activities") && (
                     <>
-                      <View style={styles.categoryContainerSecondary}>
-                        <TouchableOpacity style={styles.option} onPress={() => setStatsTab("Basic")} ><Text style={[styles.optionTextSecondary, statsTab === "Basic" && styles.activeTabSecondary]}>Basic</Text></TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => setStatsTab("Activities")} ><Text style={[styles.optionTextSecondary, statsTab === "Activities" && styles.activeTabSecondary]}>Activities</Text></TouchableOpacity>
-                      </View>
+                      {activeTab === "Stats" ? (
+                        <>
+                          <View style={styles.categoryContainerSecondary}>
+                            <TouchableOpacity style={styles.option} onPress={() => setStatsTab("Basic")} ><Text style={[styles.optionTextSecondary, statsTab === "Basic" && styles.activeTabSecondary]}>Basic</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.option} onPress={() => setStatsTab("Activities")} ><Text style={[styles.optionTextSecondary, statsTab === "Activities" && styles.activeTabSecondary]}>Activities</Text></TouchableOpacity>
+                          </View>
+                        </>
+                      ) : activeTab === "Lifts" ? (
+                        <>
+                          <View style={styles.categoryContainerSecondary}>
+                            <TouchableOpacity style={styles.option} onPress={() => setLiftsTab("Recent lifts")} ><Text style={[styles.optionTextSecondary, liftsTab === "Recent lifts" && styles.activeTabSecondary]}>Recent lifts</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.option} onPress={() => setLiftsTab("Best lifts")} ><Text style={[styles.optionTextSecondary, liftsTab === "Best lifts" && styles.activeTabSecondary]}>Best lifts</Text></TouchableOpacity>
+                          </View>
+                        </>
+                      ) : activeTab === "Activities" ? (
+                        <>
+                          <View style={styles.categoryContainerSecondary}>
+                            <TouchableOpacity style={styles.option} onPress={() => setActivitiesTab("Recent activities")} ><Text style={[styles.optionTextSecondary, activitiesTab === "Recent activities" && styles.activeTabSecondary]}>Recent activities</Text></TouchableOpacity>
+                            <TouchableOpacity style={styles.option} onPress={() => setActivitiesTab("Best activities")} ><Text style={[styles.optionTextSecondary, activitiesTab === "Best activities" && styles.activeTabSecondary]}>Best activities</Text></TouchableOpacity>
+                          </View>
+                        </>
+                      ) : null}
                     </>
-                  ) : activeTab === "Lifts" ? (
-                    <>
-                      <View style={styles.categoryContainerSecondary}>
-                        <TouchableOpacity style={styles.option} onPress={() => setLiftsTab("Recent lifts")} ><Text style={[styles.optionTextSecondary, liftsTab === "Recent lifts" && styles.activeTabSecondary]}>Recent lifts</Text></TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => setLiftsTab("Best lifts")} ><Text style={[styles.optionTextSecondary, liftsTab === "Best lifts" && styles.activeTabSecondary]}>Best lifts</Text></TouchableOpacity>
-                      </View>
-                    </>
-                  ) : activeTab === "Activities" ? (
-                    <>
-                      <View style={styles.categoryContainerSecondary}>
-                        <TouchableOpacity style={styles.option} onPress={() => setActivitiesTab("Recent activities")} ><Text style={[styles.optionTextSecondary, activitiesTab === "Recent activities" && styles.activeTabSecondary]}>Recent activities</Text></TouchableOpacity>
-                        <TouchableOpacity style={styles.option} onPress={() => setActivitiesTab("Best activities")} ><Text style={[styles.optionTextSecondary, activitiesTab === "Best activities" && styles.activeTabSecondary]}>Best activities</Text></TouchableOpacity>
-                      </View>
-                    </>
-                  ) : null}
+                  )}
+
                 </>
               )}
-
             </>
           )}
 

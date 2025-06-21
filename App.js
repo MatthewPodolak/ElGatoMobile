@@ -43,6 +43,7 @@ import ProfileDisplayScreen from './Screens/AppScreens/Account/ProfileDisplay';
 import EditProfileScreen from './Screens/AppScreens/Account/EditProfile';
 import FollowerRequestScreen from './Screens/AppScreens/Account/FollowerRequestsDisplay';
 import UserFollowersDisplay from './Screens/AppScreens/Account/UserFollowersDisplay';
+import UserSearch from './Screens/AppScreens/Account/UserSearch';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -129,6 +130,7 @@ function App() {
             <Stack.Screen name="EditProfile" component={EditProfileScreen}/>
             <Stack.Screen name="FolowersRequests" component={FollowerRequestScreen}/>
             <Stack.Screen name="UserFollowersDisplay" component={UserFollowersDisplay}/>
+            <Stack.Screen name="UserSearch" component={UserSearch}/>
           </>
         )}
       </Stack.Navigator>

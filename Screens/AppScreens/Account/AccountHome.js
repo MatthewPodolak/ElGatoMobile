@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useContext } from 'react';
-import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar } from 'react-native';
+import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar, TouchableWithoutFeedback, Image } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -17,6 +17,8 @@ import ActiveChallenge from '../../../Components/Account/ActiveChallenge';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 import ChevronUp from '../../../assets/main/Diet/chevron-up.svg';
 import CommunityDataService from '../../../Services/ApiCalls/CommunityData/CommunityDataService.js';
+
+const HEADER_HEIGHT = 60;
 
 function chunkArray(array, size) {
   const chunkedArr = [];
@@ -48,6 +50,12 @@ function AccountHome({ navigation }) {
   const [leaderboardList, setLeaderboardList] = useState(null);
   const [leaderboardError, setLeaderboardError] = useState(false);
   const [isLeaderboardDataLoading, setIsLeaderboardDataLoading] = useState(false);
+
+  const [searchPressed, setSearchPressed] = useState(false);
+  const [currentSearchQuery, setCurrentSearchQuery] = useState("");
+  const [searchLoading, setSearchLoading] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [searchData, setSearchData] = useState(null);
 
   const setActiveTabFun = async (type) => {
     setActiveTab(type);
@@ -136,7 +144,6 @@ function AccountHome({ navigation }) {
       setFollowedLoading(true);
       const res = await CommunityDataService.getFollowedList(setIsAuthenticated, navigation);
       if(!res.ok){
-        console.log("Error while trying to get followed list.");
         setFollowedError(true);
         return;
       }
@@ -210,6 +217,44 @@ function AccountHome({ navigation }) {
         setAchievmentPeriodDropdownVisible(false);
         return;
     };
+  };
+
+  const userSearch = async (query) => {
+    if(!query || query === "") { setCurrentSearchQuery(""); setSearchData(null); return; }
+    setSearchLoading(true);
+    setSearchError(false);
+    setCurrentSearchQuery(query);
+
+    try{
+      const res = await CommunityDataService.searchForUsers(setIsAuthenticated, navigation, query);
+      if(!res.ok){
+        setSearchError(true);
+        return;
+      }
+
+      const data = await res.json();
+      setSearchData(data);
+
+    }catch(error){
+      setSearchError(true);
+    }finally{
+      setSearchLoading(false);
+    }
+  }
+
+  const goToSearch = () => {
+    navigation?.push('UserSearch', {
+      initialQuery: currentSearchQuery??null,
+      initialData: searchData??null,
+    });
+  };
+
+  const goToUserProfile = (userId) => {
+    if(!userId) { return; }
+
+    navigation?.push('ProfileDisplay', {
+      userId: userId
+    });
   };
 
   const leaderboardErrorGen = () => {
@@ -649,10 +694,82 @@ function AccountHome({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container} edges={['left', 'right', 'bottom']}>
-      <View style={{ height: insets.top, backgroundColor: "#FF8303" }} />
-      <StatusBar style="light"  backgroundColor="#FF8303" translucent={false} hidden={false} />
+      <View style={{ height: insets.top, backgroundColor: "#FF8303", zIndex: 10 }} />
+      <StatusBar style="light" backgroundColor="#FF8303" translucent={false} hidden={false} />
 
-      <AccountHeader navigation={navigation} setIsAuth={setIsAuthenticated}/>
+      <AccountHeader navigation={navigation} setIsAuth={setIsAuthenticated} onSearchPress={() => setSearchPressed(prev => !prev)} searchState={searchPressed} onSearch={userSearch}/>
+      {searchPressed && (
+        <>
+          <TouchableWithoutFeedback onPress={()=>setSearchPressed(false)}>
+            <View style={[styles.backdropFullScreen, { top: insets.top + HEADER_HEIGHT }]}/>
+          </TouchableWithoutFeedback>
+          <View style={[styles.searchContainer, { top: insets.top + HEADER_HEIGHT }]}>
+            {searchLoading ? (
+              <>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  <ActivityIndicator size="large" color="#FF8303" />
+                </View>
+              </>
+            ):(
+              <>
+                {searchError ? (
+                  <View style={[GlobalStyles.flex, GlobalStyles.center, GlobalStyles.padding15]}>
+                    <Text style={[{textAlign: 'center'}]}>Something went wrong. Please check your internet connection and try again.</Text>
+                  </View>
+                ):(
+                  <>
+                    {currentSearchQuery === "" ? (
+                      <>
+                        <View style={[GlobalStyles.flex, {justifyContent: 'flex-end'}]}>
+                          <View style={[GlobalStyles.padding15]}>
+                            <View style={[styles.userHr]}></View>
+                            <TouchableOpacity style={[GlobalStyles.center]} onPress={() => goToSearch()}>
+                                <Text style={[GlobalStyles.orange, GlobalStyles.text14]}>show more results</Text>
+                            </TouchableOpacity>
+                          </View>
+                        </View>
+                      </>
+                    ):(
+                      <>
+                        {!searchData || searchData.users.length === 0 ? (
+                          <View style={[GlobalStyles.flex, GlobalStyles.center, GlobalStyles.padding15]}>
+                            <Text style={[{textAlign: 'center'}]}>We couldn't find anybody named <Text style={[GlobalStyles.orange]}>{currentSearchQuery}</Text>. I am really sorry.</Text>
+                          </View>
+                        ):(
+                          <>
+                            <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }}>
+                              {searchData.users.map((user, index) => (
+                                <View key={user.userId + index}>
+                                  <TouchableOpacity style={[styles.searchedUserContainer]} onPress={() => goToUserProfile(user.userId)}>
+                                    <View style={[styles.searchedUserPfpContainer]}>
+                                      <Image
+                                        source={ user.pfp ? { uri: `http://192.168.0.143:5094${user.pfp}` } : require('../../../assets/userPfpBase.png') }
+                                        style={styles.searchedUserPfp}
+                                      />
+                                    </View>
+                                    <Text style={[GlobalStyles.text14, GlobalStyles.bold]}>{user.name ?? ""}</Text>
+                                  </TouchableOpacity>
+                                  <View style={[styles.userHr]}></View>
+                                </View>
+                              ))}
+                            </ScrollView>
+                            <View style={[GlobalStyles.padding15]}>
+                                <View style={[styles.userHr]}></View>
+                                <TouchableOpacity style={[GlobalStyles.center]} onPress={() => goToSearch()}>
+                                  <Text style={[GlobalStyles.orange, GlobalStyles.text14]}>show more results</Text>
+                                </TouchableOpacity>
+                            </View>
+                          </>
+                        )}
+                      </>
+                    )}              
+                  </>
+                )}
+              </>
+            )}
+          </View>
+        </>
+      )}
 
       <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
             <View style={styles.categoryContainer}>
@@ -746,8 +863,54 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     marginTop: 10,
   },
-  dropdownOption: {
 
+
+  backdropFullScreen: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: 'rgba(0,0,0,0.3)',
+    zIndex: 5,
+  },
+  searchContainer: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    top: 0,
+    height: 350,
+    backgroundColor: 'white',
+    zIndex: 10,
+    borderBottomLeftRadius: 25,
+    borderBottomRightRadius: 25,
+  },
+  searchedUserContainer: {
+    width: '100%',
+    minHeight: 50,
+    marginTop: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 10,
+  },
+  userHr: {
+    borderBottomColor: 'black',
+    opacity: 0.2,
+    borderBottomWidth: 1,
+    marginBottom: 10,
+    marginTop: 10,
+  },
+  searchedUserPfpContainer: {
+    width: 45,
+    height: 45,
+    borderRadius: 22.5,
+    marginRight: 10, 
+    justifyContent: 'center',
+  },
+  searchedUserPfp: {
+    width: '100%',
+    height: '100%',
+    borderRadius: 20,
   },
 });
 

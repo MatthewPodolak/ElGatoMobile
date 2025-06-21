@@ -1,10 +1,26 @@
-import React, { useEffect, useState } from 'react';
-import { View, SafeAreaView, StyleSheet, StatusBar, Image, TouchableOpacity } from 'react-native';
-import SearchSvg from '../../assets/main/Diet/search.svg';
+import React, { useEffect, useState, useRef } from 'react';
+import { View, SafeAreaView, StyleSheet, StatusBar, Image, TouchableOpacity, TextInput } from 'react-native';
 import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
 
-function AccountHeader({ pfp, navigation, setIsAuth }) {
+import SearchSvg from '../../assets/main/Diet/search.svg';
+import CloseSvg from '../../assets/main/Diet/x-lg.svg';
+
+function AccountHeader({ pfp, navigation, setIsAuth, onSearchPress, searchState, onSearch }) {
    const [userPfp, setUserPfp] = useState(pfp ? { uri: `http://192.168.0.143:5094${pfp}` } : require('../../assets/userPfpBase.png'));
+
+   const [searchText, setSearchText] = useState('');
+   const typingTimeoutRef = useRef(null);
+
+   const onChangeSearchText = text => {
+    if (typingTimeoutRef.current) {
+      clearTimeout(typingTimeoutRef.current);
+    }
+    setSearchText(text);
+
+    typingTimeoutRef.current = setTimeout(() => {
+        onSearch(text);
+    }, 500);
+   };
 
    const ownProfilePress = () => {
     navigation?.navigate('ProfileDisplay');
@@ -27,15 +43,33 @@ function AccountHeader({ pfp, navigation, setIsAuth }) {
     }catch(error){
       userPfp = require('../../assets/userPfpBase.png');
     }
-   }
+  }
 
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
       <View style={styles.contentContainer}>
-        <View style={styles.leftContainer}>
-          <SearchSvg width={26} height={26} fill="#FFF" />
-        </View>
+        {searchState ? (
+          <TouchableOpacity style={styles.leftContainer} onPress={onSearchPress}>
+            <CloseSvg width={24} height={24} fill="#FFF" />
+          </TouchableOpacity>
+        ):(
+          <TouchableOpacity style={styles.leftContainer} onPress={onSearchPress}>
+            <SearchSvg width={26} height={26} fill="#FFF" />
+          </TouchableOpacity>
+        )}
+
+        {searchState && (
+          <TextInput
+            style={styles.searchInput}
+            value={searchText}
+            onChangeText={onChangeSearchText}
+            placeholderTextColor="rgba(255,255,255,0.7)"
+            autoFocus
+            selectionColor="#FF8303"
+          />
+        )}
+
         <View style={styles.rightContainer}>
           <TouchableOpacity style={styles.circle} onPress={() => ownProfilePress()}>
             <Image 
@@ -55,6 +89,8 @@ const styles = StyleSheet.create({
     height: 60,
     backgroundColor: '#FF8303',
     justifyContent: 'center',
+    position: 'relative',
+    zIndex: 10,
   },
   contentContainer: {
     flexDirection: 'row',
@@ -83,6 +119,15 @@ const styles = StyleSheet.create({
     width: 38,
     height: 38,
     borderRadius: 19,
+  },
+  searchInput: {
+    flex: 1,
+    marginHorizontal: 10,
+    height: 36,
+    borderRadius: 18,
+    paddingHorizontal: 15,
+    backgroundColor: 'rgba(255,255,255,0.2)',
+    color: '#FFF',
   },
 });
 
