@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Modal, View, Text ,TouchableWithoutFeedback, ActivityIndicator,StyleSheet, ImageBackground } from 'react-native';
 import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 
@@ -7,6 +7,9 @@ const AchievmentModal = ({
   onRequestClose,
   data
 }) => {
+
+  const [achievmentPicture, setAchievmentPicture] = useState(data?.achievmentEarnedImage ? { uri: `http://192.168.0.143:5094${data.achievmentEarnedImage}` } : require('../../assets/userPfpBase.png'));
+
   return (
     <Modal
       animationType="slide"
@@ -20,7 +23,7 @@ const AchievmentModal = ({
         {data ? (
           <View style = {styles.contentContainer}>
               <View style = {styles.imageContainer}>
-                <ImageBackground style={styles.img} source={data.achievmentEarnedImage??"base"} />
+                <ImageBackground style={styles.img} source={achievmentPicture} />
               </View>
               <View style = {[styles.achievmentNameContainer, GlobalStyles.center]}>
                 <Text style={[GlobalStyles.textAchievment, GlobalStyles.bold, GlobalStyles.white]}>{data.achievmentEarnedName??"Unknown"}</Text>

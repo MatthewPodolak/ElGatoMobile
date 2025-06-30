@@ -13,6 +13,8 @@ import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus }
 import { readStepsToday } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 import { readRecordPeriod } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 
+import AchievmentModal from '../../Components/ElGato/AchievmentModal.js';
+
 import WaterContainer from '../../Components/Main/WaterContainer';
 import NutriContainer from '../../Components/Main/NutriContainer';
 import BurntCalorieContainer from '../../Components/Main/BurntCalorieContainer';
@@ -23,6 +25,7 @@ import HexagonalChart from '../../Components/Main/HexagonalChart.js';
 import BarChart from '../../Components/Main/BarChart.js';
 import CircleChartDist from '../../Components/Main/CircleChartDist.js';
 import StepsCounter from '../../Components/Main/StepsCounter.js';
+import UserRequestService from '../../Services/ApiCalls/RequestData/UserRequestService.js';
 
 function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -56,6 +59,10 @@ function HomeScreen({ navigation }) {
   const scrollViewRef = useRef(null);
   const [scrollOffset, setScrollOffset] = useState(0);
   const scrollOffsetSV = useSharedValue(0);
+
+  const [achievmentData, setAchievmentData] = useState(null);
+  const [achievmentModalVisible, setAchievmentModalVisible] = useState(false);
+  const closeAchievmentModal = () => { setAchievmentData(null); setAchievmentModalVisible(false); }
 
   useEffect(() => {
       getMaxDailyIntake();
@@ -99,7 +106,10 @@ function HomeScreen({ navigation }) {
       requestPermissions(); 
     }, []);
   
-    useEffect(() => {
+    useEffect(() => { 
+      
+      //TO DO -- FALBACK TO OWN PEDOMETER BACKGROUND (PSB)
+      
       const getCurrentSteps = async () => {
         if (Platform.OS === 'ios') {
           //TODO IOS IMP.
@@ -108,9 +118,17 @@ function HomeScreen({ navigation }) {
         else if (Platform.OS === 'android') {
           if(stepsPermissionsGranted){
             const todaySteps = await readStepsToday();
-            //TODO
-            //IF 0 --- FALBACK TO kt background pedmoeter task...
+
             setCurrentSteps(todaySteps);
+            const now = new Date();
+            const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+            let model = { date: currentDate, steps: todaySteps};
+            const stepsRes = await UserRequestService.saveUserSteps(setIsAuthenticated, navigation, model);
+
+            if(stepsRes != null){
+              setAchievmentData(stepsRes);
+              setAchievmentModalVisible(true);
+            }
             return;
           }
         }
@@ -718,6 +736,12 @@ function HomeScreen({ navigation }) {
             </ScrollView>
           </>
         )}     
+
+        <AchievmentModal
+          visible={achievmentModalVisible}
+          onRequestClose={closeAchievmentModal}
+          data={achievmentData}
+        />
 
       <NavigationMenu navigation={navigation} currentScreen="Home" />
     </SafeAreaView>
