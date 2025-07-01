@@ -121,6 +121,11 @@ export const GlobalStyles = StyleSheet.create({
         textShadowOffset: { width: 1, height: 1 },
         textShadowRadius: 2,
     },
+    textShadowWhite: {
+        textShadowColor: 'rgb(255, 255, 255)',
+        textShadowOffset: { width: 1, height: 1 },
+        textShadowRadius: 2,
+    },
     textNoShadow: {
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 0,

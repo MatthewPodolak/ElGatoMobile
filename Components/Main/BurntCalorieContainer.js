@@ -1,5 +1,5 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
+import { View, StyleSheet, Animated } from 'react-native';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
 import { GlobalStyles } from '../../Styles/GlobalStyles';
@@ -12,12 +12,8 @@ const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate, permissions
 
   const unit = system === 'metric' ? 'kcal' : 'cal.';
   
-  const pressed = () => {
-
-  };
-
   return (
-    <TouchableOpacity onPress={() => pressed()} activeOpacity={1} style={styles.outerContainer}>
+    <View style={styles.outerContainer}>
       <BlurView
         style={styles.glassEffect}
         intensity={125}
@@ -59,7 +55,7 @@ const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate, permissions
           </SvgText>
         </Svg>
       </View>
-    </TouchableOpacity>
+    </View>
   );
 };
 

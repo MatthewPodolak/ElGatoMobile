@@ -7,7 +7,7 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import StartScreen from './Screens/Start/StartScreen';
 import LoginScreen from './Screens/Auth/LoginScreen';
 import RegisterScreen from './Screens/Auth/RegisterScreen';
-import HomeScreen from './Screens/AppScreens/HomeScreen';
+import HomeScreen from './Screens/AppScreens/Home/HomeScreen';
 import QuestAgeScreen from './Screens/Questionary/QuestAgeScreen';
 import QuestWeightScreen from './Screens/Questionary/QuestWeightScreen';
 import QuestGoalScreen from './Screens/Questionary/QuestGoalScreen';
@@ -44,6 +44,8 @@ import EditProfileScreen from './Screens/AppScreens/Account/EditProfile';
 import FollowerRequestScreen from './Screens/AppScreens/Account/FollowerRequestsDisplay';
 import UserFollowersDisplay from './Screens/AppScreens/Account/UserFollowersDisplay';
 import UserSearch from './Screens/AppScreens/Account/UserSearch';
+
+import CompoControlScreen from './Screens/AppScreens/Home/CompControl';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -131,6 +133,7 @@ function App() {
             <Stack.Screen name="FolowersRequests" component={FollowerRequestScreen}/>
             <Stack.Screen name="UserFollowersDisplay" component={UserFollowersDisplay}/>
             <Stack.Screen name="UserSearch" component={UserSearch}/>
+            <Stack.Screen name='CompoControlScreen' component={CompoControlScreen}/>
           </>
         )}
       </Stack.Navigator>

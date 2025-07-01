@@ -1,31 +1,31 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { AuthContext } from '../../Services/Auth/AuthContext.js';
-import NavigationMenu from '../../Components/Navigation/NavigationMenu';
-import { GlobalStyles } from '../../Styles/GlobalStyles';
+import { AuthContext } from '../../../Services/Auth/AuthContext.js';
+import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
+import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { ScrollView, GestureHandlerRootView } from 'react-native-gesture-handler';
-import DraggableItem from '../../Components/Main/DraggableItem.js';
+import DraggableItem from '../../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
 import { Platform } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus } from '../../Services/Helpers/Activity/ActivityPermissionHelper.js';
-import { readStepsToday } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
-import { readRecordPeriod } from '../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
+import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus } from '../../../Services/Helpers/Activity/ActivityPermissionHelper.js';
+import { readStepsToday } from '../../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
+import { readRecordPeriod } from '../../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 
-import AchievmentModal from '../../Components/ElGato/AchievmentModal.js';
+import AchievmentModal from '../../../Components/ElGato/AchievmentModal.js';
 
-import WaterContainer from '../../Components/Main/WaterContainer';
-import NutriContainer from '../../Components/Main/NutriContainer';
-import BurntCalorieContainer from '../../Components/Main/BurntCalorieContainer';
-import LinearChart from '../../Components/Main/LinearChart';
-import CompareChart from '../../Components/Main/CompareChart.js';
-import UserDataService from '../../Services/ApiCalls/UserData/UserDataService';
-import HexagonalChart from '../../Components/Main/HexagonalChart.js';
-import BarChart from '../../Components/Main/BarChart.js';
-import CircleChartDist from '../../Components/Main/CircleChartDist.js';
-import StepsCounter from '../../Components/Main/StepsCounter.js';
-import UserRequestService from '../../Services/ApiCalls/RequestData/UserRequestService.js';
+import WaterContainer from '../../../Components/Main/WaterContainer.js';
+import NutriContainer from '../../../Components/Main/NutriContainer.js';
+import BurntCalorieContainer from '../../../Components/Main/BurntCalorieContainer.js';
+import LinearChart from '../../../Components/Main/LinearChart.js';
+import CompareChart from '../../../Components/Main/CompareChart.js';
+import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
+import HexagonalChart from '../../../Components/Main/HexagonalChart.js';
+import BarChart from '../../../Components/Main/BarChart.js';
+import CircleChartDist from '../../../Components/Main/CircleChartDist.js';
+import StepsCounter from '../../../Components/Main/StepsCounter.js';
+import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
 
 function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -34,6 +34,7 @@ function HomeScreen({ navigation }) {
   const [currentSteps, setCurrentSteps] = useState(0); //per 24
   const [currentCaloriesBurnt, setCurrentCaloriesBurnt] = useState(0); //per 24
   const [dailyStepsGoal, setDailyStepsGoal] = useState(0);
+  const [dailyWaterIntakeGoal, setDailyWaterIntakeGoal] = useState(0);
   const [isPedometerAvaliable, setIsPedometerAvaliable] = useState(true); //If not used in further pedometer kt impl. remove, and update comp vis.
   const [stepsPermissionsGranted, setStepsPermissionsGranted] = useState(true);
   const [caloriePermissionGranted, setCaloriePermissionGranted] = useState(false);
@@ -64,10 +65,20 @@ function HomeScreen({ navigation }) {
   const [achievmentModalVisible, setAchievmentModalVisible] = useState(false);
   const closeAchievmentModal = () => { setAchievmentData(null); setAchievmentModalVisible(false); }
 
+  const navigateToCompoControl = (type) => {
+    if(!type) { return; }
+
+    navigation?.navigate('CompoControlScreen', {
+      type: type ?? null,
+      canAnimate: areAnimationsActive
+    });
+  }
+
   useEffect(() => {
       getMaxDailyIntake();
       getCurrentDailyIntake();
       getDailyStepsGoal();
+      getDailyWaterIntakeGoal();
       getUserMetricSystem();
       getWaterIntake();
       getUserLayoutData();
@@ -212,6 +223,14 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const getDailyWaterIntakeGoal = async () => {
+    try{
+      const res = await UserDataService.getDailyWaterIntakeGoal();
+      setDailyWaterIntakeGoal(res);
+    }catch(error){
+      //el gato error
+    }
+  };
 
   const getWaterIntake = async () => {
     try{
@@ -432,8 +451,7 @@ function HomeScreen({ navigation }) {
         });
       }
     };
-    
-    
+     
     const onDeleteChartComp = (index) => {
       setUserLayoutData((prevLayout) => {
         if (!prevLayout) return prevLayout;
@@ -676,23 +694,23 @@ function HomeScreen({ navigation }) {
               </View>
 
               <View style={styles.row}>
-                  <View style={styles.block}>
+                  <TouchableOpacity onPress={() => navigateToCompoControl("calories")}  activeOpacity={1} style={styles.block}>
                     <BurntCalorieContainer totalBurnt={currentCaloriesBurnt} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."} permissionsGranted={caloriePermissionGranted}/>
-                  </View>
+                  </TouchableOpacity>
                   <View style={styles.block}>
                     {userWaterIntake ? (
-                      <WaterContainer initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc}/>
+                      <WaterContainer waterIntakeGoal={dailyWaterIntakeGoal} initialValue={userWaterIntake / 10} addWaterFunc={addWaterFunc} compoControlFunc={() => navigateToCompoControl("water")}/>
                     ):(
-                      <WaterContainer addWaterFunc={addWaterFunc} />
+                      <WaterContainer waterIntakeGoal={dailyWaterIntakeGoal} addWaterFunc={addWaterFunc} compoControlFunc={() => navigateToCompoControl("water")}/>
                     )}
                   </View>
               </View>
 
               {isPedometerAvaliable && (
                 <>
-                  <View style={styles.row}>
+                  <TouchableOpacity onPress={() => navigateToCompoControl("steps")}  activeOpacity={1} style={styles.row}>
                     <StepsCounter dailyGoal={dailyStepsGoal} currentSteps={currentSteps} permissionsGranted={stepsPermissionsGranted} />
-                  </View>
+                  </TouchableOpacity>
                 </>
               )}
 

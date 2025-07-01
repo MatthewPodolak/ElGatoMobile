@@ -3,7 +3,6 @@ import { View, StyleSheet, Animated, TouchableOpacity } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 import Svg, { Path, Text as SvgText } from 'react-native-svg';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GlobalStyles } from '../../Styles/GlobalStyles';
 import { BlurView } from 'expo-blur';
 
 const generateSineWavePath = (totalWidth, height, cycles, numPoints = 100) => {
@@ -13,89 +12,70 @@ const generateSineWavePath = (totalWidth, height, cycles, numPoints = 100) => {
   for (let i = 0; i <= numPoints; i++) {
     const x = (totalWidth * i) / numPoints;
     const y = baseline + amplitude * Math.sin((2 * Math.PI * cycles * x) / totalWidth);
-    if (i === 0) {
-      d += `M ${x},${y} `;
-    } else {
-      d += `L ${x},${y} `;
-    }
+    d += i === 0 ? `M ${x},${y} ` : `L ${x},${y} `;
   }
-
   d += `L ${totalWidth},${height} L 0,${height} Z`;
   return d;
 };
 
-const WaterContainer = ({ initialValue = 0, addWaterFunc }) => {
+const WaterContainer = ({ waterIntakeGoal = 2000, initialValue = 0, addWaterFunc, compoControlFunc }) => {
   const [waterValue, setWaterValue] = useState(initialValue);
-  const [dimensions, setDimensions] = useState({ width: 0, height: 0 });
-  const [currentWaveCycle, setCurrentWaveCycle] = useState(0);
+  const [dims, setDims] = useState({ width: 0, height: 0 });
+  const [waveCycle, setWaveCycle] = useState(0);
 
-  const waterTranslate = useRef(new Animated.Value(0)).current;
-  const tiltAnim = useRef(new Animated.Value(0)).current;
-  const waveCycleAnim = useRef(new Animated.Value(0)).current;
-
-  const addWater = () => {
-    if(addWaterFunc){
-      addWaterFunc();
-    }
-  };
+  const translateY = useRef(new Animated.Value(0)).current;
+  const tiltAnim   = useRef(new Animated.Value(0)).current;
+  const cycleAnim  = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     setWaterValue(initialValue);
   }, [initialValue]);
 
-  const onContainerLayout = (event) => {
-    const { width, height } = event.nativeEvent.layout;
-    setDimensions({ width, height });
-    waterTranslate.setValue(height);
+  const onContainerLayout = ({ nativeEvent: { layout } }) => {
+    setDims(layout);
+    translateY.setValue(layout.height);
   };
 
   useEffect(() => {
-    if (dimensions.height === 0) return;
-    
-    if(waterValue <= 225){
-      const targetTranslate = dimensions.height - (waterValue / 200) * dimensions.height;
-      Animated.timing(waterTranslate, {
-        toValue: targetTranslate,
-        duration: 1000,
-        useNativeDriver: true,
-      }).start();
-    }
+    if (!dims.height) return;
 
-    
-  }, [waterValue, dimensions.height, waterTranslate]);
+    const currentMl = waterValue * 10;
+    const frac = Math.min(Math.max(currentMl / waterIntakeGoal, 0), 1);
 
-  useEffect(() => {
-    const id = waveCycleAnim.addListener(({ value }) => {
-      setCurrentWaveCycle(value);
-    });
-    return () => waveCycleAnim.removeListener(id);
-  }, [waveCycleAnim]);
+    const toValue = dims.height * (1 - frac);
+    Animated.timing(translateY, {
+      toValue,
+      duration: 800,
+      useNativeDriver: true,
+    }).start();
+  }, [waterValue, dims.height, waterIntakeGoal]);
 
   useEffect(() => {
     Accelerometer.setUpdateInterval(100);
-    const subscription = Accelerometer.addListener((data) => {
+    const sub = Accelerometer.addListener(({ x }) => {
       Animated.timing(tiltAnim, {
-        toValue: data.x,
+        toValue: x,
         duration: 100,
         useNativeDriver: true,
       }).start();
 
-      const threshold = 0.2;
-      let targetCycle = 0;
-      if (data.x > threshold) {
-        targetCycle = -2;
-      } else if (data.x < -threshold) {
-        targetCycle = 2;
-      }
+      let cycles = 0;
+      if (x > 0.2)  cycles = -2;
+      if (x < -0.2) cycles =  2;
 
-      Animated.timing(waveCycleAnim, {
-        toValue: targetCycle,
+      Animated.timing(cycleAnim, {
+        toValue: cycles,
         duration: 300,
         useNativeDriver: false,
       }).start();
     });
-    return () => subscription && subscription.remove();
-  }, [tiltAnim, waveCycleAnim]);
+
+    const id = cycleAnim.addListener(({ value }) => setWaveCycle(value));
+    return () => {
+      sub && sub.remove();
+      cycleAnim.removeListener(id);
+    };
+  }, []);
 
   const tiltRotation = tiltAnim.interpolate({
     inputRange: [-1, 1],
@@ -103,7 +83,13 @@ const WaterContainer = ({ initialValue = 0, addWaterFunc }) => {
   });
 
   return (
-    <TouchableOpacity style={styles.outerContainer} activeOpacity={1} onPress={addWater}>
+    <TouchableOpacity
+      style={styles.outerContainer}
+      activeOpacity={1}
+      onPress={addWaterFunc}
+      onLongPress={compoControlFunc}
+      delayLongPress={200}
+    >
       <BlurView
         style={styles.glassEffect}
         intensity={125}
@@ -115,7 +101,7 @@ const WaterContainer = ({ initialValue = 0, addWaterFunc }) => {
             styles.water,
             {
               transform: [
-                { translateY: waterTranslate },
+                { translateY },
                 { rotate: tiltRotation },
               ],
             },
@@ -125,16 +111,16 @@ const WaterContainer = ({ initialValue = 0, addWaterFunc }) => {
             colors={['#2193b0', '#6dd5ed']}
             style={StyleSheet.absoluteFill}
           />
-          {dimensions.width > 0 && (
-            <View style={{ width: dimensions.width * 2, height: 20, overflow: 'hidden' }}>
+          {dims.width > 0 && (
+            <View style={{ width: dims.width * 2, height: 20, overflow: 'hidden' }}>
               <Svg
-                width={dimensions.width * 2}
+                width={dims.width * 2}
                 height={20}
-                viewBox={`0 0 ${dimensions.width * 2} 20`}
+                viewBox={`0 0 ${dims.width * 2} 20`}
                 style={{ transform: [{ scaleY: -1 }] }}
               >
                 <Path
-                  d={generateSineWavePath(dimensions.width * 2, 20, currentWaveCycle, 150)}
+                  d={generateSineWavePath(dims.width * 2, 20, waveCycle, 150)}
                   fill="#F5F5F5"
                 />
               </Svg>
@@ -175,9 +161,9 @@ const styles = StyleSheet.create({
     flex: 1,
     borderRadius: 20,
     overflow: 'hidden',
-    backgroundColor: 'rgba(255, 255, 255, 0.3)',
+    backgroundColor: 'rgba(255,255,255,0.3)',
     borderWidth: 1,
-    borderColor: 'rgba(0, 0, 0, 0.2)',
+    borderColor: 'rgba(0,0,0,0.2)',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 5 },
     shadowOpacity: 0.2,

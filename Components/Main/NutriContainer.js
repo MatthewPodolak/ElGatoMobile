@@ -94,7 +94,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#ffcf9d"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.fats} maxValue={dailyMaxData.fats} color={"#A35709"} gradientColor={"#a2a309"} textValue={"F"} />
@@ -108,7 +108,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#ffcf9d"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} textValue={"P"} />
@@ -122,7 +122,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
         return (
           <>
             <View style={styles.smallCircleContainer}>
-              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#FF8303"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
+              <NutriCircleMini value={dailyData.kcal} maxValue={dailyMaxData.kcal} color={"#ffcf9d"} gradientColor={"#ffe600"} textValue={settedSystem === "metric" ? "K" : "C"} />
             </View>
             <View style={styles.smallCircleContainer}>
               <NutriCircleMini value={dailyData.protein} maxValue={dailyMaxData.protein} color={"#09a357"} gradientColor={"#0dff03"} textValue={"P"} />
@@ -190,9 +190,10 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
     <GestureHandlerRootView style={styles.outerContainer}>
       <PanGestureHandler onHandlerStateChange={onPanGestureEvent}>
         <LinearGradient
-          colors={[currentColor, '#000']}
-          start={[0, 0]}
-          end={[0.5, 1]}
+          colors={["#333", "#333"]}
+          locations={[0.0, 0.85]}
+          start={[0.5, 1.0]}
+          end={[0.5, 0.0]}
           style={styles.glassEffect}
         >
           <View style={styles.leftMainCont}>
@@ -201,7 +202,7 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
           <View style={styles.rightMainCont}>
             <View style={styles.rightTop}>
               <View style={styles.headerTextCont}>
-                <Text style={[GlobalStyles.text28, GlobalStyles.bold, GlobalStyles.orange, { color: currentColor }]}>
+                <Text style={[GlobalStyles.text28, GlobalStyles.bold, GlobalStyles.orange, GlobalStyles.textShadow, { color: currentColor }]}>
                   {titleGen()}
                 </Text>
               </View>

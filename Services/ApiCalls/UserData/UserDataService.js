@@ -139,6 +139,83 @@ export default class UserDataService {
         return basicGoal;
     }
 
+    static async setDailyStepsGoal(value){
+        await AsyncStorage.setItem("dailyStepsGoal", JSON.stringify(value));
+    }
+
+    static async getDailyWaterIntakeGoal(){
+        const waterIntakeGoal = await AsyncStorage.getItem("dailyWaterIntakeGoal");
+        if(waterIntakeGoal != null){
+            return JSON.parse(waterIntakeGoal);
+        }
+
+        let basicWaterIntake = 2000;
+        await AsyncStorage.setItem("dailyWaterIntakeGoal", JSON.stringify(basicWaterIntake));
+        return basicWaterIntake;
+    }
+
+    static async setDailyWaterIntakeGoal(value) {
+        await AsyncStorage.setItem("dailyWaterIntakeGoal", JSON.stringify(value));
+    }
+
+    static async setCaloriesSource(source){ //both or app
+        if(source !== "both" && source !== "app"){ return; }
+
+        await AsyncStorage.setItem("calorieSource", JSON.stringify(source));
+    }
+
+    static async getCalorieSource(){
+        const calorieSource = await AsyncStorage.getItem("calorieSource");
+        if(calorieSource != null){
+            return JSON.parse(calorieSource);
+        }
+
+        await AsyncStorage.setItem("calorieSource", JSON.stringify("both"));
+        return "both";
+    }
+
+    static async updateLayoutAnimationState(setIsAuthenticated, navigation, state){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        let layout = { animations: state, chartStack: [] };
+        try {
+            const json = await AsyncStorage.getItem("layoutData");
+            if (json) {
+            const parsed = JSON.parse(json);
+            layout.chartStack = Array.isArray(parsed.chartStack) ? parsed.chartStack : [];
+            }
+        } catch {
+
+        }
+
+        let model = {
+            animations: state
+        };
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/UpdateUserLayout`,
+            {
+                method: 'PATCH',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(model),
+            },
+            config.timeout
+        );
+
+        if (response.ok){
+            await AsyncStorage.setItem("layoutData", JSON.stringify(layout));
+        }
+
+        return response;
+    }
+
     static async getUserCurrentWaterIntake(setIsAuthenticated, navigation, currentDate){
         const token = await AuthService.getToken();
         if (!token || AuthService.isTokenExpired(token)) {
