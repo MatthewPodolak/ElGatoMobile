@@ -7,7 +7,6 @@ import { BlurView } from 'expo-blur';
 import LottieView from "lottie-react-native";
 
 const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate, permissionsGranted }) => {
-  const [burntCalories, setBurntCalories] = useState(totalBurnt);
   const [isActive, setIsActive] = useState(canAnimate??false);
 
   const unit = system === 'metric' ? 'kcal' : 'cal.';
@@ -51,7 +50,7 @@ const BurntCalorieContainer = ({ totalBurnt = 0, system, canAnimate, permissions
               textAnchor="middle"
               alignmentBaseline="middle"
             >
-            {burntCalories +' '+ unit}
+            {totalBurnt +' '+ unit}
           </SvgText>
         </Svg>
       </View>

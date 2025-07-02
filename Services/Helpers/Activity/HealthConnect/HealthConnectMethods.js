@@ -79,7 +79,7 @@ export const readRecordPeriod = async (type, from, to) => {
     }
 
     const chosenGroup = groups[groupKeys[0]];
-    const totalCalories = chosenGroup.reduce((sum, record) => { return sum + (record.calories || 0); }, 0);
+    const totalCalories = ~~chosenGroup.reduce((sum, rec) => sum + (rec.energy?.inKilocalories ?? 0), 0);
 
     return totalCalories;
 

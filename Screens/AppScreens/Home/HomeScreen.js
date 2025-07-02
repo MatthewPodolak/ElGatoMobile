@@ -146,16 +146,45 @@ function HomeScreen({ navigation }) {
       };
 
       const getCurrentBurntCalories = async () => {
+        const calorieSource = await UserDataService.getCalorieSource();
+
         if (Platform.OS === 'ios') {
           //TODO IOS IMP.
           return;
         } 
         else if (Platform.OS === 'android') {
-          if(caloriePermissionGranted){
-            const todayCalories = await readRecordPeriod('ActiveCaloriesBurned', new Date().setHours(0, 0, 0, 0), new Date());
-            setCurrentCaloriesBurnt(todayCalories);
+   
+          if(calorieSource === "both" && caloriePermissionGranted){
+            const startOfDay = new Date();
+            startOfDay.setHours(0, 0, 0, 0);
+
+            const todayCalories = await readRecordPeriod('ActiveCaloriesBurned', startOfDay, new Date());
+            let gatoCalories = 0;
+
+            const now = new Date();
+            const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+            const gatoCaloriesRes = await UserDataService.getCurrentlyBurntCalories(setIsAuthenticated, navigation, currentDate);
+            if(gatoCaloriesRes.ok){
+               gatoCalories = await gatoCaloriesRes.json();      
+            }
+
+            setCurrentCaloriesBurnt((todayCalories + gatoCalories));
+            return;           
+          }else if(calorieSource === "app"){
+            let gatoCalories = 0;
+            
+            const now = new Date();
+            const currentDate = `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}-${String(now.getUTCDate()).padStart(2, '0')}T00:00:00.000+00:00`;
+            const gatoCaloriesRes = await UserDataService.getCurrentlyBurntCalories(setIsAuthenticated, navigation, currentDate);
+            if(gatoCaloriesRes.ok){
+               gatoCalories = await gatoCaloriesRes.json();      
+            }
+
+            setCurrentCaloriesBurnt((gatoCalories));
             return;
           }
+
+          setCurrentCaloriesBurnt(0);
         }
       };
 
