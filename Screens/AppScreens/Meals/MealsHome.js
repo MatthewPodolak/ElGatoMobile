@@ -25,6 +25,11 @@ function MealsHome({ navigation }) {
   const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
 
+  const [allMealsDataError, setAllMealsDataError] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [favouritesError, setFavouritesError] = useState(false);
+  const [ownError, setOwnError] = useState(false);
+
   const [isLoading, setIsLoading] = useState(true);
   const [isLoadingSearch, setIsLoadingSearch] = useState(true);
   const [isLoadingLikedAndSaved, setIsLoadingLikedAndSaved] = useState(true);
@@ -136,34 +141,36 @@ function MealsHome({ navigation }) {
 
   const fetchOwnData = async () => {
     setIsLoadingOwn(true);
+    setOwnError(false);
 
     try{
       const res = await MealDataService.getOwnRecipes(setIsAuthenticated, navigation);
 
       if(!res.ok){
-        console.log(res.error);
-        console.log("error");
-        //error
+        setOwnError(true);
         return;
       }
 
       const data = await res.json();
       setOwnMealsData(data);
-      setIsLoadingOwn(false);
 
     }catch(error){
-      console.log(error);
+      setOwnError(true);
+    }finally{
+      setIsLoadingOwn(false);
     }
   };
 
   const fetchUserLikedAndSavedMeals = async () => {
     setIsLoadingLikedAndSaved(true);
+    setFavouritesError(false);
+
     try{
       const res = await MealDataService.getLikedMeals(setIsAuthenticated, navigation);
 
       if(!res.ok){
         //return no
-        console.log('error while fetching liked meals main page');
+        setFavouritesError(true);
         return;
       }
 
@@ -172,7 +179,7 @@ function MealsHome({ navigation }) {
       setFilteredLikedMealsData(data);
 
     }catch(error){
-      console.log('error');
+      setFavouritesError(true);
     }finally{
       setIsLoadingLikedAndSaved(false);
     }
@@ -225,6 +232,7 @@ function MealsHome({ navigation }) {
 
   const fetchSearchData = async (page) => {
     setIsLoadingSearch(true);
+    setSearchError(false);
     try{
 
       let requestBody = {
@@ -257,16 +265,15 @@ function MealsHome({ navigation }) {
       const res = await MealDataService.Search(setIsAuthenticated, navigation, requestBody);
 
       if(!res.ok){
-        //error
-        console.log("search req error");
+        setSearchError(true);
+        return;
       }
       
       const data = await res.json();
       setSearchedMealsData(data);
 
     }catch(error){
-      //error
-      console.log('internal while fetching search ress');
+      setSearchError(true);
     }finally{
       setIsLoadingSearch(false);
     }
@@ -274,20 +281,21 @@ function MealsHome({ navigation }) {
 
   const fetchAllMealsData = async () => {
     try {
- 
+      setAllMealsDataError(false);
       const res = await MealDataService.GetStarters(setIsAuthenticated, navigation);
 
       if(!res.ok){
-        //return no
-        console.log('error while fetching meal main page');
+        setAllMealsDataError(true);
+        return;
       }
 
       const data = await res.json();
       setAllMealsData(data);
-      setIsLoading(false);
     } catch (error) {
-       //error - display.
-    } 
+       setAllMealsDataError(true);
+    }finally{
+      setIsLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -307,304 +315,367 @@ function MealsHome({ navigation }) {
       case 'All':
         return (
           <>
-            <TouchableOpacity onPress={() => starterPress("Most Liked")} style={[AllRecepies.rowTitle, { marginTop: 20 }]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Most liked</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.mostLiked?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay meal={item} navigation={navigation} />
+            {allMealsDataError ? (
+              <>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  {/**GATO - ERROR LOADING STR. */}
+                  <View style={styles.emptyGatoContainer}>
+                  
+                  </View>
+                  <View style={[styles.centerText, {marginTop: 25}]}>
+                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something looks <Text style={[GlobalStyles.orange]}>off</Text>. Check your internet connection.</Text>
+                  </View>
+                </View>
+              </>
+            ):(
+              <>
+                <TouchableOpacity onPress={() => starterPress("Most Liked")} style={[AllRecepies.rowTitle, { marginTop: 20 }]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Most liked</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.mostLiked?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                    
+                  ))}
+                </ScrollView>
                 
-              ))}
-            </ScrollView>
-            
-            <TouchableOpacity onPress={() => starterPress("All")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>All</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.all?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("All")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>All</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.all?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("Breakfast")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Breakfast</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.breakfast?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("Breakfast")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Breakfast</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.breakfast?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("Side Dish")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Side dish</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.sideDish?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("Side Dish")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Side dish</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.sideDish?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("Main Dish")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Main dish</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.mainDish?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("Main Dish")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Main dish</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.mainDish?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("High Protein")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High protein</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.highProtein?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("High Protein")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High protein</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.highProtein?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("Low Carbs")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low carbs</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.lowCarbs?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("Low Carbs")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low carbs</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.lowCarbs?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("High Carbs")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High carb</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.highCarb?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("High Carbs")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>High carb</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}
-            </ScrollView>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.highCarb?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
 
-            <TouchableOpacity onPress={() => starterPress("Low Fat")} style={[AllRecepies.rowTitle]}>
-              <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low fat</Text>
-              <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
-            </TouchableOpacity>
-            <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-              {allMealsData?.lowFats?.map((item, index) => (
-                <TouchableOpacity
-                  key={item.stringId}
-                  onPress={() => inspectModal(item)}
-                >
-                  <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                <TouchableOpacity onPress={() => starterPress("Low Fat")} style={[AllRecepies.rowTitle]}>
+                  <Text style = {[GlobalStyles.text22, GlobalStyles.centerLeft, GlobalStyles.bold]}>Low fat</Text>
+                  <ChevronRight style = {styles.chevronRight} width={26} height={26} fill={"#000"} />
                 </TouchableOpacity>
-              ))}              
-            </ScrollView>            
-          </>
+                <ScrollView horizontal={true} style={styles.row} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+                  {allMealsData?.lowFats?.map((item, index) => (
+                    <TouchableOpacity
+                      key={item.stringId}
+                      onPress={() => inspectModal(item)}
+                    >
+                      <MealDisplay key={item.stringId} meal={item} navigation={navigation} />
+                    </TouchableOpacity>
+                  ))}              
+                </ScrollView>            
+              </>
+            )}       
+          </>    
         );
       case 'Search':
         return (
           <>
-          <View style = {styles.container}>
-            <View style = {styles.containerSearchBar}>
-                <View style = {styles.searchBarContainer}>
-                  <View style={styles.barContainer}>
-                    <TextInput
-                      style={styles.searchInput}
-                      selectionColor="#FF8303"
-                      placeholder="Search for ..."
-                      placeholderTextColor="#999"
-                      value={searchedPhrase}
-                      onChangeText={getSearchedPhrase}
-                    />
+            {searchError ? (
+              <>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  {/**GATO - ERROR SEARCH ERROR. */}
+                  <View style={styles.emptyGatoContainer}>
+                  
+                  </View>
+                  <View style={[styles.centerText, {marginTop: 25}]}>
+                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something looks <Text style={[GlobalStyles.orange]}>off</Text>. Check your internet connection.</Text>
                   </View>
                 </View>
-
-                <View style = {styles.filterRow}>
-                  <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-                    <View style = {styles.filterContainer}>
-                      <Text style = {styles.filterText}>Filters </Text>
-                      <ChevronDown style={{ marginTop: 3 , marginRight: 5}} width={17} height={17} fill={'whitesmoke'} />
-                    </View>
-                  </TouchableOpacity>
-                </View>
-            </View>
-
-            {(!searchedMealsData || searchedMealsData.length === 0) && !isLoadingSearch ? (
-              <View style={styles.emptySearchContainer}>
-                <View style = {styles.emptySearchGatoLottie}>
-                   {/*ELGATO*/}
-                </View>
-                <View style = {styles.emptySearchText}>
-                  <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Upsss...</Text> looks like there is not much to show. Try changing your filters.</Text>
-                </View>
-              </View>
-              ) : isLoadingSearch == true ? (
-                <View style = {styles.loadingSearchContainer}>
-                  <ActivityIndicator size="large" color="#FF8303" />
-                </View>
-              ) : (
-                <FlatList
-                  style={styles.searchedContentContainer}
-                  data={searchedMealsData}
-                  renderItem={({ item }) => (
-                      <TouchableOpacity
-                          style={[styles.searchedRow]}
-                          onPress={() => inspectModal(item)}
-                      >
-                          <MealDisplayBig meal={item} navigation={navigation} />
-                      </TouchableOpacity>
-                  )}
-                  keyExtractor={(item) => item.stringId}
-                  onEndReached={() => handleScrollEnd()}
-                  onEndReachedThreshold={0.7}
-                  ListFooterComponent={isFetchingMore && (
-                      <View style={[styles.fetchMoreContainer, GlobalStyles.center]}>
-                          <ActivityIndicator size="small" color="#FF8303" />
+              </>
+            ):(
+              <>
+                <View style = {styles.container}>
+                  <View style = {styles.containerSearchBar}>
+                      <View style = {styles.searchBarContainer}>
+                        <View style={styles.barContainer}>
+                          <TextInput
+                            style={styles.searchInput}
+                            selectionColor="#FF8303"
+                            placeholder="Search for ..."
+                            placeholderTextColor="#999"
+                            value={searchedPhrase}
+                            onChangeText={getSearchedPhrase}
+                          />
+                        </View>
                       </View>
+
+                      <View style = {styles.filterRow}>
+                        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+                          <View style = {styles.filterContainer}>
+                            <Text style = {styles.filterText}>Filters </Text>
+                            <ChevronDown style={{ marginTop: 3 , marginRight: 5}} width={17} height={17} fill={'whitesmoke'} />
+                          </View>
+                        </TouchableOpacity>
+                      </View>
+                  </View>
+
+                  {(!searchedMealsData || searchedMealsData.length === 0) && !isLoadingSearch ? (
+                    <View style={styles.emptySearchContainer}>
+                      <View style = {styles.emptySearchGatoLottie}>
+                        {/*ELGATO*/}
+                      </View>
+                      <View style = {styles.emptySearchText}>
+                        <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Upsss...</Text> looks like there is not much to show. Try changing your filters.</Text>
+                      </View>
+                    </View>
+                    ) : isLoadingSearch == true ? (
+                      <View style = {styles.loadingSearchContainer}>
+                        <ActivityIndicator size="large" color="#FF8303" />
+                      </View>
+                    ) : (
+                      <FlatList
+                        style={styles.searchedContentContainer}
+                        data={searchedMealsData}
+                        renderItem={({ item }) => (
+                            <TouchableOpacity
+                                style={[styles.searchedRow]}
+                                onPress={() => inspectModal(item)}
+                            >
+                                <MealDisplayBig meal={item} navigation={navigation} />
+                            </TouchableOpacity>
+                        )}
+                        keyExtractor={(item) => item.stringId}
+                        onEndReached={() => handleScrollEnd()}
+                        onEndReachedThreshold={0.7}
+                        ListFooterComponent={isFetchingMore && (
+                            <View style={[styles.fetchMoreContainer, GlobalStyles.center]}>
+                                <ActivityIndicator size="small" color="#FF8303" />
+                            </View>
+                        )}
+                        showsVerticalScrollIndicator={false}
+                        showsHorizontalScrollIndicator={false}
+                    />              
                   )}
-                  showsVerticalScrollIndicator={false}
-                  showsHorizontalScrollIndicator={false}
-              />              
-            )}
-          </View>
-                  
+                </View>
+              </>
+            )}                         
           </>
         );
       case 'Favourites':
         return (
           <>
-            <View style = {styles.container}>
-            <View style = {styles.containerSearchBar}>
-                <View style = {styles.searchBarContainer}>
-                  <View style={styles.barContainer}>
-                    <TextInput
-                      style={styles.searchInput}
-                      selectionColor="#FF8303"
-                      placeholder="Search in liked ..."
-                      placeholderTextColor="#999"
-                      onChangeText={setLikedRecepieSearch}
-                    />
+            {favouritesError ? (
+              <>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  {/**GATO - ERROR FAV ERROR. */}
+                  <View style={styles.emptyGatoContainer}>
+                  
+                  </View>
+                  <View style={[styles.centerText, {marginTop: 25}]}>
+                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something looks <Text style={[GlobalStyles.orange]}>off</Text>. Check your internet connection.</Text>
                   </View>
                 </View>
-            </View>
+              </>
+            ):(
+              <>
+                <View style = {styles.container}>
+                  <View style = {styles.containerSearchBar}>
+                      <View style = {styles.searchBarContainer}>
+                        <View style={styles.barContainer}>
+                          <TextInput
+                            style={styles.searchInput}
+                            selectionColor="#FF8303"
+                            placeholder="Search in liked ..."
+                            placeholderTextColor="#999"
+                            onChangeText={setLikedRecepieSearch}
+                          />
+                        </View>
+                      </View>
+                  </View>
 
-            {(!filteredLikedMealsData || filteredLikedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
-              <View style={styles.emptySearchContainer}>
-                <View style = {styles.emptySearchGatoLottie}>
-                   {/*ELGATO*/}
-                </View>
-                <View style = {styles.emptySearchText}>
-                  <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Nothing? </Text>You need to keep up with liking all the good stuff out there.</Text>
-                </View>
-              </View>
-              ) : isLoadingLikedAndSaved == true ? (
-                <View style = {styles.loadingSearchContainer}>
-                  <ActivityIndicator size="large" color="#FF8303" />
-                </View>
-              ) : (
-              <ScrollView
-                style={styles.searchedContentContainer}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-              >
-                {filteredLikedMealsData?.map((item, index) => (
-                  <TouchableOpacity 
-                    style={styles.searchedRow}
-                    key={`${item.stringId || 'item'}-${index}`}
-                    onPress={() => inspectModal(item)}
-                    >
-                    <View>
-                      <MealDisplayBig meal={item} navigation={navigation} />
+                  {(!filteredLikedMealsData || filteredLikedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
+                    <View style={styles.emptySearchContainer}>
+                      <View style = {styles.emptySearchGatoLottie}>
+                        {/*ELGATO*/}
+                      </View>
+                      <View style = {styles.emptySearchText}>
+                        <Text style = {styles.emptySearchTxt}><Text style = {[GlobalStyles.orange, GlobalStyles.bold]}>Nothing? </Text>You need to keep up with liking all the good stuff out there.</Text>
+                      </View>
                     </View>
-                  </TouchableOpacity>
-                  
-                ))}
+                    ) : isLoadingLikedAndSaved == true ? (
+                      <View style = {styles.loadingSearchContainer}>
+                        <ActivityIndicator size="large" color="#FF8303" />
+                      </View>
+                    ) : (
+                    <ScrollView
+                      style={styles.searchedContentContainer}
+                      showsVerticalScrollIndicator={false}
+                      showsHorizontalScrollIndicator={false}
+                    >
+                      {filteredLikedMealsData?.map((item, index) => (
+                        <TouchableOpacity 
+                          style={styles.searchedRow}
+                          key={`${item.stringId || 'item'}-${index}`}
+                          onPress={() => inspectModal(item)}
+                          >
+                          <View>
+                            <MealDisplayBig meal={item} navigation={navigation} />
+                          </View>
+                        </TouchableOpacity>
+                        
+                      ))}
 
-              </ScrollView>
-            )}
+                    </ScrollView>
+                  )}
 
 
-            </View>
+                  </View>
+              </>
+            )}         
           </>
         );
       case 'Own':
         return (
           <>
-            <View style={styles.container}>
-              {isLoadingOwn ? (
-                <View style = {styles.loadingSearchContainer}>
-                  <ActivityIndicator size="large" color="#FF8303" />
+            {ownError ? (
+              <>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  {/**GATO - ERROR OWN ERROR. */}
+                  <View style={styles.emptyGatoContainer}>
+                  
+                  </View>
+                  <View style={[styles.centerText, {marginTop: 25}]}>
+                    <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something looks <Text style={[GlobalStyles.orange]}>off</Text>. Check your internet connection.</Text>
+                  </View>
                 </View>
-              ) : (!ownMealsData || ownMealsData.length === 0) && isLoadingOwn == false ? (
-                <View>
-                    <View style={styles.ownGatoCont}>
-
+              </>
+            ):(
+              <>
+                <View style={styles.container}>
+                  {isLoadingOwn ? (
+                    <View style = {styles.loadingSearchContainer}>
+                      <ActivityIndicator size="large" color="#FF8303" />
                     </View>
-                    <View style={[styles.ownGatoTextCont, GlobalStyles.center]}>
-                      <Text style={[GlobalStyles.text18]}><Text style={GlobalStyles.orange}>Oh no!</Text> There is nothing here!</Text>
-                      <Text style={[GlobalStyles.text16]}>Show off ur cooking abilities, just saying.</Text>
-                    </View>
-                </View>
-              ) : (
-                <View style={styles.ownTopCont}>
-                  {ownMealsData?.map((item, index) => (
-                    <TouchableOpacity 
-                      style={styles.searchedRow}
-                      key={`${item.stringId || 'item'}-${index}`}
-                      onPress={() => inspectModal(item)}
-                      >
-                      <View>
-                        <MealDisplayBig meal={item} navigation={navigation} />
-                      </View>
-                    </TouchableOpacity>         
-                  ))}
-                </View>
-              )}
+                  ) : (!ownMealsData || ownMealsData.length === 0) && isLoadingOwn == false ? (
+                    <View>
+                        <View style={styles.ownGatoCont}>
 
-            </View>
+                        </View>
+                        <View style={[styles.ownGatoTextCont, GlobalStyles.center]}>
+                          <Text style={[GlobalStyles.text18]}><Text style={GlobalStyles.orange}>Oh no!</Text> There is nothing here!</Text>
+                          <Text style={[GlobalStyles.text16]}>Show off ur cooking abilities, just saying.</Text>
+                        </View>
+                    </View>
+                  ) : (
+                    <View style={styles.ownTopCont}>
+                      {ownMealsData?.map((item, index) => (
+                        <TouchableOpacity 
+                          style={styles.searchedRow}
+                          key={`${item.stringId || 'item'}-${index}`}
+                          onPress={() => inspectModal(item)}
+                          >
+                          <View>
+                            <MealDisplayBig meal={item} navigation={navigation} />
+                          </View>
+                        </TouchableOpacity>         
+                      ))}
+                    </View>
+                  )}
+
+                </View>
+              </>
+            )}         
           </>
         );
       default:
@@ -775,7 +846,7 @@ const styles = StyleSheet.create({
     padding: 20,
   },
   emptySearchTxt: {
-    fontSize: 20,
+    fontSize: 18,
     fontFamily: 'Helvetica',
     fontWeight: '500',
     textAlign: 'center',
@@ -814,6 +885,10 @@ const styles = StyleSheet.create({
     height: '85%',
   },
   ownGatoTextCont: {
+
+  },
+  emptyGatoContainer: {
+    minHeight: 500,
   },
 });
 
