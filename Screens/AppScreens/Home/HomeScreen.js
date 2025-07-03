@@ -248,7 +248,7 @@ function HomeScreen({ navigation }) {
       const res = await UserDataService.getDailyStepsGoal();
       setDailyStepsGoal(res);
     }catch(error){
-      //el gato net
+      setMainErrors(true);
     }
   };
 
@@ -257,7 +257,7 @@ function HomeScreen({ navigation }) {
       const res = await UserDataService.getDailyWaterIntakeGoal();
       setDailyWaterIntakeGoal(res);
     }catch(error){
-      //el gato error
+      setMainErrors(true);
     }
   };
 
@@ -341,9 +341,7 @@ function HomeScreen({ navigation }) {
 
       const res = await UserDataService.getPastExerciseData(setIsAuthenticated, navigation, model);
       if(!res.ok){
-        //error
-        //net view.
-        console.log("error");
+        setMainErrors(true);
         return;
       }
 
@@ -351,9 +349,7 @@ function HomeScreen({ navigation }) {
       setChartDataExercises(data);
 
     }catch(error){
-      //error
-      //net view.
-      console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -361,8 +357,7 @@ function HomeScreen({ navigation }) {
     try{
       const res = await UserDataService.getMuscleUsageData(setIsAuthenticated, navigation);
       if(!res){
-        //error net view
-        console.log("error");
+        setMainErrors(true);
         return;
       }
 
@@ -370,8 +365,7 @@ function HomeScreen({ navigation }) {
       setMuscleUsageData(data);
 
     }catch(error){
-      //Error
-      console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -379,8 +373,7 @@ function HomeScreen({ navigation }) {
     try{
       const res = await UserDataService.getPastMakroData(setIsAuthenticated, navigation);
       if(!res){
-        //error net view
-        console.log("error");
+        setMainErrors(true);
         return;
       }
 
@@ -388,8 +381,7 @@ function HomeScreen({ navigation }) {
       setPastMakroData(data);
 
     }catch(error){
-      //error
-      console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -400,7 +392,7 @@ function HomeScreen({ navigation }) {
       const res = await UserDataService.getUserDailyMakroDist(setIsAuthenticated, navigation, currentDate);
 
       if(!res.ok){
-        //error - net view
+        setMainErrors(true);
         return;
       }
 
@@ -408,8 +400,7 @@ function HomeScreen({ navigation }) {
       setDailyMakroDist(data);
 
     }catch(error){
-      //error
-      console.log(error);
+      setMainErrors(true);
     }
   };
 
@@ -706,7 +697,12 @@ function HomeScreen({ navigation }) {
         {mainErrors ? (
           <>
             <View style={[GlobalStyles.flex, GlobalStyles.center]}>
-                <Text>EL GATO ERROR VIEW!</Text>
+              <View style={styles.emptyGatoContainer}>
+      
+              </View>
+              <View style={[styles.centerText, {marginTop: 25}]}>
+                  <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Something went horribly <Text style={[GlobalStyles.orange]}>wrong</Text>. Check your internet connection and try to restart the app.</Text>
+              </View>
             </View>
           </>
         ):(
@@ -826,7 +822,10 @@ const styles = StyleSheet.create({
   emptyLayoutContiner: {
     height: 400,
     backgroundColor: 'yeelow',
-  }
+  },
+  emptyGatoContainer: {
+    minHeight: 600,
+  },
 });
 
 export default HomeScreen;
