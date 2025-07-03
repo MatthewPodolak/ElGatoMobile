@@ -63,4 +63,8 @@ export const DietHomeStyles = StyleSheet.create({
     flex: 1,
     height: 80,
   },
+
+  emptyGatoContainer: {
+    minHeight: 500,
+  },
  });

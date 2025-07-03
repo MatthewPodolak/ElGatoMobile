@@ -28,6 +28,7 @@ const AddIngredient = ({ route, navigation }) => {
   const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [activeTab, setActiveTab] = useState('Search');
+  const [initialSearchPerformed, setInitialSearchPerformed] = useState(false);
 
   const [isFavLoading, setIsFavLoading] = useState(false);
   const [isOwnLoading, setIsOwnLoading] = useState(false);
@@ -171,7 +172,6 @@ const AddIngredient = ({ route, navigation }) => {
 
       if(!res.ok){
         //Error throw popup
-        console.log('error while fetching liked meals');
         setFavError("error");
         return;
       }
@@ -181,7 +181,6 @@ const AddIngredient = ({ route, navigation }) => {
 
     }catch(error){
       //ERROR
-      console.log('error while fetching liked meals' + error);
       setFavError("error");
     }finally{
       setIsFavLoading(false);
@@ -281,7 +280,6 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const reportItem = (item) => {
-    console.log('reported +++', item.name);
     setReportedItem(item);
     setReportModalVisible(true);
   };
@@ -291,9 +289,7 @@ const AddIngredient = ({ route, navigation }) => {
     setReportedItem(null);
   };
 
-  const passSelectedIngredients = () => {
-    console.log('backed');
-  
+  const passSelectedIngredients = () => {  
     if (!selectedItemsData || selectedItemsData.length === 0) {
       navigation.navigate('DietHome');
     } else {
@@ -323,7 +319,6 @@ const AddIngredient = ({ route, navigation }) => {
 
   const handleItemPress = (item) => {
     setSelectedItem(item);
-    console.log('SELECTED:', item);
   
     setSelectedItems(prevItems => {
       const itemExists = prevItems.some(selected => selected.id === item.id);
@@ -346,7 +341,6 @@ const AddIngredient = ({ route, navigation }) => {
   const handleAddIngredient = (selectedItem) => {
     console.log(selectedItem);
     if(gramsCounter === 0){
-      console.log('zero');
       //error
       return;
     }
@@ -407,7 +401,6 @@ const AddIngredient = ({ route, navigation }) => {
       const scannedIngredient = await DietDataService.getIngridientByEan(setIsAuthenticated, navigation, data);
 
       if(!scannedIngredient.ok){
-        console.log('not ok');
         setElGatoCurrentEan(data);
         setElGatoAddModalVisible(true);
         //error return info to user that the ean is invalid and perform adding options pr.
@@ -442,11 +435,10 @@ const AddIngredient = ({ route, navigation }) => {
 
   const fetchIngredientData = async (ingredient) => {
     try{
+      setInitialSearchPerformed(true);
       const ingredientListRes = await DietDataService.getListOfCorrelatedItemByName(setIsAuthenticated, navigation, ingredient);
 
       if(!ingredientListRes.ok){
-        //show none
-        console.log('hitted error');
         setSearchedData(null);
         return;
       }
@@ -455,7 +447,7 @@ const AddIngredient = ({ route, navigation }) => {
       setSearchedData(data);
 
     }catch(error){
-      //error internet prob.
+      setSearchedData(null);
     }
   };
 
@@ -514,9 +506,9 @@ const AddIngredient = ({ route, navigation }) => {
                 ))
               )}
 
-              {searchedData == null ? (
+              {searchedData == null && initialSearchPerformed ? (
                 <View style={AddIngredientStyles.contentError}>
-                  <View style = {AddIngredientStyles.errorLottieContainer}>
+                  <View style = {[AddIngredientStyles.errorLottieContainer, GlobalStyles.center]}>
                     <Text>EL GATO LOTTIE HERE</Text>
                   </View>
                   <View style = {AddIngredientStyles.errorAddingContainer}>
@@ -526,6 +518,10 @@ const AddIngredient = ({ route, navigation }) => {
                     </TouchableOpacity>
                   </View>
                 </View>
+              ) : (searchedData == null && !initialSearchPerformed) ? (
+                <>
+
+                </>
               ) : (
                 <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
                   {searchedData.map((item, index) => (

@@ -30,7 +30,7 @@ function DietHome({ navigation }) {
 
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
-  const [error, setError] = useState(null);
+  const [error, setError] = useState(false);
 
   const { params } = useRoute();
 
@@ -55,12 +55,8 @@ function DietHome({ navigation }) {
       const res = await DietDataService.addMealFromSaved(setIsAuthenticated, navigation, requestBody);
 
       if(!res.ok){
-        //ERROR
-        console.log("ERROR WHILE ADDING FROM SAVED");
         return;
       }
-
-      //Ok
 
     }catch(error){
       console.log("ERROR WHILE ADDING FROM SAVED -> " + error);
@@ -198,9 +194,7 @@ function DietHome({ navigation }) {
   
           if (!pushIngRes.ok) {
             //error
-            throw new Error(`Failed to push ingredients`);
-          }else{
-            //good
+            return;
           }
           
         } catch (error) {
@@ -536,29 +530,23 @@ function DietHome({ navigation }) {
 
     try {
       const mealAddRes = await DietDataService.AddNewMeal(setIsAuthenticated, navigation, addNewMealModel);
-
       if(!mealAddRes.ok){
-        //set error popup no internet - meal could not be saved.
-        console.log('err while adding');
         return;
       }
 
-      console.log("new meal added.");
-
     } catch (error) {
       console.log("Error while adding newMeal");
-      //set error popup no internet - meal could not be saved.
     }
   };
 
 
   const handleDateSelect = async (date) => {
     setSelectedDate(date);
+    setError(false);
+    setDietData(null);
 
     try {
-      setDietData(null);
       date = date + 'T00:00:00Z';
-
       const response = await DietDataService.GetUserDietDay(setIsAuthenticated, navigation, date);
 
       if (!response.ok) {
@@ -567,12 +555,10 @@ function DietHome({ navigation }) {
         currentDate.toISOString();
       
         if (currentDate > new Date(date)) {
-          console.log('OLD DAY - no info!');
-          setError("STARY BEZ DATY!");
+          setError(true);
+          return;
         }
-        else if(currentDate <= new Date(date)) {
-          console.log('NEW DAY - no info!');
-          
+        else if(currentDate <= new Date(date)) {          
           const dailyCalorieCount = {
             kcal: 0,
             protein: 0,
@@ -604,38 +590,35 @@ function DietHome({ navigation }) {
             const mealAddRes = await DietDataService.AddNewMeal(setIsAuthenticated, navigation, addNewMealModel);           
 
             if(!mealAddRes.ok){
-              console.log("ERROR HIT");
-              setError("throw net");
+              setError(true);
               return;
             }
-            console.log("HIT");
           }catch(error){
-             setError("diff error - throw net");
+             setError(true);
           }
 
         }else{
-          setError("failed to load - internet!");
-          throw new Error('Failed to fetch diet data');
+          setError(true);
         }     
       }else if(response.ok){
         const data = await response.json();
+        if(data?.meals.length === 0){
+          setDietData(null);
+          setError(true);
+          return
+        }
         setDietData(data);
       }else{
-        setError("COS INNEGO ERROR TYPE S!");
+        setError(true);
       }
       
     } catch (error) {
-      if (error.message === 'Request timed out') {
-        setError("Request timed out - INTERNET");
-      }else{
-        setError("COS INNEGO ERROR TYPE S!");
-      }
-      console.log(error);
+      setError(true);
     }
   };
 
   const generateContentForDate = () => {
-    if (!dietData && error == null) {
+    if (!dietData && !error) {
       return (
         <View style={DietHomeStyles.loadingContainer}>
           <ActivityIndicator size="large" color="#FF8303" />
@@ -643,11 +626,16 @@ function DietHome({ navigation }) {
       );
     }
 
-    if(error != null && !dietData){
+    if(error && !dietData){
       return (
-        <View>
-          <Text>ERROR VIEW!</Text>
-          <Text>{error}</Text>
+        <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+          {/**GATO - EMPTY ERROR */}
+          <View style={DietHomeStyles.emptyGatoContainer}>
+
+          </View>
+          <View style={[{textAlign: 'center'}, {marginTop: 25}]}>
+            <Text style={[GlobalStyles.text18, { textAlign: 'center' }]}>Upps... Looks like there is nothing here! Add new <Text style={[GlobalStyles.orange]}>meals</Text> and start counting your calories.</Text>
+          </View>
         </View>
       );
     }
