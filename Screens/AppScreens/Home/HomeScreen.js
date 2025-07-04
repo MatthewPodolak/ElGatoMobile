@@ -27,6 +27,7 @@ import CircleChartDist from '../../../Components/Main/CircleChartDist.js';
 import WeightChart from '../../../Components/Main/WeightChart.js';
 import StepsCounter from '../../../Components/Main/StepsCounter.js';
 import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
+import StepsChart from '../../../Components/Main/StepsChart.js';
 
 function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
@@ -57,6 +58,7 @@ function HomeScreen({ navigation }) {
   const [pastMakroData, setPastMakroData] = useState(null);
   const [dailyMakroDist, setDailyMakroDist] = useState(null);
   const [weightHistoryData, setWeightHistoryData] = useState(null);
+  const [stepsHistoryData, setStepsHistoryData] = useState(null);
 
   const [mainErrors, setMainErrors] = useState(false);
   const scrollViewRef = useRef(null);
@@ -228,6 +230,10 @@ function HomeScreen({ navigation }) {
       await getWeightData();
     }
 
+    if(userLayoutData.chartStack.find(a => a.chartDataType === "Steps")){
+      await getStepsData();
+    }
+
     //here get the rest data based on layout.
 
     setChartDataLoading(false);
@@ -282,7 +288,6 @@ function HomeScreen({ navigation }) {
 
     }catch(error){
       setMainErrors(true);
-      console.log(error);
     }
   };
 
@@ -298,7 +303,6 @@ function HomeScreen({ navigation }) {
 
     }catch(error){
       setMainErrors(true);
-      console.log(error);
     }
   };
 
@@ -420,6 +424,22 @@ function HomeScreen({ navigation }) {
 
       const data = await res.json();
       setWeightHistoryData(data);
+
+    }catch(error){
+      setMainErrors(true);
+    }
+  }
+
+  const getStepsData = async () => {
+    try{
+      const res = await UserDataService.getUserStepsHistory(setIsAuthenticated, navigation);
+      if(!res.ok){
+        setMainErrors(true);
+        return;
+      }
+
+      const data = await res.json();
+      setStepsHistoryData(data);
 
     }catch(error){
       setMainErrors(true);
@@ -688,6 +708,17 @@ function HomeScreen({ navigation }) {
                 <BarChart key={key} data={proteinData} isActive={false} settedPeriod={"All"} system={null} name={null} />
               );
             }  
+
+            if(element.chartDataType === "Steps"){
+              chartComponent = (!stepsHistoryData || stepsHistoryData.length === 0)
+                ? (
+                  <StepsChart key={key} name={element.name} dataa={null} isActive={true} stepsGoalDaily={dailyStepsGoal}/>
+                )
+                : (
+                  <StepsChart key={key} name={element.name} dataa={stepsHistoryData} isActive={true} settedPeriod={element.period} stepsGoalDaily={dailyStepsGoal}/>
+                );
+            }
+
             break;
     
           case "Circle":
