@@ -46,6 +46,7 @@ import UserFollowersDisplay from './Screens/AppScreens/Account/UserFollowersDisp
 import UserSearch from './Screens/AppScreens/Account/UserSearch';
 
 import CompoControlScreen from './Screens/AppScreens/Home/CompControl';
+import AddWeightScreen from './Screens/AppScreens/Home/AddWeight';
 
 import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
@@ -134,6 +135,7 @@ function App() {
             <Stack.Screen name="UserFollowersDisplay" component={UserFollowersDisplay}/>
             <Stack.Screen name="UserSearch" component={UserSearch}/>
             <Stack.Screen name='CompoControlScreen' component={CompoControlScreen}/>
+            <Stack.Screen name='AddWeightScreen' component={AddWeightScreen}/>
           </>
         )}
       </Stack.Navigator>

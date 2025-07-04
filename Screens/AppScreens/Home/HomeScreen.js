@@ -24,6 +24,7 @@ import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService
 import HexagonalChart from '../../../Components/Main/HexagonalChart.js';
 import BarChart from '../../../Components/Main/BarChart.js';
 import CircleChartDist from '../../../Components/Main/CircleChartDist.js';
+import WeightChart from '../../../Components/Main/WeightChart.js';
 import StepsCounter from '../../../Components/Main/StepsCounter.js';
 import UserRequestService from '../../../Services/ApiCalls/RequestData/UserRequestService.js';
 
@@ -55,6 +56,7 @@ function HomeScreen({ navigation }) {
   const [muscleUsageData, setMuscleUsageData] = useState(null);
   const [pastMakroData, setPastMakroData] = useState(null);
   const [dailyMakroDist, setDailyMakroDist] = useState(null);
+  const [weightHistoryData, setWeightHistoryData] = useState(null);
 
   const [mainErrors, setMainErrors] = useState(false);
   const scrollViewRef = useRef(null);
@@ -220,6 +222,10 @@ function HomeScreen({ navigation }) {
 
     if(userLayoutData.chartStack.find(a=>a.chartType === "Circle" && a.chartDataType === "MakroDist")){
       await getMakroDailyDistData();
+    }
+
+    if (userLayoutData.chartStack.find(a => a.chartDataType === "Weight")){
+      await getWeightData();
     }
 
     //here get the rest data based on layout.
@@ -404,6 +410,22 @@ function HomeScreen({ navigation }) {
     }
   };
 
+  const getWeightData = async () => {
+    try{
+      const res = await UserDataService.getUserWeightHistory(setIsAuthenticated, navigation);
+      if(!res.ok){
+        setMainErrors(true);
+        return;
+      }
+
+      const data = await res.json();
+      setWeightHistoryData(data);
+
+    }catch(error){
+      setMainErrors(true);
+    }
+  }
+
   const addWaterFunc = () => {
     if (waterTimeoutRef.current) {
       clearTimeout(waterTimeoutRef.current);
@@ -548,6 +570,16 @@ function HomeScreen({ navigation }) {
               ) : (
                 <LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />
               );
+            }
+
+            if (element.chartDataType === "Weight") {
+              chartComponent = (!weightHistoryData || weightHistoryData.length === 0)
+                ? (
+                  <WeightChart key={key} name="Weight" dataa={null} isActive={true} navigation={navigation} system={systemType}/>
+                )
+                : (
+                  <WeightChart key={key} name="Weight" dataa={weightHistoryData} isActive={true} settedPeriod={"All"} navigation={navigation} system={systemType}/>
+                );
             }
             break;
     
@@ -711,7 +743,7 @@ function HomeScreen({ navigation }) {
               <View style={styles.row}>
                 <View style={styles.wideBlockTop}>
                   {dailyMaxIntake && currentDailyIntake ? (
-                    <NutriContainer intakeData={currentDailyIntake} dailyMax={dailyMaxIntake} system={"metric"}/>
+                    <NutriContainer intakeData={currentDailyIntake} dailyMax={dailyMaxIntake} system={systemType}/>
                   ):(
                     <ActivityIndicator size="small" color="#FF8303" />
                   )}
@@ -720,7 +752,7 @@ function HomeScreen({ navigation }) {
 
               <View style={styles.row}>
                   <TouchableOpacity onPress={() => navigateToCompoControl("calories")}  activeOpacity={1} style={styles.block}>
-                    <BurntCalorieContainer totalBurnt={currentCaloriesBurnt} system={"metric"} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."} permissionsGranted={caloriePermissionGranted}/>
+                    <BurntCalorieContainer totalBurnt={currentCaloriesBurnt} system={systemType} canAnimate={areAnimationsActive} key={areAnimationsActive ? "just for" : "re-render purp."} permissionsGranted={caloriePermissionGranted}/>
                   </TouchableOpacity>
                   <View style={styles.block}>
                     {userWaterIntake ? (

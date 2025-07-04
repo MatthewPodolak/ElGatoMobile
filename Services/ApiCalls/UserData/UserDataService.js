@@ -522,4 +522,49 @@ export default class UserDataService {
 
         return response;
     }
+
+    static async getUserWeightHistory(setIsAuthenticated, navigation){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetWeightHistory`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+    }
+
+    static async addWeightForToday(setIsAuthenticated, navigation, model){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/AddWeight`,
+            {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(model)
+            },
+            config.timeout
+        );
+
+        return response;
+    }
 }
