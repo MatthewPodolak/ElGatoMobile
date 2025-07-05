@@ -280,7 +280,7 @@ function AccountHome({ navigation }) {
 
     switch(selectedAchievmentType){
       case "Calories":
-        const calorieBoards = boards.find(b => b.type === 0);
+        const calorieBoards = boards.find(b => b.type === "Calories");
         if (!calorieBoards) {
           return leaderboardErrorGen();
         }
@@ -303,7 +303,7 @@ function AccountHome({ navigation }) {
         ));
 
       case "Activity":
-        const activityBoards = boards.find(b => b.type === 1);
+        const activityBoards = boards.find(b => b.type === "Activity");
         if (!activityBoards) {
           return leaderboardErrorGen();
         }
@@ -327,7 +327,7 @@ function AccountHome({ navigation }) {
 
         break;
       case "Steps":
-        const stepsBoards = boards.find(b => b.type === 2);
+        const stepsBoards = boards.find(b => b.type === "Steps");
         if (!stepsBoards) {
           return leaderboardErrorGen();
         }
@@ -351,7 +351,7 @@ function AccountHome({ navigation }) {
 
         break;
       case "Running":
-        const runningBoards = boards.find(b => b.type === 3);
+        const runningBoards = boards.find(b => b.type === "Running");
         if (!runningBoards) {
           return leaderboardErrorGen();
         }
@@ -375,7 +375,7 @@ function AccountHome({ navigation }) {
 
         break;
       case "Swimming":
-        const swimmingBoards = boards.find(b => b.type === 4);
+        const swimmingBoards = boards.find(b => b.type === "Swimming");
         if (!swimmingBoards) {
           return leaderboardErrorGen();
         }
@@ -391,6 +391,78 @@ function AccountHome({ navigation }) {
             <LeaderboardDisplay 
               data={entry}
               type={swimmingBoards.type}
+              isMetric={systemType === "metric"} 
+              navigation={navigation}
+            />
+          </View>
+        ));
+
+        break;
+      case "Benchpress":
+        const benchBoards = boards.find(b => b.type === "Benchpress");
+        if (!benchBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const benchBoardItems = benchBoards[periodKey] || [];
+        if (benchBoardItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return benchBoardItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={benchBoards.type}
+              isMetric={systemType === "metric"} 
+              navigation={navigation}
+            />
+          </View>
+        ));
+
+        break;
+      case "Deadlift":
+        const deadLiftBoards = boards.find(b => b.type === "Deadlift");
+        if (!deadLiftBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const deadliftBoardItems = deadLiftBoards[periodKey] || [];
+        if (deadliftBoardItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return deadliftBoardItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={deadLiftBoards.type}
+              isMetric={systemType === "metric"} 
+              navigation={navigation}
+            />
+          </View>
+        ));
+
+        break;
+      case "Squats":
+        const squatBoards = boards.find(b => b.type === "Squats");
+        if (!squatBoards) {
+          return leaderboardErrorGen();
+        }
+
+        periodKey = selectedAchievmentPeriod.toLowerCase(); 
+        const squatBoardsItems = squatBoards[periodKey] || [];
+        if (squatBoardsItems.length === 0) {
+          return leaderboardErrorGen();
+        }
+
+        return squatBoardsItems.map((entry, idx) => (
+          <View key={entry.leaderboardPosition}  style={{ marginTop: idx === 0 ? 12 : 0 }}>
+            <LeaderboardDisplay 
+              data={entry}
+              type={squatBoards.type}
               isMetric={systemType === "metric"} 
               navigation={navigation}
             />
@@ -517,7 +589,7 @@ function AccountHome({ navigation }) {
                     {achievmentTypeDropdownVisible && (
                       <View style={styles.dropdownMenu}>
                         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 10, paddingHorizontal: 15 }}>
-                          {['Calories', 'Activity', 'Steps', 'Running', 'Swimming'].map(option => {
+                          {['Calories', 'Activity', 'Steps', 'Benchpress', 'Deadlift', 'Squats', 'Running', 'Swimming'].map(option => {
                             const isSelected = option === selectedAchievmentType;
                             return (
                               <TouchableOpacity

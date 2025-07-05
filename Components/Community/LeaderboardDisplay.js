@@ -53,7 +53,8 @@ const LeaderboardDisplay = ({ data, type, isMetric = true, navigation }) => {
     2: 'Steps',
   };
   const metricLabel = labels[type] || '';
-  const isCardio = type === 3 || type === 4;
+  const isCardio = type === "Running" || type === "Swimming";
+  const isGym = type === "Benchpress" || type === "Deadlift" || type === "Squats";
 
   const goToTheProfile = () => {
     if(data?.userData?.userId == null){
@@ -113,7 +114,11 @@ const LeaderboardDisplay = ({ data, type, isMetric = true, navigation }) => {
                       </View>
                     </View>            
                   </View>
-                ):(
+                ) : isGym ? (
+                  <>
+                    <Text style={[GlobalStyles.text18, GlobalStyles.orange, GlobalStyles.textShadow]}>{(isMetric ? data?.gymSpecific?.weightKg : data?.gymSpecific?.weightLbs)?.toFixed(2)}{' '}<Text style={[GlobalStyles.black, GlobalStyles.text14]}>{isMetric ? 'kg' : 'lbs'} x </Text>{data?.gymSpecific?.repetitions}<Text style={[GlobalStyles.black, GlobalStyles.text14]}> reps</Text></Text>
+                  </>
+                ): (
                   <Text style={[GlobalStyles.text18, GlobalStyles.bold, GlobalStyles.textShadow, GlobalStyles.orange]} numberOfLines={1} ellipsizeMode="tail"> {leadValue} <Text style={[GlobalStyles.text14, GlobalStyles.black]}>{metricLabel}</Text></Text>
                 )}
               </View>
