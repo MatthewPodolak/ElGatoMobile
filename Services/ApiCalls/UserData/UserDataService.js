@@ -417,6 +417,10 @@ export default class UserDataService {
             config.timeout
         );
 
+        if(response.ok){
+            await AsyncStorage.setItem("layoutData", JSON.stringify(model));
+        }
+
         return response;
       }
 
@@ -577,6 +581,28 @@ export default class UserDataService {
 
         const response = await fetchWithTimeout(
             `${config.ipAddress}/api/UserData/GetStepsHistory`,
+            {
+                method: 'GET',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json',
+                },
+            },
+            config.timeout
+        );
+
+        return response;
+    }
+
+    static async getUserExercisesNames(setIsAuthenticated, navigation){
+        const token = await AuthService.getToken();
+        if (!token || AuthService.isTokenExpired(token)) {
+          await AuthService.logout(setIsAuthenticated, navigation);
+          return null;
+        }
+
+        const response = await fetchWithTimeout(
+            `${config.ipAddress}/api/UserData/GetUserExercises`,
             {
                 method: 'GET',
                 headers: {

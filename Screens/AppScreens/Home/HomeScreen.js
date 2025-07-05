@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useContext, useRef } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity } from 'react-native';
+import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
@@ -12,6 +13,7 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { acessReadPermissionHealthConnect, checkHealthConnectPermissionsStatus } from '../../../Services/Helpers/Activity/ActivityPermissionHelper.js';
 import { readStepsToday } from '../../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
 import { readRecordPeriod } from '../../../Services/Helpers/Activity/HealthConnect/HealthConnectMethods.js';
+import { truncate } from '../../../Services/Helpers/Utils/Utils.js';
 
 import AchievmentModal from '../../../Components/ElGato/AchievmentModal.js';
 
@@ -31,6 +33,7 @@ import StepsChart from '../../../Components/Main/StepsChart.js';
 
 function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
+  const route = useRoute();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState("metric");
   const [currentSteps, setCurrentSteps] = useState(0); //per 24
@@ -69,6 +72,13 @@ function HomeScreen({ navigation }) {
   const [achievmentModalVisible, setAchievmentModalVisible] = useState(false);
   const closeAchievmentModal = () => { setAchievmentData(null); setAchievmentModalVisible(false); }
 
+  useEffect(() => {
+    if (route.params?.needsRefresh) {
+      navigation.setParams({ needsRefresh: false });
+      getUserLayoutData();
+    }
+  }, [route.params?.needsRefresh]);
+
   const navigateToCompoControl = (type) => {
     if(!type) { return; }
 
@@ -76,6 +86,10 @@ function HomeScreen({ navigation }) {
       type: type ?? null,
       canAnimate: areAnimationsActive
     });
+  }
+
+  const personalizePressed = () => {
+    navigation?.navigate('Personalize');
   }
 
   useEffect(() => {
@@ -578,17 +592,18 @@ function HomeScreen({ navigation }) {
           case "Linear":
             if (element.chartDataType === "Exercise") {
               const exPastData = chartDataExercises.find(a => a.exerciseName === element.name);
+              const displayName = truncate(element.name, 9);
               chartComponent = exPastData ? (
                 <LinearChart
                   key={key}
-                  name={"Benchpress"}
+                  name={displayName}
                   dataa={exPastData}
                   isActive={true}
                   settedPeriod={element.period}
                   userSystem={systemType}
                 />
               ) : (
-                <LinearChart key={key} name={"Benchpress"} dataa={null} isActive={false} settedPeriod={null} />
+                <LinearChart key={key} name={displayName} dataa={null} isActive={false} settedPeriod={null} />
               );
             }
 
@@ -606,16 +621,17 @@ function HomeScreen({ navigation }) {
           case "Compare":
             if (element.chartDataType === "Exercise") {
               const wholeExPast = chartDataExercises.find(a => a.exerciseName === element.name);
+              const displayName = truncate(element.name, 9);
               chartComponent = wholeExPast ? (
                 <CompareChart
                   key={key}
-                  name={"Benchpress"}
+                  name={displayName}
                   dataa={wholeExPast}
                   isActive={true}
                   userSystem={systemType}
                 />
               ) : (
-                <CompareChart key={key} name={"Benchpress"} dataa={null} isActive={false} />
+                <CompareChart key={key} name={displayName} dataa={null} isActive={false} />
               );
             }
             break;
@@ -835,7 +851,7 @@ function HomeScreen({ navigation }) {
                 </>
               )}         
 
-              <TouchableOpacity style={[styles.bottomHintCont, GlobalStyles.center]}>
+              <TouchableOpacity style={[styles.bottomHintCont, GlobalStyles.center]} onPress={() => personalizePressed()}>
                   <Text style={[GlobalStyles.text16, GlobalStyles.orange]}>personalize my home page</Text>
               </TouchableOpacity>
 
