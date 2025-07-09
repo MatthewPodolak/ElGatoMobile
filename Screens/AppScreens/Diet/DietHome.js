@@ -1,5 +1,5 @@
-import React, { useState, useEffect,useContext, useRef } from 'react';
-import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StatusBar } from 'react-native';
+import React, { useState, useEffect,useContext, useRef, useCallback } from 'react';
+import { Animated, View, Text, ScrollView, ActivityIndicator, TouchableOpacity, StatusBar, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
@@ -28,6 +28,10 @@ function DietHome({ navigation }) {
   const optionsAnimation = useRef(new Animated.Value(0)).current;
   const iconAnimation = useRef(new Animated.Value(0)).current;
 
+  const [refreshing, setRefreshing] = useState(false);
+  const lastRefreshRef = useRef(0);
+  const REFRESH_INTERVAL = 5000;
+
   const [selectedDate, setSelectedDate] = useState(null);
   const [dietData, setDietData] = useState(null);
   const [error, setError] = useState(false);
@@ -39,6 +43,24 @@ function DietHome({ navigation }) {
   const closeErrorPopup = () => {
       setIsErrorModalVisible(false);
   };
+
+  const onRefresh = useCallback(async () => {
+      setRefreshing(true);
+  
+      const now = Date.now();
+      const sinceLast = now - lastRefreshRef.current;
+  
+      if (sinceLast >= REFRESH_INTERVAL){
+        lastRefreshRef.current = now;
+        try{
+          await handleDateSelect(selectedDate);
+        }catch(error){
+
+        }
+      }
+  
+      setRefreshing(false);
+  }, [selectedDate, handleDateSelect]);
 
   const addFromFavouritesClick = () => {
     navigation.navigate('SavedMeals');
@@ -191,7 +213,6 @@ function DietHome({ navigation }) {
           };
 
           const pushIngRes = await DietDataService.addIngriedientsToMeal(setIsAuthenticated, navigation, requestBodyPushIng);
-  
           if (!pushIngRes.ok) {
             //error
             return;
@@ -504,7 +525,6 @@ function DietHome({ navigation }) {
   };
 
   const newMealPress = async () => {
-    console.log("xd");
     closeOptionsAnimation(optionsAnimation, iconAnimation, setOptionsVisible);
     const newMealDate = selectedDate + 'T00:00:00Z';
     console.log(newMealDate);
@@ -672,7 +692,17 @@ function DietHome({ navigation }) {
       <ScrollView
         style={DietHomeStyles.scrollContainer}
         showsVerticalScrollIndicator={false}
+        contentContainerStyle={{ flexGrow: 1 }}
         showsHorizontalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#FF8303"
+            colors={['#FF8303']}
+            title={refreshing ? 'Refreshing...' : null}
+          />
+        }
       >
         {selectedDate ? generateContentForDate() : <Text>Select a date to see meals.</Text>}
       </ScrollView>

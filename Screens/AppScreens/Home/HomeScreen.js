@@ -1,10 +1,13 @@
 import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
+import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableItem from '../../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
@@ -35,7 +38,10 @@ function HomeScreen({ navigation }) {
   const insets = useSafeAreaInsets();
   const route = useRoute();
   const { setIsAuthenticated } = useContext(AuthContext);
+
   const [refreshing, setRefreshing] = useState(false);
+  const lastRefreshRef = useRef(0);
+  const REFRESH_INTERVAL = 5000;
 
   const [systemType, setSystemType] = useState("metric");
   const [currentSteps, setCurrentSteps] = useState(0); //per 24
@@ -77,14 +83,21 @@ function HomeScreen({ navigation }) {
   const onRefresh = useCallback(async () => {
     setRefreshing(true);
 
-    try{
-      if (userLayoutData) {
-        await getChartsData();
-      }
+    const now = Date.now();
+    const sinceLast = now - lastRefreshRef.current;
 
-      await getCurrentDailyIntake();
-    }catch(error){
+    if (sinceLast >= REFRESH_INTERVAL){
+      lastRefreshRef.current = now;
       
+      try{
+        if (userLayoutData) {
+          await getChartsData();
+        }
+
+        await getCurrentDailyIntake();
+      }catch(error){
+        
+      }
     }
 
     setRefreshing(false);
@@ -611,6 +624,7 @@ function HomeScreen({ navigation }) {
             if (element.chartDataType === "Exercise") {
               const exPastData = chartDataExercises.find(a => a.exerciseName === element.name);
               const displayName = truncate(element.name, 11);
+              const displayName = truncate(element.name, 11);
               chartComponent = exPastData ? (
                 <LinearChart
                   key={key}
@@ -804,6 +818,21 @@ function HomeScreen({ navigation }) {
           </>
         ):(
           <>
+            <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} 
+              showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} 
+              ref={scrollViewRef} 
+              onScroll={onScrollHandler} 
+              scrollEventThrottle={1}
+              refreshControl={
+              <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#FF8303"
+                colors={['#FF8303']}
+                title={refreshing ? 'Refreshing...' : null}
+              />
+          }
+            >
             <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} 
               showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} 
               ref={scrollViewRef} 
