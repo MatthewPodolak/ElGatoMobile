@@ -10,6 +10,14 @@ const NutriContainer = ({ intakeData, dailyMax, system = "metric" }) => {
   const [settedSystem] = useState(system);
   const [dailyData, setDailyData] = useState(intakeData ?? null);
   const [dailyMaxData, setDailyMaxData] = useState(dailyMax ?? null);
+  useEffect(() => {
+    setDailyData(intakeData ?? {});
+  }, [intakeData]);
+
+  useEffect(() => {
+    setDailyMaxData(dailyMax ?? {});
+  }, [dailyMax]);
+
   const [currentPage, setCurrentPage] = useState(0);
   const [currentColor, setCurrentColor] = useState("#ff6600");
   const totalPages = 4;
