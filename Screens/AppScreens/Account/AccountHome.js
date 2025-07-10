@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar, TouchableWithoutFeedback, Image } from 'react-native';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
+import { View, Text,ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator, StatusBar, TouchableWithoutFeedback, Image, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -32,6 +32,11 @@ function AccountHome({ navigation }) {
   const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
   const [systemType, setSystemType] = useState(null);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const lastRefreshRef = useRef(0);
+  const REFRESH_INTERVAL = 5000;
+
   const [activeTab, setActiveTab] = useState("Challenges");
   const [challActiveTab, setChallActiveTab] = useState("Browse");
   const [leaderboardsActiveTab, setLeaderboardsActiveTab] = useState("Friends");
@@ -56,6 +61,31 @@ function AccountHome({ navigation }) {
   const [searchLoading, setSearchLoading] = useState(false);
   const [searchError, setSearchError] = useState(false);
   const [searchData, setSearchData] = useState(null);
+
+  const onRefresh = useCallback(async () => {
+      setRefreshing(true);
+  
+      const now = Date.now();
+      const sinceLast = now - lastRefreshRef.current;
+  
+      if (sinceLast >= REFRESH_INTERVAL){
+        lastRefreshRef.current = now;
+        
+        switch(activeTab){
+          case "Challenges":
+            await getChallengesList();
+            break;
+          case "Leaderboards":
+            await getLeaderboardList();
+            break;
+          case "Friends":
+            await getFollowedList();
+            break;
+        }
+      }
+  
+      setRefreshing(false);
+  }, [activeTab, getChallengesList, getLeaderboardList, getFollowedList]);
 
   const setActiveTabFun = async (type) => {
     setActiveTab(type);
@@ -843,7 +873,19 @@ function AccountHome({ navigation }) {
         </>
       )}
 
-      <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+      <ScrollView 
+        showsVerticalScrollIndicator={false} 
+        showsHorizontalScrollIndicator={false}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#FF8303"
+            colors={['#FF8303']}
+            title={refreshing ? 'Refreshing...' : null}
+          />
+         }
+      >
             <View style={styles.categoryContainer}>
                 <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Challenges")} ><Text style={[styles.optionText, activeTab === "Challenges" && styles.activeTab]}>Challenges</Text></TouchableOpacity>
                 <TouchableOpacity style={styles.option} onPress={() => setActiveTabFun("Leaderboards")} ><Text style={[styles.optionText, activeTab === "Leaderboards" && styles.activeTab]}>Leaderboards</Text></TouchableOpacity>

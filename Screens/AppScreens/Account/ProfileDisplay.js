@@ -1,5 +1,5 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator,Image, StatusBar, FlatList } from 'react-native';
+import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
+import { View, Text, ScrollView, StyleSheet, TouchableOpacity, ActivityIndicator,Image, StatusBar, RefreshControl } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu';
@@ -31,6 +31,11 @@ function ProfileDisplay({ navigation }) {
     const route = useRoute();
     const insets = useSafeAreaInsets();
     const { setIsAuthenticated } = useContext(AuthContext);
+
+    const [refreshing, setRefreshing] = useState(false);
+    const lastRefreshRef = useRef(0);
+    const REFRESH_INTERVAL = 5000;
+
     const { userId = null } = route.params ?? {};
     const [isOwn, setIsOwn] = useState(false);
     const [isFollowed, setIsFollowed] = useState(false);
@@ -58,6 +63,21 @@ function ProfileDisplay({ navigation }) {
 
     const [pfpDisplayVisible, setPfpDisplayVisible] = useState(false);
     const [actionModalVisible, setActionModalVisible] = useState(false);
+
+    const onRefresh = useCallback(async () => {
+          setRefreshing(true);
+      
+          const now = Date.now();
+          const sinceLast = now - lastRefreshRef.current;
+      
+          if (sinceLast >= REFRESH_INTERVAL){
+            lastRefreshRef.current = now;
+            
+            await getProfileData();
+          }
+      
+          setRefreshing(false);
+    }, [getProfileData]);
 
     useEffect(() => {
       if(profileData && !initialSynced){
@@ -571,7 +591,19 @@ function ProfileDisplay({ navigation }) {
             </View>
         </View>
 
-        <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
+        <ScrollView 
+          showsVerticalScrollIndicator={false} 
+          showsHorizontalScrollIndicator={false}
+          refreshControl={
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+                tintColor="#FF8303"
+                colors={['#FF8303']}
+                title={refreshing ? 'Refreshing...' : null}
+            />
+          }
+        >
           {profileDataLoading ? (
             <>
               <View style={[GlobalStyles.flex, GlobalStyles.center, {height: 650}]}>
