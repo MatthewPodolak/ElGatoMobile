@@ -1,10 +1,9 @@
-import React, { useState, useRef, useEffect, useContext } from 'react';
-import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, StatusBar } from 'react-native';
+import React, { useState, useRef, useEffect, useContext, useCallback } from 'react';
+import { Animated, View, Text, TouchableOpacity, StyleSheet, ActivityIndicator, ScrollView, StatusBar, RefreshControl } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { useFocusEffect } from '@react-navigation/native';
-import { useCallback } from 'react';
 import { closeOptionsAnimation, showOptionsAnimation } from '../../../Animations/ButtonAnimation.js';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 import UserDataService from '../../../Services/ApiCalls/UserData/UserDataService.js';
@@ -20,6 +19,11 @@ import CardioDataService from '../../../Services/ApiCalls/CardioData/CardioDataS
 function TrainingHome({ navigation, route }) {
   const insets = useSafeAreaInsets();
   const { setIsAuthenticated } = useContext(AuthContext);
+
+  const [refreshing, setRefreshing] = useState(false);
+  const lastRefreshRef = useRef(0);
+  const REFRESH_INTERVAL = 5000;
+
   const [activeTab, setActiveTab] = useState("Gym");
   const [measureType, setMeasureType] = useState("metric");
   const [isGymLoading, setIsGymLoading] = useState(false);
@@ -44,6 +48,29 @@ function TrainingHome({ navigation, route }) {
   const timeoutRef = useRef(null);
   const timeoutRefRemoval = useRef(null);
   const timeoutRefUpdate = useRef(null);
+
+  const onRefresh = useCallback(async () => {
+      setRefreshing(true);
+  
+      const now = Date.now();
+      const sinceLast = now - lastRefreshRef.current;
+  
+      if (sinceLast >= REFRESH_INTERVAL){
+        lastRefreshRef.current = now;
+        
+        switch(activeTab){
+          case "Gym":
+            await getTrainingDay(selectedDate);
+            break;
+          case "Cardio":
+            await getTrainingDayCardio(selectedDate);
+            break;
+        }
+
+      }
+  
+      setRefreshing(false);
+  }, [activeTab, selectedDate, getTrainingDay, getTrainingDayCardio]);
 
   const setActiveTabFunc = async (value) => {
     setActiveTab(value);
@@ -949,7 +976,19 @@ function TrainingHome({ navigation, route }) {
             </View>
           ) : (
             trainingData?.exercises && trainingData.exercises.length > 0 ? (
-              <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
+              <ScrollView style={[GlobalStyles.flex]} 
+                showsVerticalScrollIndicator={false} 
+                showsHorizontalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#FF8303"
+                    colors={['#FF8303']}
+                    title={refreshing ? 'Refreshing...' : null}
+                  />
+                }
+              >            
 
                 <View style={styles.topMargin}></View>
                 {trainingData.exercises.map((model, index) => (
@@ -973,14 +1012,27 @@ function TrainingHome({ navigation, route }) {
                 <View style={styles.bottomMargin}></View>
               </ScrollView>
             ) : (
-              <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+              <ScrollView style={[GlobalStyles.flex]} 
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false} 
+                showsHorizontalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#FF8303"
+                    colors={['#FF8303']}
+                    title={refreshing ? 'Refreshing...' : null}
+                  />
+                } 
+              >
                 <View style={styles.emptyGatoLottie}></View>
                 <View style={styles.emptySearchText}>
                   <Text style={styles.emptySearchTxt}>
                     <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
                   </Text>
                 </View>
-              </View>
+              </ScrollView>
             )
           )}
         </>
@@ -992,21 +1044,46 @@ function TrainingHome({ navigation, route }) {
             </View>
           ):(
             cardioTrainingData?.exercises && cardioTrainingData.exercises.length > 0 ? (
-              <ScrollView style={[GlobalStyles.flex]} showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>            
+              <ScrollView style={[GlobalStyles.flex]} 
+                showsVerticalScrollIndicator={false} 
+                showsHorizontalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#FF8303"
+                    colors={['#FF8303']}
+                    title={refreshing ? 'Refreshing...' : null}
+                  />
+                }             
+              >            
                 {cardioTrainingData.exercises.map((training, index) => (
                   <CardioTrainingDayDisplay key={training.exerciseData.publicId} exercise={training} measureType={measureType} changeVisilibity={changeVisilibity} removeCardioExercise={removeCardioExercise}/>
                 ))}
                 <View style={styles.cardioSpacing}></View>
               </ScrollView>
             ) : (
-              <View style={[GlobalStyles.center, GlobalStyles.flex]}>
+              <ScrollView style={[GlobalStyles.flex]} 
+                contentContainerStyle={{ flexGrow: 1 }}
+                showsVerticalScrollIndicator={false} 
+                showsHorizontalScrollIndicator={false}
+                refreshControl={
+                  <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    tintColor="#FF8303"
+                    colors={['#FF8303']}
+                    title={refreshing ? 'Refreshing...' : null}
+                  />
+                } 
+              >
                 <View style={styles.emptyGatoLottie}></View>
                 <View style={styles.emptySearchText}>
                   <Text style={styles.emptySearchTxt}>
                     <Text style={[GlobalStyles.orange]}>Nothing? </Text>Get yo ass to work
                   </Text>
                 </View>
-              </View>
+              </ScrollView>
             )
           )}
         </>
@@ -1068,7 +1145,7 @@ const styles = StyleSheet.create({
   },
 
   emptyGatoLottie: {
-    height: '80%',
+    height: '85%',
     width: '100%',
   },
   emptySearchText: {
