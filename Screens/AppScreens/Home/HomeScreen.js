@@ -1,13 +1,10 @@
 import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
 import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
-import React, { useEffect, useState, useContext, useRef, useCallback } from 'react';
-import { View, Text, ActivityIndicator, StyleSheet, StatusBar, TouchableOpacity, RefreshControl, ScrollView } from 'react-native';
 import { useRoute } from '@react-navigation/native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import NavigationMenu from '../../../Components/Navigation/NavigationMenu.js';
 import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import DraggableItem from '../../../Components/Main/DraggableItem.js';
 import { useSharedValue } from 'react-native-reanimated';
@@ -624,7 +621,6 @@ function HomeScreen({ navigation }) {
             if (element.chartDataType === "Exercise") {
               const exPastData = chartDataExercises.find(a => a.exerciseName === element.name);
               const displayName = truncate(element.name, 11);
-              const displayName = truncate(element.name, 11);
               chartComponent = exPastData ? (
                 <LinearChart
                   key={key}
@@ -818,21 +814,6 @@ function HomeScreen({ navigation }) {
           </>
         ):(
           <>
-            <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} 
-              showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} 
-              ref={scrollViewRef} 
-              onScroll={onScrollHandler} 
-              scrollEventThrottle={1}
-              refreshControl={
-              <RefreshControl
-                refreshing={refreshing}
-                onRefresh={onRefresh}
-                tintColor="#FF8303"
-                colors={['#FF8303']}
-                title={refreshing ? 'Refreshing...' : null}
-              />
-          }
-            >
             <ScrollView style={[GlobalStyles.flex, styles.paddingBorder]} 
               showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false} 
               ref={scrollViewRef} 
