@@ -320,6 +320,10 @@ function ProfileDisplay({ navigation }) {
       });
     };
 
+    const navigateToSettings = () => {
+      navigation?.navigate('Settings');
+    };
+
     const renderContent = () => {
       switch(activeTab){
         case "Stats":
@@ -574,11 +578,11 @@ function ProfileDisplay({ navigation }) {
                 {isOwn ? (
                     <>
                       {isPrivate ? (
-                        <TouchableOpacity onPress={() => navigateToEditScreen()}>
+                        <TouchableOpacity onPress={() => navigateToSettings()}>
                           <SettingsSvg width={28} height={28} fill="#FFF" style={[{marginRight: 15}]} />
                         </TouchableOpacity>
                       ):(
-                        <TouchableOpacity onPress={() => navigateToEditScreen()}>
+                        <TouchableOpacity onPress={() => navigateToSettings()}>
                           <SettingsSvg width={28} height={28} fill="#FFF" />
                         </TouchableOpacity>
                       )}

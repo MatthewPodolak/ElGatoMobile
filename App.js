@@ -44,6 +44,7 @@ import EditProfileScreen from './Screens/AppScreens/Account/EditProfile';
 import FollowerRequestScreen from './Screens/AppScreens/Account/FollowerRequestsDisplay';
 import UserFollowersDisplay from './Screens/AppScreens/Account/UserFollowersDisplay';
 import UserSearch from './Screens/AppScreens/Account/UserSearch';
+import SettingsScreen from './Screens/AppScreens/Account/Settings';
 
 import CompoControlScreen from './Screens/AppScreens/Home/CompControl';
 import AddWeightScreen from './Screens/AppScreens/Home/AddWeight';
@@ -138,6 +139,7 @@ function App() {
             <Stack.Screen name='CompoControlScreen' component={CompoControlScreen}/>
             <Stack.Screen name='AddWeightScreen' component={AddWeightScreen}/>
             <Stack.Screen name='Personalize' component={Personalize}/>
+            <Stack.Screen name='Settings' component={SettingsScreen}/>
           </>
         )}
       </Stack.Navigator>
