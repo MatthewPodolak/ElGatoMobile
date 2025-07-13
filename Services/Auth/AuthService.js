@@ -27,15 +27,15 @@ const AuthService = {
     }
   },
 
-  async logout(setIsAuthenticated, navigation) {
+  async logout(setIsAuthenticated) {
     await this.removeToken();
+    await this.removeAsyncStorageData();
+
     setIsAuthenticated(false);
-    if (navigation) {
-      navigation.reset({
-        index: 0,
-        routes: [{ name: 'Start' }],
-      });
-    }
+  },
+
+  async removeAsyncStorageData(){
+    await AsyncStorage.clear();
   },
 };
 

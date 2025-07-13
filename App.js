@@ -1,85 +1,90 @@
-import React, { useState, useEffect, useContext  } from 'react';
+import React, { useEffect, useContext } from 'react';
 import { ActivityIndicator, View } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { GestureHandlerRootView } from 'react-native-gesture-handler';
+
+import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
 
 import StartScreen from './Screens/Start/StartScreen';
 import LoginScreen from './Screens/Auth/LoginScreen';
-import RegisterScreen from './Screens/Auth/RegisterScreen';
-import HomeScreen from './Screens/AppScreens/Home/HomeScreen';
-import QuestAgeScreen from './Screens/Questionary/QuestAgeScreen';
-import QuestWeightScreen from './Screens/Questionary/QuestWeightScreen';
-import QuestGoalScreen from './Screens/Questionary/QuestGoalScreen';
-import QuestGenderScreen from './Screens/Questionary/QuestGenderScreen';
-import QuestBodyTypeScreen from './Screens/Questionary/QuestBodyTypeScreen';
-import QuestSleepScreen from './Screens/Questionary/QuestSleepScreen';
-import QuestTrainingDaysScreen from './Screens/Questionary/QuestTrainingDaysScreen';
-import QuestWalkingScreen from './Screens/Questionary/QuestWalkingScreen';
-import QuestJobTypeScreen from './Screens/Questionary/QuestJobTypeScreen';
-import MetricScreen from './Screens/Questionary/MetricScreen';
-import QuestHightScreen from './Screens/Questionary/QuestHightScreen';
-import CredentialsScreen from './Screens/Questionary/CredentialsScreen';
-import FinalQuestScreen from './Screens/Questionary/FinalQuestScreen';
+import QuestionaryScreen from './Screens/Questionary/QuestionaryScreen';
+import QuestionaryFinalizationScreen from './Screens/Questionary/QuestionaryFinalizationScreen';
 
+import HomeScreen from './Screens/AppScreens/Home/HomeScreen';
 import AccountScreenMain from './Screens/AppScreens/Account/AccountHome';
 import DietScreenMain from './Screens/AppScreens/Diet/DietHome';
 import TrainingScreenMain from './Screens/AppScreens/Training/TrainingHome';
 import MealsScreenMain from './Screens/AppScreens/Meals/MealsHome';
 import StartersDisplayScreen from './Screens/AppScreens/Meals/StartersDisplay';
 import AddMealScreen from './Screens/AppScreens/Meals/AddMealForm';
-
 import AddIngredientScreen from './Screens/AppScreens/Diet/AddIngredient';
 import SavedMealsScreen from './Screens/AppScreens/Diet/SavedMeals';
-
 import AddExerciseScreen from './Screens/AppScreens/Training/AddExercise';
 import InspectExerciseScreen from './Screens/AppScreens/Training/InspectExercise';
 import LoadExercises from './Screens/AppScreens/Training/LoadExercises';
-
 import CardioStartScreen from './Screens/AppScreens/Training/CardioStart';
 import CardioSummaryScreen from './Screens/AppScreens/Training/CardioSummary';
-
 import ProfileDisplayScreen from './Screens/AppScreens/Account/ProfileDisplay';
 import EditProfileScreen from './Screens/AppScreens/Account/EditProfile';
 import FollowerRequestScreen from './Screens/AppScreens/Account/FollowerRequestsDisplay';
 import UserFollowersDisplay from './Screens/AppScreens/Account/UserFollowersDisplay';
 import UserSearch from './Screens/AppScreens/Account/UserSearch';
 import SettingsScreen from './Screens/AppScreens/Account/Settings';
-
 import CompoControlScreen from './Screens/AppScreens/Home/CompControl';
 import AddWeightScreen from './Screens/AppScreens/Home/AddWeight';
 import Personalize from './Screens/AppScreens/Home/Personalize';
 
-import { AuthProvider, AuthContext } from './Services/Auth/AuthContext';
+const AuthStack = createNativeStackNavigator();
+function UnauthenticatedNavigator() {
+  return (
+    <AuthStack.Navigator
+      screenOptions={{ headerShown: false, animation: 'none' }}
+    >
+      <AuthStack.Screen name="Start" component={StartScreen} />
+      <AuthStack.Screen name="Login" component={LoginScreen} />
+      <AuthStack.Screen name="Questionary" component={QuestionaryScreen} />
+      <AuthStack.Screen name="QuestionaryFinalization" component={QuestionaryFinalizationScreen} />
+    </AuthStack.Navigator>
+  );
+}
 
-import * as Font from 'expo-font';
-
-const Stack = createNativeStackNavigator();
+const AppStack = createNativeStackNavigator();
+function AuthenticatedNavigator() {
+  return (
+    <AppStack.Navigator screenOptions={{ headerShown: false, animation: 'none' }}>
+      <AppStack.Screen name="Home" component={HomeScreen} />
+      <AppStack.Screen name="AccountHome" component={AccountScreenMain} />
+      <AppStack.Screen name="DietHome" component={DietScreenMain} />
+      <AppStack.Screen name="TrainingHome" component={TrainingScreenMain} />
+      <AppStack.Screen name="MealsHome" component={MealsScreenMain} />
+      <AppStack.Screen name="StartersDisplay" component={StartersDisplayScreen} />
+      <AppStack.Screen name="AddMeal" component={AddMealScreen} />
+      <AppStack.Screen name="AddIngredient" component={AddIngredientScreen} />
+      <AppStack.Screen name="SavedMeals" component={SavedMealsScreen} />
+      <AppStack.Screen name="AddExercise" component={AddExerciseScreen} />
+      <AppStack.Screen name="InspectExercise" component={InspectExerciseScreen} />
+      <AppStack.Screen name="LoadExercises" component={LoadExercises} />
+      <AppStack.Screen name="CardioStart" component={CardioStartScreen} />
+      <AppStack.Screen name="CardioSummary" component={CardioSummaryScreen} />
+      <AppStack.Screen name="ProfileDisplay" component={ProfileDisplayScreen} />
+      <AppStack.Screen name="EditProfile" component={EditProfileScreen} />
+      <AppStack.Screen name="FollowerRequests" component={FollowerRequestScreen} />
+      <AppStack.Screen name="UserFollowersDisplay" component={UserFollowersDisplay} />
+      <AppStack.Screen name="UserSearch" component={UserSearch} />
+      <AppStack.Screen name="Settings" component={SettingsScreen} />
+      <AppStack.Screen name="CompoControl" component={CompoControlScreen} />
+      <AppStack.Screen name="AddWeight" component={AddWeightScreen} />
+      <AppStack.Screen name="Personalize" component={Personalize} />
+    </AppStack.Navigator>
+  );
+}
 
 function App() {
-  const [isReady, setIsReady] = useState(false);
-  const { isAuthenticated } = useContext(AuthContext);
+  const { isAuthenticated, isLoading } = useContext(AuthContext);
 
-  useEffect(() => {
-    const prepareApp = async () => {
-      try {
-        await Font.loadAsync({
-          Helvetica: require('./assets/fonts/Helvetica.ttf'),
-          HelveticaBold: require('./assets/fonts/Helvetica-Bold.ttf'),
-        });
-        
-        setIsReady(true);
-      } catch (error) {
-        console.error('Error during app preparation', error);
-      }
-    };
-
-    prepareApp();
-  }, []);
-
-  if (!isReady) {
+  if (isLoading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: 'black' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#FF8303" />
       </View>
     );
@@ -87,70 +92,15 @@ function App() {
 
   return (
     <NavigationContainer>
-      <Stack.Navigator
-        initialRouteName={isAuthenticated ? 'Home' : 'Start'}
-        screenOptions={{
-          headerShown: false,
-          animation: 'none',
-        }}
-      >
-        {!isAuthenticated ? (
-          <>
-            <Stack.Screen name="Start" component={StartScreen} />
-            <Stack.Screen name="Login" component={LoginScreen} />
-            <Stack.Screen name="Metric" component={MetricScreen} />
-            <Stack.Screen name="Register" component={RegisterScreen} />
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="QuestAge" component={QuestAgeScreen}/>
-            <Stack.Screen name="QuestWeight" component={QuestWeightScreen}/>
-            <Stack.Screen name="QuestGoal" component={QuestGoalScreen}/>
-            <Stack.Screen name="QuestGender" component={QuestGenderScreen}/>
-            <Stack.Screen name="QuestBody" component={QuestBodyTypeScreen}/>
-            <Stack.Screen name="QuestSleep" component={QuestSleepScreen}/>
-            <Stack.Screen name="QuestTraining" component={QuestTrainingDaysScreen}/>
-            <Stack.Screen name="QuestWalking" component={QuestWalkingScreen}/>
-            <Stack.Screen name="QuestJob" component={QuestJobTypeScreen}/>
-            <Stack.Screen name="QuestHeight" component={QuestHightScreen}/>
-            <Stack.Screen name="Credentials" component={CredentialsScreen}/>
-            <Stack.Screen name="Final" component={FinalQuestScreen}/>
-          </>
-        ) : (
-          <>
-            <Stack.Screen name="Home" component={HomeScreen} />
-            <Stack.Screen name="Start" component={StartScreen} />
-            <Stack.Screen name="AccountHome" component={AccountScreenMain} />
-            <Stack.Screen name="DietHome" component={DietScreenMain} />
-            <Stack.Screen name="TrainingHome" component={TrainingScreenMain} />
-            <Stack.Screen name="MealsHome" component={MealsScreenMain} />
-            <Stack.Screen name="AddIngredient" component={AddIngredientScreen} />
-            <Stack.Screen name="AddExercise" component={AddExerciseScreen}/>
-            <Stack.Screen name="StartersDisplay" component={StartersDisplayScreen}/>
-            <Stack.Screen name="AddMeal" component={AddMealScreen} />
-            <Stack.Screen name="SavedMeals" component={SavedMealsScreen}/>
-            <Stack.Screen name="InspectExercise" component={InspectExerciseScreen}/>
-            <Stack.Screen name="LoadExercises" component={LoadExercises} />
-            <Stack.Screen name="CardioStartScreen" component={CardioStartScreen} />
-            <Stack.Screen name="CardioSummary" component={CardioSummaryScreen} />
-            <Stack.Screen name="ProfileDisplay" component={ProfileDisplayScreen} />
-            <Stack.Screen name="EditProfile" component={EditProfileScreen}/>
-            <Stack.Screen name="FolowersRequests" component={FollowerRequestScreen}/>
-            <Stack.Screen name="UserFollowersDisplay" component={UserFollowersDisplay}/>
-            <Stack.Screen name="UserSearch" component={UserSearch}/>
-            <Stack.Screen name='CompoControlScreen' component={CompoControlScreen}/>
-            <Stack.Screen name='AddWeightScreen' component={AddWeightScreen}/>
-            <Stack.Screen name='Personalize' component={Personalize}/>
-            <Stack.Screen name='Settings' component={SettingsScreen}/>
-          </>
-        )}
-      </Stack.Navigator>
+      {isAuthenticated ? <AuthenticatedNavigator /> : <UnauthenticatedNavigator />}
     </NavigationContainer>
   );
 }
 
 export default function AppWrapper() {
   return (
-      <AuthProvider>
-        <App />
-      </AuthProvider>
+    <AuthProvider>
+      <App />
+    </AuthProvider>
   );
 }

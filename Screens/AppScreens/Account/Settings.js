@@ -41,7 +41,7 @@ function Settings({ navigation }) {
   const navigateBack = () => navigation.goBack();
 
   const handlePress = async (item) => {
-    if(item === "Logout") { await AuthService.logout(setIsAuthenticated, navigation); return; }
+    if(item === "Logout") { await AuthService.logout(setIsAuthenticated); return; }
 
     setActionRequired(true);
     setActionType(item);

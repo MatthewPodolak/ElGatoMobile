@@ -4,7 +4,7 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 function StartScreen({ navigation }) {
 
   const registerPress = () => {
-    navigation.navigate('Metric');
+    navigation.navigate('Questionary');
   };
 
   const loginPress = () => {
@@ -13,9 +13,7 @@ function StartScreen({ navigation }) {
 
   return (
     <SafeAreaView style={styles.container}>
-      <View style={styles.textContainer}>
-        <Text style={styles.mainText}>This is where your journey starts.</Text>
-      </View>
+      <Text style={styles.mainText}>This is where your journey starts.</Text>
       <View style={styles.imageContainer}>
         {/* IMG */}
       </View>
@@ -43,11 +41,6 @@ const styles = StyleSheet.create({
     backgroundColor: '#F0E3CA',
     padding: 10,
   },
-  textContainer: {
-    width: '100%',
-    height: '20%',
-    padding: 20,
-  },
   mainText: {
     fontSize: 38,
     fontWeight: '700',
@@ -56,12 +49,12 @@ const styles = StyleSheet.create({
   },
   imageContainer: {
     width: '100%',
-    height: '65%',
+    flex: 1,
     padding: 5,
   },
   buttonContainer: {
     width: '100%',
-    height: '20%',
+    minHeight: 50,
     padding: 5,
     alignItems: 'center',
   },

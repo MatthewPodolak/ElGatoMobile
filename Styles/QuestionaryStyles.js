@@ -1,7 +1,7 @@
 import { StyleSheet } from 'react-native';
 
 export const questStyles = StyleSheet.create({
-    option: {
+  option: {
     backgroundColor: '#ead9b6',
     padding: 15,
     marginVertical: 10,
@@ -27,9 +27,10 @@ export const questStyles = StyleSheet.create({
     marginBottom: 10,
   },
   nextButtonText: {
-    color: 'whitesmoke',
+    color: '#1B1A17',
     fontSize: 16,
-    fontWeight: '600',
+    fontWeight: '700',
+    fontFamily: 'Helvetica',
   },
   container: {
     flex: 1,
@@ -65,20 +66,19 @@ export const questStyles = StyleSheet.create({
   },
   questionHeaderContainer: {
     width: '100%',
-    height: '30%',
     alignItems: 'center',
     padding: 20,
-    marginTop: 10,
   },
   questionaryText: {
     fontSize: 32,
-    fontWeight: '600',
+    marginTop: -15,
+    fontWeight: '700',
     color: '#1B1A17',
-    fontFamily: 'HelveticaBold',
+    fontFamily: 'Helvetica',
     textAlign: 'left',
   },
   questionaryAnswerSection: {
-    width: '100%',
+    flex: 1,
     paddingHorizontal: 20,
     marginBottom: 20,
     flexDirection: 'row',
@@ -113,7 +113,6 @@ export const questStyles = StyleSheet.create({
     borderColor: '#999999',
     opacity: 0.6,
   },
-  //FIELDS
   input: {
     height: 100,
     padding: 10,
@@ -126,7 +125,23 @@ export const questStyles = StyleSheet.create({
     borderBottomWidth: 1,
   },
   questionaryAnswerSectionField: {
-    width: '80%',
+    width: '100%',
+    flex: 1,
     paddingHorizontal: 20,
   },
-  });
+  genderImage: {
+    width: 50,
+    height: 50,
+    marginBottom: 10,
+  },
+  optionImageContainer: {
+    width: 75,
+    height: 75,
+    backgroundColor: '#000',
+  },
+  row: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginBottom: 10,
+  },
+});
