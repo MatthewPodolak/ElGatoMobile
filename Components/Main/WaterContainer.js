@@ -60,8 +60,8 @@ const WaterContainer = ({ waterIntakeGoal = 2000, initialValue = 0, addWaterFunc
       }).start();
 
       let cycles = 0;
-      if (x > 0.2)  cycles = -2;
-      if (x < -0.2) cycles =  2;
+      if (x > 0.2)   cycles =  2;
+      if (x < -0.2)  cycles = -2;
 
       Animated.timing(cycleAnim, {
         toValue: cycles,
@@ -79,7 +79,7 @@ const WaterContainer = ({ waterIntakeGoal = 2000, initialValue = 0, addWaterFunc
 
   const tiltRotation = tiltAnim.interpolate({
     inputRange: [-1, 1],
-    outputRange: ['22deg', '-22deg'],
+    outputRange: ['-22deg','22deg'],
   });
 
   return (

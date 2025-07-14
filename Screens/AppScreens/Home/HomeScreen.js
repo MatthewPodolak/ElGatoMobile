@@ -110,7 +110,7 @@ function HomeScreen({ navigation }) {
   const navigateToCompoControl = (type) => {
     if(!type) { return; }
 
-    navigation?.navigate('CompoControlScreen', {
+    navigation?.navigate('CompoControl', {
       type: type ?? null,
       canAnimate: areAnimationsActive
     });
