@@ -26,15 +26,24 @@ export default class DietDataService {
           return response;
     }
     
-    static async getListOfCorrelatedItemByName(setIsAuthenticated, navigation, name){
+    static async getListOfCorrelatedItemByName(setIsAuthenticated, navigation, name, count, afterCode = null){
         const token = await AuthService.getToken();
         if (!token || AuthService.isTokenExpired(token)) {
           await AuthService.logout(setIsAuthenticated, navigation);
           return null;
         }
 
+        const params = new URLSearchParams({
+          name,
+          count: String(count),
+        });
+
+        if (afterCode != null) {
+          params.append("afterCode", afterCode);
+        }
+
         const response = await fetchWithTimeout(
-            `${config.ipAddress}/api/Diet/GetListOfCorrelatedItemByName?name=${name}`,
+            `${config.ipAddress}/api/Diet/GetListOfCorrelatedItemByName?${params}`,
             {
               method: 'GET',
               headers: {
@@ -42,7 +51,7 @@ export default class DietDataService {
                 'Content-Type': 'application/json',
               },
             },
-            config.timeout
+            config.longTimeout
           );
 
         return response;

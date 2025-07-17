@@ -1,12 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated } from 'react-native';
+import { Modal, View, Text, TouchableOpacity, StyleSheet, Animated, SafeAreaView, StatusBar } from 'react-native';
 import { errorTrim } from '../../Services/Errors/ErrorTrimer.js';
 
 const ErrorPopup = ({ visible, message, onClose }) => {
-  const [progress] = useState(new Animated.Value(0));
+  const [progress] = useState(() => new Animated.Value(0));
 
   useEffect(() => {
     if (visible) {
+      progress.setValue(0);
+
       Animated.timing(progress, {
         toValue: 1,
         duration: 7000,
@@ -31,8 +33,10 @@ const ErrorPopup = ({ visible, message, onClose }) => {
       transparent={true}
       animationType="fade"
       visible={visible}
+      statusBarTranslucent
       onRequestClose={onClose}
     >
+      <StatusBar backgroundColor="rgba(0, 0, 0, 0.7)" barStyle="light-content" />
       <TouchableOpacity style={styles.overlay} onPress={onClose} activeOpacity={1}>
         <TouchableOpacity style={styles.popupContainer} activeOpacity={1}>
           <View style={styles.popupTopContainer}>
@@ -56,7 +60,7 @@ const styles = StyleSheet.create({
   },
   popupContainer: {
     width: '90%',
-    padding: 20, //mb 15
+    padding: 20,
     backgroundColor: '#000',
     borderRadius: 10,
     alignItems: 'center',

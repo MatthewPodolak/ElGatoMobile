@@ -1,6 +1,6 @@
 import React, { useState, useEffect,useContext } from 'react';
 import { TouchableOpacity, Modal, Alert, TouchableWithoutFeedback  } from 'react-native';
-import { ScrollView,View, Text, TextInput, StatusBar, ActivityIndicator } from 'react-native';
+import { ScrollView,View, Text, TextInput, StatusBar, ActivityIndicator, FlatList } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { CameraView, useCameraPermissions, PermissionStatus } from 'expo-camera';
@@ -61,6 +61,9 @@ const AddIngredient = ({ route, navigation }) => {
   const [selectedItems, setSelectedItems] = useState([]);
   const [selectedItemsData, setSelectedItemsData] = useState([]);
   const [searchedData, setSearchedData] = useState(null);
+  const [searchCount, setSearchCount] = useState(20);
+  const [searchQuery, setSearchQuery] = useState(null);
+  const [isSearchingMore, setIsSearchingMore] = useState(false);
   
   const [scannedData, setScannedData] = useState([]);
 
@@ -70,7 +73,6 @@ const AddIngredient = ({ route, navigation }) => {
   const [macros, setMacros] = useState({ proteins: 0, carbs: 0, fats: 0, kcal: 0 });
   const [gramsCounter, setGramsCounter] = useState(0);
 
-  //adding params
   const [productName, setProductName] = useState('');
   const [ean, setEan] = useState('');
   const [brandName, setBrandName] = useState('');
@@ -131,9 +133,6 @@ const AddIngredient = ({ route, navigation }) => {
       case "Own":
         await fetchOwnMeals();
         break;
-      case "Meals":
-        console.log("Meals clicked");
-        break;
       case "New":
         console.log("New Clicked");
       break;
@@ -145,7 +144,6 @@ const AddIngredient = ({ route, navigation }) => {
     setOwnError(null);
     try{
       const res = await MealDataService.getOwnRecipes(setIsAuthenticated, navigation);
-
       if(!res.ok){
         //Error
         setOwnError("Error");
@@ -153,7 +151,7 @@ const AddIngredient = ({ route, navigation }) => {
       }
 
       const data = await res.json();
-      setOwnMealsData(data);
+      setOwnMealsData(data ?? []);
 
     }catch(error){
       //error
@@ -161,26 +159,23 @@ const AddIngredient = ({ route, navigation }) => {
     }finally{
       setIsOwnLoading(false);
     }
-
   };
 
   const fetchUserLikedAndSavedMeals = async () => {
     setIsFavLoading(true);
     setFavError(null);
+
     try{
       const res = await MealDataService.getLikedMeals(setIsAuthenticated, navigation);
-
       if(!res.ok){
-        //Error throw popup
         setFavError("error");
         return;
       }
 
       const data = await res.json();
-      setLikedMealsData(data);
+      setLikedMealsData(data ?? []);
 
     }catch(error){
-      //ERROR
       setFavError("error");
     }finally{
       setIsFavLoading(false);
@@ -272,7 +267,6 @@ const AddIngredient = ({ route, navigation }) => {
 
     }catch(error){
       //error handle
-      console.log("HERE" + error);
     }
 
     setReportedItem(null);
@@ -339,9 +333,7 @@ const AddIngredient = ({ route, navigation }) => {
   
 
   const handleAddIngredient = (selectedItem) => {
-    console.log(selectedItem);
     if(gramsCounter === 0){
-      //error
       return;
     }
 
@@ -359,7 +351,6 @@ const AddIngredient = ({ route, navigation }) => {
 
     setSelectedItemsData((prevItems) => [...prevItems, newIngredient]);
     setIngModalVisible(false);
-    console.log(selectedItemsData);
   };
 
   const closeModalIng = () => {
@@ -434,9 +425,11 @@ const AddIngredient = ({ route, navigation }) => {
   };
 
   const fetchIngredientData = async (ingredient) => {
+    setSearchQuery(ingredient);
+    setSearchCount(20);
     try{
       setInitialSearchPerformed(true);
-      const ingredientListRes = await DietDataService.getListOfCorrelatedItemByName(setIsAuthenticated, navigation, ingredient);
+      const ingredientListRes = await DietDataService.getListOfCorrelatedItemByName(setIsAuthenticated, navigation, ingredient, searchCount, null);
 
       if(!ingredientListRes.ok){
         setSearchedData(null);
@@ -449,6 +442,25 @@ const AddIngredient = ({ route, navigation }) => {
     }catch(error){
       setSearchedData(null);
     }
+  };
+
+  const loadMoreSearchItems = async () => {
+      if (isSearchingMore) return;
+      setIsSearchingMore(true);
+
+      const lastItem = searchedData[ searchedData.length - 1 ];
+      try{
+        const res = await DietDataService.getListOfCorrelatedItemByName(setIsAuthenticated, navigation, searchQuery, searchCount, lastItem.id);
+        if(res.ok){
+          const data = await res.json();
+          setSearchedData(prev => [...prev, ...data]);
+        }
+      }catch(error){
+
+      }finally{
+        setIsSearchingMore(false);
+      }
+
   };
 
   useEffect(() => {
@@ -464,6 +476,11 @@ const AddIngredient = ({ route, navigation }) => {
 
     return () => clearTimeout(newTimeout);
   }, [ingredientName]);
+
+  const formatAmount = (value) => {
+    const rounded = parseFloat(value.toFixed(1));
+    return Number.isInteger(rounded) ? rounded.toString() : rounded.toString();
+  };
 
   const renderContent = () => {
     switch (activeTab) {
@@ -499,7 +516,7 @@ const AddIngredient = ({ route, navigation }) => {
                           <Text style={AddIngredientStyles.itemName}>{item.name}</Text>
                       </View>
                       <View style = {AddIngredientStyles.scannedRowRight}>
-                        <CloseIcon width={22} height={22} />
+                        <CloseIcon width={20} height={20} fill={"#000"} />
                       </View>
                     </TouchableOpacity>
                   </View>
@@ -523,8 +540,11 @@ const AddIngredient = ({ route, navigation }) => {
 
                 </>
               ) : (
-                <ScrollView showsVerticalScrollIndicator={false} showsHorizontalScrollIndicator={false}>
-                  {searchedData.map((item, index) => (
+                <FlatList
+                  data={searchedData}
+                  keyExtractor={(item, index) => item.id ? `${item.id}-${index}` : index.toString() }
+                  renderItem={({ item }) => ( 
+                  <>
                     <View key={item.id || index} style={AddIngredientStyles.contentRow}>
                       <TouchableOpacity
                         key={item.id || index}
@@ -556,21 +576,27 @@ const AddIngredient = ({ route, navigation }) => {
                         </View>
                       </View>
                       <View style = {AddIngredientStyles.contentRowListBottom}>
-                          <Text style={AddIngredientStyles.nutrientText}>P: {item.proteins}g</Text>
-                          <Text style={AddIngredientStyles.nutrientText}>C: {item.carbs}g</Text>
-                          <Text style={AddIngredientStyles.nutrientText}>F: {item.fats}g</Text>
+                          <Text style={AddIngredientStyles.nutrientText}>P: {item.proteins.toFixed(2)}g</Text>
+                          <Text style={AddIngredientStyles.nutrientText}>C: {item.carbs.toFixed(2)}g</Text>
+                          <Text style={AddIngredientStyles.nutrientText}>F: {item.fats.toFixed(2)}g</Text>
                           <View style={AddIngredientStyles.kcalContainer}>
-                            <Text style={AddIngredientStyles.kcalText}>Kcal: {item.kcal}</Text>
+                            <Text style={AddIngredientStyles.kcalText}>Kcal: {item.kcal.toFixed(2)}</Text>
                           </View>
                       </View>                  
                       </TouchableOpacity>
                       <View style={AddIngredientStyles.hr}></View>
                     </View>
-                  ))}
-                </ScrollView>
+                  </> 
+                )}
+                  showsVerticalScrollIndicator={false}
+                  onEndReached={loadMoreSearchItems}
+                  onEndReachedThreshold={0.5}
+                  ListFooterComponent={isSearchingMore ? <View style={[GlobalStyles.center, {height: 50}]}><ActivityIndicator size="small" color="#FF8303"/></View> : null}
+                />
               )}
               </View>
             </View>
+
           );
         case 'Favs':
           return (
@@ -605,9 +631,14 @@ const AddIngredient = ({ route, navigation }) => {
                     <Text style={[GlobalStyles.text16]}>You should appreciate some more!</Text>
                   </View>
                 </View>
-              ): (
-                <View>
-                  <Text>Error view</Text>
+              ):(
+                <View style={[AddIngredientStyles.RestCont]}>
+                  <View style={[AddIngredientStyles.underGatoEmptyContainer]}>
+                    {/*ELGATO*/}
+                  </View>
+                  <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                    <Text style={[GlobalStyles.text18, {textAlign: 'center', paddingHorizontal: 20}]}>Upsss... Something went <Text style={[GlobalStyles.orange]}>horribly</Text> wrong. Try to restart the application.</Text>
+                  </View>
                 </View>
               )}
             </View>
@@ -646,20 +677,22 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
               </View>
             ): (
-              <View>
-                <Text>Error view</Text>
+              <View style={[AddIngredientStyles.RestCont]}>
+                <View style={[AddIngredientStyles.underGatoEmptyContainer]}>
+                  {/*ELGATO*/}
+                </View>
+                <View style={[GlobalStyles.flex, GlobalStyles.center]}>
+                  <Text style={[GlobalStyles.text18, {textAlign: 'center', paddingHorizontal: 20}]}>Upsss... Something went <Text style={[GlobalStyles.orange]}>horribly</Text> wrong. Try to restart the application.</Text>
+                </View>
               </View>
             )}
           </View>
           );
-        case 'Meals':
-          return (
-            <View style={AddIngredientStyles.RestCont}></View>
-          );
-
           case "New":
             return(
-              <View style={AddIngredientStyles.RestCont}></View>
+              <View style={AddIngredientStyles.RestCont}>
+
+              </View>
             );
         
           default:
@@ -693,7 +726,6 @@ const AddIngredient = ({ route, navigation }) => {
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Search")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Search" && AddIngredientStyles.activeTab]}>Search</Text></TouchableOpacity>
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Favs")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Favs" && AddIngredientStyles.activeTab]}>Favs</Text></TouchableOpacity>
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Own")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Own" && AddIngredientStyles.activeTab]}>Own</Text></TouchableOpacity>
-        <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("Meals")} ><Text style={[AddIngredientStyles.optionText, activeTab === "Meals" && AddIngredientStyles.activeTab]}>Meals</Text></TouchableOpacity>
         <TouchableOpacity style={AddIngredientStyles.option} onPress={() => setActiveTabFun("New")} ><Text style={[AddIngredientStyles.optionText, activeTab === "New" && AddIngredientStyles.activeTab]}>New</Text></TouchableOpacity>
       </View>
 
@@ -929,8 +961,10 @@ const AddIngredient = ({ route, navigation }) => {
         <Modal
           animationType="slide"
           visible={ingModalVisible}
+          statusBarTranslucent
           onRequestClose={closeModalIng}
         >
+        <SafeAreaView edges={['left', 'right', 'bottom', 'top']} style={{ backgroundColor: '#FF8303', flex: 1 }}>
         <StatusBar backgroundColor="#FF8303" barStyle="light-content" />
           <View style={AddIngredientStyles.ingModalContainer}>
             <View style = {AddIngredientStyles.topContainer}>
@@ -1189,7 +1223,14 @@ const AddIngredient = ({ route, navigation }) => {
                 </View>
                 </View>
                 <View style={AddIngredientStyles.ingContentRowButton}>
-                  <TouchableOpacity onPress={() => addGrams(parseFloat(inputGrams))}>
+                  <TouchableOpacity
+                    onPress={() => {
+                      const grams = parseFloat(inputGrams);
+                      if (!isNaN(grams)) {
+                        addGrams(grams);
+                      }
+                    }}
+                  >
                     <AddIcon width={32} height={32}/>
                   </TouchableOpacity>
                 </View>
@@ -1208,8 +1249,13 @@ const AddIngredient = ({ route, navigation }) => {
                       <Text style = {AddIngredientStyles.summaryText}> {gramsCounter} g</Text>
                     )}                   
                   </View>
-                  <View style = {AddIngredientStyles.summaryBottomRow}>
-                      <Text style = { { textAlign: 'center' }}>P: {selectedItem.proteins * (gramsCounter / 100)} C: {selectedItem.carbs * (gramsCounter / 100)} F: {selectedItem.fats * (gramsCounter / 100)} KCAL: {selectedItem.kcal * (gramsCounter / 100)}</Text>
+                  <View style={AddIngredientStyles.summaryBottomRow}>
+                    <Text style={{ textAlign: 'center' }}>
+                      P: {formatAmount(selectedItem.proteins * (gramsCounter / 100))} {' '}
+                      C: {formatAmount(selectedItem.carbs    * (gramsCounter / 100))} {' '}
+                      F: {formatAmount(selectedItem.fats     * (gramsCounter / 100))} {' '}
+                      KCAL: {formatAmount(selectedItem.kcal  * (gramsCounter / 100))}
+                    </Text>
                   </View>
               </View>
             </View>
@@ -1221,6 +1267,7 @@ const AddIngredient = ({ route, navigation }) => {
             </TouchableOpacity>
 
           </View>
+          </SafeAreaView>
         </Modal>
       )}
       <InspectMealModal

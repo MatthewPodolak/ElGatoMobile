@@ -196,7 +196,7 @@ export const AddIngredientStyles = StyleSheet.create({
       },
       errorAddOrange: {
         color: '#FF8303',
-        fontWeight: '600', //700?
+        fontWeight: '600',
         fontSize: 18,
         fontFamily: 'Helvetica',
       },
@@ -213,22 +213,20 @@ export const AddIngredientStyles = StyleSheet.create({
       },
       scannedContentRow: {
         width: '100%',
-        paddingLeft: 10,
-        paddingRight: 10,
+        paddingLeft: 15,
+        paddingRight: 15,
         marginBottom: 20,
         position: 'relative', 
       },
       scannedRowRight: {
         width: '10%',
         height: '100%',
-        backgroundColor: '#1B1A17',
         position: 'absolute', 
         right: 0, 
         top: 0, 
         alignItems: 'center',
         justifyContent: 'center',
       },
-      //xdd
       contentRow: {
         width: '100%',
         paddingLeft: 10,
@@ -236,74 +234,106 @@ export const AddIngredientStyles = StyleSheet.create({
         position: 'relative',
       },
     
+      contentRow: {
+        alignSelf: 'stretch',
+        marginVertical: 4,
+        marginHorizontal: 8,
+        borderRadius: 8,
+        backgroundColor: '#FFFFFF',
+        borderWidth: 1,
+        borderColor: '#F0F0F0',
+        overflow: 'hidden',
+      },
+
       contentRowListTop: {
-        marginTop: 5,
-        marginBottom: 2,
-        width: '100%',
         flexDirection: 'row',
+        alignItems: 'center',
+        paddingHorizontal: 12,
+        paddingVertical: 8,
+        backgroundColor: '#FBFBFB',
       },
+
       ListContentRowLeft: {
-        width: '80%',
-      },
-      ListContentRowRight: {
-        width: '20%',
-        alignItems: 'center',
-        justifyContent: 'center',   
-      },
-      contentRowListBottom: {
         flex: 1,
-        width: '100%',
+        justifyContent: 'center',
+      },
+
+      ListContentRowRight: {
+        width: 32,
+        alignItems: 'center',
+        justifyContent: 'center',
+      },
+
+      contentRowListBottom: {
         flexDirection: 'row',
         alignItems: 'center',
-        marginBottom: 5,
+        justifyContent: 'space-between',
+        paddingHorizontal: 12,
+        paddingVertical: 6,
+        backgroundColor: '#FFFFFF',
       },
+
       brandName: {
-        fontSize: 14,
-        marginLeft: 5,
-        fontFamily: 'Helvetica',
+        fontSize: 13,
+        marginLeft: 6,
+        color: '#666',
       },
-      ListCheckContainer:{
-        width: 25,
-        height: 25,
+
+      itemName: {
+        fontSize: 17,
+        marginLeft: 0,
+        color: '#1B1A17',
       },
+
+      nutrientText: {
+        fontSize: 12,
+        color: '#000',
+        marginRight: 8,
+        fontWeight: '500',
+      },
+
+      kcalText: {
+        fontSize: 12,
+        fontWeight: '600',
+        color: '#000',
+        marginRight: 8,
+      },
+
+      kcalContainer: {
+        flex: 1,
+        alignItems: 'flex-end',
+      },
+
+      ListCheckContainer: {
+        width: 24,
+        height: 24,
+      },
+
       checkBox: {
         width: '100%',
         height: '100%',
-        borderWidth: 1,   
+        borderWidth: 1,
+        borderColor: '#DDD',
+        borderRadius: 4,
       },
+
       check: {
         position: 'absolute',
-        bottom: 0,
-        left: -10,
-        top: -15,
         zIndex: 99,
+        bottom: -8,
+        left: -10,
       },
-      itemName: {
-        fontSize: 18,
-        marginLeft: 5,
-        fontFamily: 'Helvetica',
-      },
-      
-      nutrientText: {
-        marginLeft: 10,
-      },
-      kcalContainer: {
-        flex: 1, 
-        alignItems: 'flex-end',
-      },
-      kcalText: {
-        marginRight: 10, 
-      },
+
       selectedRow: {
-        backgroundColor: '#FF8303',
+        backgroundColor: '#FFF8F0',
       },
-    
+
       hr: {
-        borderBottomColor: 'lightgray',
-        opacity: 0.6,
-        marginTop: 2,
-        borderBottomWidth: 1,
+        height: 1,
+        backgroundColor: '#F0F0F0',
+        marginHorizontal: 8,
       },
+
     
     
       ingModalContainer: {
@@ -312,56 +342,72 @@ export const AddIngredientStyles = StyleSheet.create({
       },
       ingModalContentContainer: {
         flex: 1,
+        paddingHorizontal: 16,
       },
       ingModalContentRow: {
         flexDirection: 'row',
-        paddingTop: 10,
-        paddingBottom: 10,
+        paddingVertical: 12,
+        alignItems: 'center',
       },
       ingContentRowContent: {
-        width: '90%',
+        flex: 1,
         flexDirection: 'row',
-        paddingLeft: 15,
+        alignItems: 'center',
       },
       ingContentRowButton: {
-        width: '10%',
-        paddingRight: 15,
+        width: '12%',
+        alignItems: 'center',
+        justifyContent: 'center',
       },
       ingContentRowGrams: {
         width: '18%',
         alignItems: 'center',
       },
       ingContentRowMakro: {
+        flex: 1,
         flexDirection: 'row',
-        width: '60%',
-        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingHorizontal: 8,
       },
-      ingContentRowKcal:{
+      ingContentRowKcal: {
         width: '20%',
+        alignItems: 'flex-end',
         flexDirection: 'row',
-        alignItems: 'center',
       },
       nutrientTextModal: {
-        fontSize: 16,
-        marginLeft: 12,
+        fontSize: 14,
+        color: '#333',
+        marginLeft: 4,
+        fontFamily: 'Helvetica',
       },
       nutrientTextModalValue: {
-        fontSize: 16,
-        marginLeft: 5,
-      },
-      gramsTextModal: {
-        fontSize: 22,
+        fontSize: 14,
         fontFamily: 'Helvetica',
         fontWeight: '600',
+        color: '#000',
+        marginLeft: 2,
+      },
+      gramsTextModal: {
+        fontSize: 18,
+        fontWeight: '700',
+        color: '#1B1A17',
+        fontFamily: 'Helvetica',
       },
       inputBorder: {
-        borderColor: 'black',
+        borderColor: '#CCC',
         borderWidth: 1,
+        borderRadius: 6,
         width: '100%',
-        paddingLeft: 12,
+        paddingHorizontal: 12,
+        paddingVertical: 8,
       },
       ingModalContentSummaryRow: {
-        marginTop: 25,
+        marginTop: 32,
+        paddingVertical: 16,
+        backgroundColor: 'whitesmoke',
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#FF8303',
       },
       summaryTopRow: {
         width: '100%',
@@ -370,30 +416,25 @@ export const AddIngredientStyles = StyleSheet.create({
         width: '100%',
       },
       summaryText: {
-        fontSize: 32,
-        fontWeight: '600',
+        fontSize: 28,
+        fontWeight: '700',
         color: '#FF8303',
-        fontFamily: 'Helvetica',
-        alignItems: 'center',
         textAlign: 'center',
+        fontFamily: 'Helvetica',
       },
-    
       confirmButtonContainer: {
         position: 'absolute',
-        bottom: 20,
-        width: '50%',
-        marginLeft: '25%',
-        alignItems: 'center',
+        bottom: 24,
+        width: '60%',
+        left: '20%',
       },
       confirmButton: {
-        width: '100%',
         backgroundColor: '#1B1A17',
-        paddingVertical: 9,
-        borderRadius: 50,
+        paddingVertical: 12,
+        borderRadius: 30,
         alignItems: 'center',
-        color: 'whitesmoke',
-        justifyContent: 'center',
       },
+
     
     
       reportModalOverlay: {

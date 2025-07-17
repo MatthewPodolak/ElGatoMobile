@@ -11,8 +11,6 @@ import { GlobalStyles } from '../../../Styles/GlobalStyles.js';
 import { closeOptionsAnimation, showOptionsAnimation } from '../../../Animations/ButtonAnimation.js';
 
 import PlusIcon from '../../../assets/main/Diet/plus-lg.svg';
-import AddIcon from '../../../assets/main/Diet/plus-square.svg';
-import LoadIcon from '../../../assets/main/Diet/load.svg';
 
 import { DietHomeStyles } from '../../../Styles/Diet/DietHomeStyles.js';
 
@@ -111,17 +109,17 @@ function DietHome({ navigation }) {
 
         switch(errorResponse.errorCode){
           case "AlreadyExists":
-            setErrorMsg("Meal with this name is already saved ;c");
+            setErrorMsg("Meal with this name is already saved.");
             setIsErrorModalVisible(true);
             break;
         }
-        return;
+        return false;
       }
 
-      console.log("Added");
+      return true;
 
     }catch(error){
-      console.log("Error while saving meals " + error);
+      return false;
     }
   };
 
@@ -182,8 +180,8 @@ function DietHome({ navigation }) {
   }, [params]);
   
 
-  useEffect(() => {
-    if (params?.selectedItemsData && params?.mealId) {
+  useEffect(() => {    
+    if (params?.selectedItemsData && params?.mealId != null) {
       const { mealId, selectedItemsData } = params;
   
       const addIngredients = async () => {
@@ -220,7 +218,6 @@ function DietHome({ navigation }) {
           
         } catch (error) {
           //error
-          console.error('Error while adding ingredients to meal:', error);
         }
       };
   
@@ -291,7 +288,7 @@ function DietHome({ navigation }) {
       let requestBodyRemoveIng = {
         mealPublicId: publicId,
         ingridientId: id,
-        ingridientName: name,
+        ingridientName: name??"",
         weightValue: weightValue,
         date: mealDate 
       };
@@ -299,8 +296,6 @@ function DietHome({ navigation }) {
       const removeIngredientFromMeal = await DietDataService.removeIngridientFromMeal(setIsAuthenticated, navigation, requestBodyRemoveIng);
 
       if(!removeIngredientFromMeal.ok){
-        //error handling
-        console.log('NOT REMOVED - ERROR');
         return;
       }
 
@@ -716,11 +711,9 @@ function DietHome({ navigation }) {
         >
           <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={newMealPress}>
             <Text style={[GlobalStyles.text16]}>Add new</Text>
-            <AddIcon fill={'#000'} width={14} height={14}  style={[DietHomeStyles.iconSpacing, DietHomeStyles.rightMarginIcon]}/>
           </TouchableOpacity>
           <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={addFromFavouritesClick}>
             <Text style={[GlobalStyles.text16]}>Load saved</Text>
-            <LoadIcon fill={'#000'} width={18} height={18} style={DietHomeStyles.iconSpacing} />
           </TouchableOpacity>
       </Animated.View>
 

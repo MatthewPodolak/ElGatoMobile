@@ -23,7 +23,7 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
 
   const scaleValue = useRef(new Animated.Value(1)).current;
 
-  const mealSaveButtonClicked = () => {
+  const mealSaveButtonClicked = async () => {
     setIsLiked(true);
     animateHeart();
     const addIngredientToSavedModal = {
@@ -31,7 +31,10 @@ const Meal = ({ meal, onRemoveMeal, onChangeMealName,navigation, addIngredientTo
       ingridients: meal.ingridient,
     };
 
-    saveMeal(addIngredientToSavedModal);
+    const success = await saveMeal(addIngredientToSavedModal);
+    if (!success) {
+      setIsLiked(false);
+    }
   };
 
   const mealSaveButtonUnclicked = () => {
