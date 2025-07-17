@@ -112,6 +112,7 @@ const FilterModal = ({
       visible={visible}
       onRequestClose={closeFilterModal}
       transparent={true}
+      statusBarTranslucent
     >    
         <View style = {styles.elGatoAddOverlay}>
               <View style = {styles.content}>

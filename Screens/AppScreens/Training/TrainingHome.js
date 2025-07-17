@@ -955,7 +955,7 @@ function TrainingHome({ navigation, route }) {
   };
 
   const navigateToStartCardio = () => {
-    navigation.navigate('CardioStartScreen');
+    navigation.navigate('CardioStart');
   };
 
   return (

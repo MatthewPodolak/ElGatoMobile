@@ -14,6 +14,7 @@ const AchievmentModal = ({
     <Modal
       animationType="slide"
       visible={visible}
+      statusBarTranslucent
       onRequestClose={onRequestClose}
       transparent={true}
     >

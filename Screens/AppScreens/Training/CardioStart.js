@@ -765,6 +765,7 @@ function CardioStart({ navigation }) {
         animationType="slide"
         transparent={true}
         visible={activitySelectorModalVisible}
+        statusBarTranslucent
         onRequestClose={() => setActivitySelectorModalVisible(false)}
       >
         <TouchableWithoutFeedback onPress={() => setActivitySelectorModalVisible(false)}>
@@ -813,6 +814,7 @@ function CardioStart({ navigation }) {
         animationType="slide"
         transparent={true}
         visible={deviceModalVisible}
+        statusBarTranslucent
         onRequestClose={() => setDeviceModalVisible(false)}
       >
         <TouchableWithoutFeedback onPress={() => setDeviceModalVisible(false)}>
@@ -931,6 +933,7 @@ function CardioStart({ navigation }) {
       <Modal
         transparent={true}
         visible={invalidTrainingModal}
+        statusBarTranslucent
         onRequestClose={() => setInvalidTrainingModalVisible(false)}
       >
         <TouchableWithoutFeedback onPress={() => setInvalidTrainingModalVisible(false)}>

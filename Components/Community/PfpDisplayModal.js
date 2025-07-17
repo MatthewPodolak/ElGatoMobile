@@ -24,6 +24,7 @@ const PfpDisplayModal = ({ visible, onRequestClose, pfp }) => {
     <Modal
       animationType="fade"
       visible={visible}
+      statusBarTranslucent
       onRequestClose={onRequestClose}
       transparent={true}
     >
