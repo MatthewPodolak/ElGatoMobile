@@ -385,18 +385,16 @@ function DietHome({ navigation }) {
         ingridientWeightNew: newWeightValue,
         date: mealDate
       };
+
       const patchIngredientWeight = await DietDataService.updateIngridientWeightValue(setIsAuthenticated, navigation, requestBodyPatchWeight);
 
       if(!patchIngredientWeight.ok){
         //error handle
-        console.log('error patching new weight');
         return;
       }
 
-      console.log("patched");
     }catch(error){
       //error int
-      console.log('hitted error');
     }
 
   };

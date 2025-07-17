@@ -595,7 +595,42 @@ export const AddIngredientStyles = StyleSheet.create({
     underGatoEmptyContainer: {
       height: '85%',
     },
-    /*Own*/
 
-    /*Meals*/
+    /*Own*/
+    fieldWrapper: {
+      width: '90%',
+      alignSelf: 'center',
+      position: 'relative',
+      marginVertical: 10,
+    },
+    ownLabelWrapper: {
+      position: 'absolute',
+      top: -10,
+      left: 12,
+      backgroundColor: 'whitesmoke',
+      zIndex: 99,
+      paddingHorizontal: 4,
+    },
+    ownLabel: {
+      fontSize: 14,
+      color: '#000',
+      fontFamily: 'Helvetica',
+      marginBottom: -6,
+      backgroundColor: 'whitesmoke',
+      alignSelf: 'flex-start',
+      paddingHorizontal: 4,
+      zIndex: 1,
+    },
+    ownInput: {
+      width: '100%',
+      borderWidth: 1,
+      borderColor: '#999',
+      borderRadius: 4,
+      paddingVertical: 12,
+      paddingHorizontal: 12,
+      fontSize: 16,
+    },
+    pair: {
+      flex: 1,
+    },
  });

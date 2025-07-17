@@ -81,6 +81,14 @@ const AddIngredient = ({ route, navigation }) => {
   const [fat, setFat] = useState('');
   const [carbs, setCarbs] = useState('');
 
+  const [addNewError, setAddNewError] = useState(null);
+  const [addNewName, setAddNewName] = useState(null);
+  const [addNewWeight, setAddNewWeight] = useState(null);
+  const [addNewKcals, setAddNewKcals] = useState(null);
+  const [addNewProteins, setAddNewProteins] = useState(null);
+  const [addNewFats, setAddNewFats] = useState(null);
+  const [addNewCarbs, setAddNewCarbs] = useState(null);
+
   const { mealId } = route.params;
   const { mealName } = route.params;
 
@@ -134,8 +142,7 @@ const AddIngredient = ({ route, navigation }) => {
         await fetchOwnMeals();
         break;
       case "New":
-        console.log("New Clicked");
-      break;
+        break;
     }
   };
 
@@ -351,6 +358,49 @@ const AddIngredient = ({ route, navigation }) => {
 
     setSelectedItemsData((prevItems) => [...prevItems, newIngredient]);
     setIngModalVisible(false);
+  };
+
+  const addNewIngriedientFromForm = () => {
+    setAddNewError(null);
+
+    if(!addNewName) { setAddNewError("I would suggest aasbfasjfaj as a name for that."); return; }
+    if(!addNewWeight) { setAddNewError("Leaving weight empty is pointless. I won't bother adding that."); return; }
+
+    if (!/^[1-9]\d*$/.test(addNewWeight)) {
+      setAddNewError("WEIGHT AS A WHOLE NUMBER!");
+      return;
+    }
+
+    const macroFields = [
+      { value: addNewProteins,   label: "proteins"   },
+      { value: addNewCarbs,      label: "carbs"      },
+      { value: addNewFats,       label: "fats"       },
+      { value: addNewKcals,      label: "calories"   },
+    ];
+    for (let {value, label} of macroFields) {
+      if (!value.trim()) {
+        setAddNewError(`Just fill makro's up. You left ${label} empty for what?`);
+        return;
+      }
+      if (!/^\d+(\.\d+)?$/.test(value)) {
+        setAddNewError(`${label.charAt(0).toUpperCase() + label.slice(1)} must be a number (e.g. 21 or 6.9).`);
+        return;
+      }
+    }
+
+    const newIngredient = {
+      name: addNewName.trim(),
+      weightValue: parseInt(addNewWeight, 10),
+      proteins: parseFloat(addNewProteins),
+      carbs: parseFloat(addNewCarbs),
+      fats: parseFloat(addNewFats),
+      energyKcal: parseFloat(addNewKcals),
+      id: Math.floor(Math.random() * 1_000_000 + 1).toString(),
+      prep_for: 100,
+      servings: false,
+    };
+
+    setSelectedItemsData((prevItems) => [...prevItems, newIngredient]);
   };
 
   const closeModalIng = () => {
@@ -691,6 +741,93 @@ const AddIngredient = ({ route, navigation }) => {
           case "New":
             return(
               <View style={AddIngredientStyles.RestCont}>
+                <View style={[AddIngredientStyles.fieldWrapper, {marginTop: 20}]}>
+                  <View style={AddIngredientStyles.ownLabelWrapper}>
+                    <Text style={AddIngredientStyles.ownLabel}>Name</Text>
+                  </View>
+                  <TextInput
+                    style={AddIngredientStyles.ownInput}
+                    selectionColor="#FF8303"
+                    value={addNewName}
+                    onChangeText={(text) => setAddNewName(text)}
+                  />
+                </View>
+                <View style={AddIngredientStyles.fieldWrapper}>
+                  <View style={AddIngredientStyles.ownLabelWrapper}>
+                    <Text style={AddIngredientStyles.ownLabel}>Weight</Text>
+                  </View>
+                  <TextInput
+                    style={AddIngredientStyles.ownInput}
+                    selectionColor="#FF8303"
+                    keyboardType="numeric"
+                    value={addNewWeight}
+                    onChangeText={(text) => setAddNewWeight(text)}
+                  />
+                </View>
+
+                <View style={[{paddingHorizontal: 20, marginTop: 10}]}>
+                  <Text style={[GlobalStyles.text16, GlobalStyles.textShadow]}>Per 100g:</Text>
+                </View>
+
+                <View style={[AddIngredientStyles.fieldWrapper, { flexDirection: 'row' }]}>
+                  <View style={[AddIngredientStyles.pair, { marginRight: 8 }]}>
+                    <Text style={[AddIngredientStyles.ownLabel, {marginLeft: 10}]}>Protein</Text>
+                    <TextInput
+                      style={AddIngredientStyles.ownInput}
+                      selectionColor="#FF8303"
+                      keyboardType="numeric"
+                      value={addNewProteins}
+                      onChangeText={(text) => setAddNewProteins(text)}
+                    />
+                  </View>
+
+                  <View style={AddIngredientStyles.pair}>
+                    <Text style={[AddIngredientStyles.ownLabel, {marginLeft: 10}]}>Carbs</Text>
+                    <TextInput
+                      style={AddIngredientStyles.ownInput}
+                      selectionColor="#FF8303"
+                      keyboardType="numeric"
+                      value={addNewCarbs}
+                      onChangeText={(text) => setAddNewCarbs(text)}
+                    />
+                  </View>
+                </View>
+
+                <View style={[AddIngredientStyles.fieldWrapper, { flexDirection: 'row' }]}>
+                  <View style={[AddIngredientStyles.pair, { marginRight: 8 }]}>
+                    <Text style={[AddIngredientStyles.ownLabel, {marginLeft: 10}]}>Fats</Text>
+                    <TextInput
+                      style={AddIngredientStyles.ownInput}
+                      selectionColor="#FF8303"
+                      keyboardType="numeric"
+                      value={addNewFats}
+                      onChangeText={(text) => setAddNewFats(text)}
+                    />
+                  </View>
+
+                  <View style={AddIngredientStyles.pair}>
+                    <Text style={[AddIngredientStyles.ownLabel, {marginLeft: 10}]}>Kcal</Text>
+                    <TextInput
+                      style={AddIngredientStyles.ownInput}
+                      selectionColor="#FF8303"
+                      keyboardType="numeric"
+                      value={addNewKcals}
+                      onChangeText={(text) => setAddNewKcals(text)}
+                    />
+                  </View>
+                </View>
+
+                {addNewError && (
+                  <View style={[{paddingHorizontal: 20, marginTop: 10}]}>
+                    <Text style={[GlobalStyles.text16, GlobalStyles.red, {textAlign: 'center'}]}>{addNewError}</Text>
+                  </View>
+                )}
+
+                <View style={[GlobalStyles.center, GlobalStyles.bottomAbs]}>
+                  <TouchableOpacity style={[GlobalStyles.elevatedButtonOrange, GlobalStyles.rounded]} onPress={() => addNewIngriedientFromForm()}>
+                    <Text style={[GlobalStyles.text16, GlobalStyles.white]}>Add new</Text>
+                  </TouchableOpacity>
+                </View>
 
               </View>
             );

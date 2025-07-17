@@ -130,4 +130,23 @@ export const GlobalStyles = StyleSheet.create({
         textShadowOffset: { width: 0, height: 0 },
         textShadowRadius: 0,
     },
+    elevatedButtonOrange: {
+        alignItems: 'center',
+        justifyContent: 'center',
+        paddingVertical: 12,
+        paddingHorizontal: 32,
+        elevation: 3,
+        width: '90%',
+        backgroundColor: '#FF8303',
+        marginBottom: 10,
+    },
+    rounded: {
+        borderRadius: 25,
+    },
+    bottomAbs: {
+        position: 'absolute',
+        bottom: 20,
+        width: '100%',
+        alignItems: 'center',
+    }
 });
