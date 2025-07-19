@@ -17,7 +17,7 @@ function NavigationMenu({ navigation, currentScreen }) {
         onPress={() => navigation.navigate('Home')}
       >
       <View style = {styles.navImgContainer}>
-        <HomeIcon width={30} height={30} />
+        <HomeIcon style={[{marginTop: 10}]} width={46} height={46} fill={"#fff"}/>
       </View>
       </Pressable>
       <Pressable
@@ -28,7 +28,7 @@ function NavigationMenu({ navigation, currentScreen }) {
         onPress={() => navigation.navigate('DietHome')}
       >
       <View style = {styles.navImgContainer}>
-        <DietIcon width={34} height={48} />
+        <DietIcon width={58} height={58} />
       </View>
       </Pressable>
       <Pressable
@@ -50,7 +50,7 @@ function NavigationMenu({ navigation, currentScreen }) {
         onPress={() => navigation.navigate('TrainingHome')}
       >
       <View style = {styles.navImgContainer}>
-        <TrainingIcon width={30} height={30} />
+        <TrainingIcon style={[{marginBottom: 5}]} width={52} height={52} />
       </View>
       </Pressable>
       <Pressable
