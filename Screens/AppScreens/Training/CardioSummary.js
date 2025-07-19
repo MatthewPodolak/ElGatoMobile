@@ -338,7 +338,7 @@ function CardioSummary({ navigation, route }) {
           </Text>
         </View>
 
-        <Text style={styles.descriptionTitle}>Private Notes <PrivateSVG /></Text>
+        <Text style={styles.descriptionTitle}>Private Notes <PrivateSVG width={14} height={14}/></Text>
         <View style={[styles.blockContainer, {minHeight: 100}]}>
           <TextInput
             style={styles.textInputPriv}

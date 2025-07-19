@@ -792,7 +792,7 @@ function CardioStart({ navigation }) {
                             const IconComponent = activity.Icon;
                             return (
                               <TouchableOpacity key={index} style={styles.activityItem} onPress={() => setActivityType(activity.name)}>
-                                <IconComponent width={24} height={24} fill={activityType === activity.name ? "#FF6600" : "#000"} />
+                                <IconComponent width={24} height={24} fill={"#000"} />
                                 <Text style={[ styles.activityText, GlobalStyles.text16, activityType === activity.name && { color: "#FF6600" }, ]}>
                                   {activity.name}
                                 </Text>
