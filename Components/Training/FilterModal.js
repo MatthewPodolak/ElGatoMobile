@@ -6,6 +6,7 @@ import { GlobalStyles } from '../../Styles/GlobalStyles.js';
 import Close from '../../assets/main/Diet/x-lg.svg';
 import ChevUp from '../../assets/main/Diet/chevron-up.svg';
 import ChevDown from '../../assets/main/Diet/chevron-down.svg';
+import { getMuscleIcon } from '../../assets/Data/muscles.js';
 
 const FilterModal = ({
   visible,
@@ -120,7 +121,7 @@ const FilterModal = ({
                     <View style = {styles.closingFeed}></View>
                 </TouchableWithoutFeedback>
                 <View style = {styles.contentCont}>
-                    <ScrollView style = {styles.contentScrollable}>
+                    <ScrollView style = {styles.contentScrollable} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
                         <View style = {styles.topContainer}>
                             <Text style={[GlobalStyles.text18]}>Filters: </Text>
                             <TouchableOpacity onPress={() => closeFilterModal(activeFilters)}>
@@ -198,41 +199,28 @@ const FilterModal = ({
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Chest') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Chest')}
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => handleAddMuscleGroup('UpperChest')} style={[
-                                    styles.muscleRectangle,
-                                    selectedMuscles.includes('UpperChest') && styles.selectedMuscleRectangle
-                                ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
-                                </TouchableOpacity>
-                            </View>
-                            <View style={styles.muscleRow}>
-                                <TouchableOpacity onPress={() => handleAddMuscleGroup('LowerChest')} style={[
-                                    styles.muscleRectangle,
-                                    selectedMuscles.includes('LowerChest') && styles.selectedMuscleRectangle
-                                ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
-                                </TouchableOpacity>
+                                
                                 <TouchableOpacity onPress={() => handleAddMuscleGroup('Back')} style={[
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Back') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                  {getMuscleIcon('Back')}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.muscleRow}>
-                                <TouchableOpacity onPress={() => handleAddMuscleGroup('Lats')} style={[
+                                <TouchableOpacity onPress={() => handleAddMuscleGroup('Abs')} style={[
                                     styles.muscleRectangle,
-                                    selectedMuscles.includes('Lats') && styles.selectedMuscleRectangle
+                                    selectedMuscles.includes('Abs') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Abs')}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => handleAddMuscleGroup('Traps')} style={[
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Traps') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                  {getMuscleIcon('Trapezius')}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.muscleRow}>
@@ -240,13 +228,13 @@ const FilterModal = ({
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Biceps') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Biceps')}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => handleAddMuscleGroup('Triceps')} style={[
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Triceps') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Triceps')}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.muscleRow}>
@@ -254,13 +242,13 @@ const FilterModal = ({
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Shoulders') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Shoulders')}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => handleAddMuscleGroup('Quads')} style={[
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Quads') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Quadriceps')}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.muscleRow}>
@@ -268,13 +256,13 @@ const FilterModal = ({
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Hamstrings') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Hamstrings')}
                                 </TouchableOpacity>
                                 <TouchableOpacity onPress={() => handleAddMuscleGroup('Glutes')} style={[
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Glutes') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                     {getMuscleIcon('Glutes')}
                                 </TouchableOpacity>
                             </View>
                             <View style={styles.muscleRow}>
@@ -282,14 +270,9 @@ const FilterModal = ({
                                     styles.muscleRectangle,
                                     selectedMuscles.includes('Calves') && styles.selectedMuscleRectangle
                                 ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                                    {getMuscleIcon('Calves')}
                                 </TouchableOpacity>
-                                <TouchableOpacity onPress={() => handleAddMuscleGroup('Abs')} style={[
-                                    styles.muscleRectangle,
-                                    selectedMuscles.includes('Abs') && styles.selectedMuscleRectangle
-                                ]}>
-                                    <ImageBackground style={styles.mainImg} resizeMode="contain" />
-                                </TouchableOpacity>
+
                             </View>
                        </View>
 

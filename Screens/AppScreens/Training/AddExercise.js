@@ -10,6 +10,7 @@ import ChevronLeft from '../../../assets/main/Diet/chevron-left.svg';
 import CheckIcon from '../../../assets/main/Diet/check2.svg';
 import ChevronDown from '../../../assets/main/Diet/chevron-down.svg';
 import DeleteIcon from '../../../assets/main/Diet/trash3.svg';
+import { getMuscleIcon } from '../../../assets/Data/muscles.js';
 
 import ExerciseDisplay from '../../../Components/Training/ExerciseDisplay.js';
 import FilterModal from '../../../Components/Training/FilterModal.js';
@@ -44,9 +45,8 @@ function AddExercise({ navigation, route }) {
     const [newExerciseName, setNewExerciseName] = useState(null);
     const [showAddExerciseErrorText, setShowAddExerciseErrorText] = useState(false);
     const [showAddExerciseErrorMuscleType, setShowAddExerciseErrorMuscleType] = useState(false);
-
+  
     const addNewExercise = async () => {
-      console.log("EXERCISE DATA -> " + JSON.stringify(likedExercisesList));
       if(!newExerciseName){
         setShowAddExerciseErrorText(true);
         return;
@@ -146,7 +146,6 @@ function AddExercise({ navigation, route }) {
         }
 
         //error
-        console.log("errorek");
         const errorData = await res.json();
         console.log(errorData);
 
@@ -668,13 +667,13 @@ function AddExercise({ navigation, route }) {
                             styles.muscleRectangle,
                             selectedMuscle === "Chest" && styles.selectedMuscleRectangle
                             ]}>
-                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                            {getMuscleIcon('Chest')}
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => setSelectedMuscle('Legs')} style={[
                             styles.muscleRectangle,
                             selectedMuscle === "Legs" && styles.selectedMuscleRectangle
                             ]}>
-                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          {getMuscleIcon('Quadriceps')}
                           </TouchableOpacity>
                         </View>
 
@@ -683,13 +682,13 @@ function AddExercise({ navigation, route }) {
                             styles.muscleRectangle,
                             selectedMuscle === "Back" && styles.selectedMuscleRectangle
                             ]}>
-                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                            {getMuscleIcon('Back')}
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => setSelectedMuscle('Arms')} style={[
                             styles.muscleRectangle,
                             selectedMuscle === "Arms" && styles.selectedMuscleRectangle
                             ]}>
-                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          {getMuscleIcon('Biceps')}
                           </TouchableOpacity>
                         </View>
 
@@ -698,13 +697,13 @@ function AddExercise({ navigation, route }) {
                             styles.muscleRectangle,
                             selectedMuscle === "Core" && styles.selectedMuscleRectangle
                             ]}>
-                            <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                            {getMuscleIcon('Abs')}
                           </TouchableOpacity>
                           <TouchableOpacity onPress={() => setSelectedMuscle('Shoulders')} style={[
                             styles.muscleRectangle,
                             selectedMuscle === "Shoulders" && styles.selectedMuscleRectangle
                             ]}>
-                          <ImageBackground style={styles.mainImg} resizeMode="contain" />
+                          {getMuscleIcon('Shoulders')}
                           </TouchableOpacity>
                         </View>
                       </View>
@@ -896,7 +895,7 @@ const styles = StyleSheet.create({
       },
       errorAddOrange: {
         color: '#FF8303',
-        fontWeight: '600', //700?
+        fontWeight: '600',
         fontSize: 18,
         fontFamily: 'Helvetica',
       },

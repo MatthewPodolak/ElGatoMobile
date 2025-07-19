@@ -14,6 +14,8 @@ import { AuthContext } from '../../../Services/Auth/AuthContext.js';
 import config from '../../../Config';
 import TrainingDataService from '../../../Services/ApiCalls/TrainingData/TrainingDataService.js';
 
+import { muscles } from '../../../assets/Data/muscles.js';
+
 
 function InspectExercise({ navigation, route }) { 
     const insets = useSafeAreaInsets();
@@ -127,7 +129,6 @@ function InspectExercise({ navigation, route }) {
     };
 
     useEffect(() => {
-        console.log(isLiked);     
         setIsExerciseLiked(isLiked);
         setStartingState(isLiked);
 
@@ -168,7 +169,7 @@ function InspectExercise({ navigation, route }) {
                 </View>
             </View>
 
-            <ScrollView style={styles.contentContainer}>
+            <ScrollView style={styles.contentContainer} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
                 <View style={styles.gifContainer}>
                     <ImageBackground resizeMode='contain' source={{ uri: currentImage }} style={styles.image} />
                 </View>
@@ -185,21 +186,23 @@ function InspectExercise({ navigation, route }) {
                     </View>
                 </View>
 
-                <View style = {styles.descContainer}>
-                    <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsDescExpanded(!isDescExpanded)}>
-                    <View><Text style = {[GlobalStyles.text18]}>Description </Text></View>
-                        {isDescExpanded ? (
-                            <View><ChevDown width = {24} height = {24} fill={"#000"}/></View>
-                        ):(
-                            <View><ChevUp width = {24} height = {24} fill={"#000"}/></View>
-                        )}                    
-                    </TouchableOpacity> 
-                    {isDescExpanded && (
-                        <View style = {styles.expandableContentNutri}>
-                            <Text style={GlobalStyles.text16}>{exercise.desc}</Text>
-                        </View>
-                    )}
-                </View>
+                {exercise.desc && (
+                    <View style = {styles.descContainer}>
+                        <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsDescExpanded(!isDescExpanded)}>
+                        <View><Text style = {[GlobalStyles.text18]}>Description </Text></View>
+                            {isDescExpanded ? (
+                                <View><ChevDown width = {24} height = {24} fill={"#000"}/></View>
+                            ):(
+                                <View><ChevUp width = {24} height = {24} fill={"#000"}/></View>
+                            )}                    
+                        </TouchableOpacity> 
+                        {isDescExpanded && (
+                            <View style = {styles.expandableContentNutri}>
+                                <Text style={GlobalStyles.text16}>{exercise.desc}</Text>
+                            </View>
+                        )}
+                    </View>
+                )}
 
                 <View style = {styles.descContainer}>
                     <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsMuscleExpanded(!isMuscleExpanded)}>
@@ -211,10 +214,30 @@ function InspectExercise({ navigation, route }) {
                         )}                    
                     </TouchableOpacity> 
                     {isMuscleExpanded && (
-                        <View style = {styles.expandableContentNutri}>
-                            <Text style={GlobalStyles.text16}>muscle circles TODO</Text>
+                        <View style={styles.muscleGrid}>
+                            {exercise.musclesEngaged.reduce((unique, engaged) => {
+                            if (!unique.find((e) => e.group.toLowerCase() === engaged.group.toLowerCase())) {
+                                unique.push(engaged);
+                            }
+                            return unique;
+                            }, []).map((engaged) => {
+                            const matchedMuscle = muscles.find(
+                                (m) => m.name.toLowerCase() === engaged.group.toLowerCase()
+                            );
+                            const Icon = matchedMuscle?.icon;
+
+                            return (
+                                <View key={engaged.id} style={styles.muscleCardUsed}>
+                                {Icon && <Icon width={48} height={48} />}
+                                <Text style={styles.muscleLabelUsed}>
+                                    {engaged.group}
+                                </Text>
+                                </View>
+                            );
+                            })}
                         </View>
                     )}
+
                 </View> 
 
                 <View style={styles.bottomSpacing}></View>                
@@ -231,114 +254,152 @@ function InspectExercise({ navigation, route }) {
 };
 
 const styles = StyleSheet.create({
-    container: {
-        flex: 1,
-    },
-    topContainer: {
-        width: '100%',
-        height: '9%',
-        backgroundColor: '#FF8303',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-      },
-      topContIngBack: {
-        width: '15%',
-        height: '100%',
-      },
-      topContIngTitle: {
-        width: '70%',
-        height: '100%',
-        justifyContent: 'center',
-        textAlign: 'center',
-        alignItems: 'center',
-      },
-      topContIngReport: {
-        width: '15%',
-        height: '100%',
-        justifyContent: 'center',
-        textAlign: 'center',
-        alignItems: 'center',
-      },
-      topBack: {
-        position: 'absolute',
-        left: 10,
-        height: '100%',
-        justifyContent: 'center',
-      },
-      topName: {
-        justifyContent: 'center',
-        alignItems: 'center',
-      },
-      topNameText: {
-        fontSize: 22,
-        fontWeight: '700',
-        fontFamily: 'Helvetica',
-        textAlign: 'center',
-      },
-      contentContainer: {
-        flex: 1,
-        padding: 10,
-        backgroundColor: '#F0E3CA',
-      },
-      gifContainer: {
-        width: '100%',
-        height: 300,
-        borderRadius: 25,
-        borderWidth: 1,
-        borderColor: 'black',
-      },
-      image: {
-        flex: 1,
-        marginLeft: -5,
-      },
-      svgDescCont: {
-        flexDirection: 'column',
-        padding: 5,
-    },
-    svgRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center', 
-        paddingHorizontal: 5,
-        marginTop: 5,
-    },
-    descContainer: {
-        paddingVertical: 10,
-    },
-    expandableContentNutri: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingVertical: 15,
-    },
-    expandTitle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center', 
-        paddingHorizontal: 5,
-        marginTop: 5,
-    },
-    bottomSpacing: {
-        height: 70,
-    },
-    elGatoAddConfirm: {
-        width: '50%',
-        position: 'absolute',
-        height: 50,
-        bottom: 20,
-        borderRadius: 25,
-        marginLeft: '25%',
-        backgroundColor: '#FF8303',
-        justifyContent: 'center',  
-        alignItems: 'center',      
-      },
-      elGatoConfirmText: {
-        color: 'white',          
-        fontSize: 16,           
-        fontWeight: '600',
-        fontFamily: 'Helvetica', 
-      },
+  container: {
+    flex: 1,
+    backgroundColor: '#F0E3CA',
+  },
+  topContainer: {
+    width: '100%',
+    height: 60,
+    backgroundColor: '#FF8303',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+  },
+  topContIngBack: {
+    width: 40,
+    alignItems: 'center',
+  },
+  topContIngTitle: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topContIngReport: {
+    width: 40,
+    alignItems: 'center',
+  },
+  topBack: {
+    justifyContent: 'center',
+  },
+  topNameText: {
+    fontSize: 20,
+    fontWeight: '700',
+    fontFamily: 'Helvetica',
+    textAlign: 'center',
+  },
+  contentContainer: {
+    flex: 1,
+    backgroundColor: '#F0E3CA',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  gifContainer: {
+    height: 260,
+    borderRadius: 20,
+    overflow: 'hidden',
+    backgroundColor: '#F7EEDD',
+    borderColor: '#E5E5E5',
+    borderWidth: 1,
+    marginBottom: 16,
+    elevation: 4,
+  },
+  image: {
+    flex: 1,
+  },
+  svgDescCont: {
+    backgroundColor: '#F7EEDD',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  svgRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 4,
+  },
+  descContainer: {
+    marginBottom: 10,
+    backgroundColor: '#F7EEDD',
+    borderRadius: 12,
+    padding: 10,
+    elevation: 2,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+  },
+  expandTitle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  expandableContentNutri: {
+    marginTop: 10,
+    paddingHorizontal: 6,
+  },
+  bottomSpacing: {
+    height: 80,
+  },
+  elGatoAddConfirm: {
+    width: '90%',
+    height: 50,
+    alignSelf: 'center',
+    marginBottom: 20,
+    borderRadius: 15,
+    backgroundColor: '#FF8303',
+    justifyContent: 'center',
+    alignItems: 'center',
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.2,
+    shadowRadius: 6,
+  },
+  elGatoConfirmText: {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: '700',
+    fontFamily: 'Helvetica',
+  },
+  muscleGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    justifyContent: 'center',
+    gap: 12,
+    marginVertical: 10,
+  },
+
+   muscleCardUsed: {
+    width: 80,
+    alignItems: 'center',
+    paddingVertical: 10,
+    paddingHorizontal: 8,
+    borderRadius: 12,
+    backgroundColor: '#FFF5E1',
+    elevation: 3,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 3,
+   },
+
+   muscleLabelUsed: {
+    marginTop: 6,
+    fontSize: 12,
+    fontFamily: 'Helvetica',
+    fontWeight: '500',
+    textAlign: 'center',
+    color: '#333',
+  },
+
 });
 
 export default InspectExercise;

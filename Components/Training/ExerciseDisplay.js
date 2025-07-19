@@ -51,7 +51,7 @@ const styles = StyleSheet.create({
         height: '75%',
       },
       bottomRow: {
-        height: '25%',
+        minHeight: '25%',
         borderTopColor: '#FF8303',
         borderTopWidth: 1,
         justifyContent: 'center',
