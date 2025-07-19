@@ -295,7 +295,7 @@ function ProfileDisplay({ navigation }) {
     };
 
     const navigateToRquests = () => {
-      navigation.navigate('FolowersRequests', {
+      navigation.navigate('FollowerRequests', {
         userId: profileData?.generalProfileData?.userId,
         initialRequests: followerRequestsData?.requests,
       });

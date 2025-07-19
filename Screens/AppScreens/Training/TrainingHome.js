@@ -1098,16 +1098,16 @@ function TrainingHome({ navigation, route }) {
         >
           {activeTab === "Gym" ? (
               <>
-                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToAddExercise}>
+                <TouchableOpacity style={[styles.expOptionRow, GlobalStyles.elevated]} onPress={navigateToAddExercise}>
                   <Text style={[GlobalStyles.text16]}>Add new</Text>
                 </TouchableOpacity>
-                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToLoadPlans} >
+                <TouchableOpacity style={[styles.expOptionRow,GlobalStyles.elevated]} onPress={navigateToLoadPlans} >
                   <Text style={[GlobalStyles.text16]}>Load plan</Text>
                 </TouchableOpacity>
               </>
           ):(
               <>
-                <TouchableOpacity style={styles.expOptionRow} onPress={navigateToStartCardio} >
+                <TouchableOpacity style={[styles.expOptionRow, GlobalStyles.elevated]} onPress={navigateToStartCardio} >
                   <Text style={[GlobalStyles.text16]}>Start activity</Text>
                 </TouchableOpacity>
               </>
@@ -1115,7 +1115,7 @@ function TrainingHome({ navigation, route }) {
           
         </Animated.View>
 
-        <TouchableOpacity style={styles.addExerciseButton} onPress={optionButtonPressed}>
+        <TouchableOpacity style={[styles.addExerciseButton, GlobalStyles.elevated]} onPress={optionButtonPressed}>
         <Animated.View
           pointerEvents={optionsVisible ? 'auto' : 'none'}
           style={{

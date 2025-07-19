@@ -221,7 +221,7 @@ function InspectExercise({ navigation, route }) {
 
             </ScrollView>
             <TouchableOpacity onPress={() => addExercise()}>
-                <View style = {styles.elGatoAddConfirm}>
+                <View style = {[styles.elGatoAddConfirm, GlobalStyles.elevated]}>
                     <Text style = {styles.elGatoConfirmText}>Add exercise</Text>
                 </View>
             </TouchableOpacity>        

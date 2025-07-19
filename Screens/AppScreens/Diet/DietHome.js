@@ -707,15 +707,15 @@ function DietHome({ navigation }) {
             { opacity: optionsAnimation, transform: [{ translateY: optionsAnimation.interpolate({ inputRange: [0, 1], outputRange: [20, 0] }) }] },
           ]}
         >
-          <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={newMealPress}>
+          <TouchableOpacity style={[DietHomeStyles.expOptionRow, GlobalStyles.elevated]} onPress={newMealPress}>
             <Text style={[GlobalStyles.text16]}>Add new</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={DietHomeStyles.expOptionRow} onPress={addFromFavouritesClick}>
+          <TouchableOpacity style={[DietHomeStyles.expOptionRow, GlobalStyles.elevated]} onPress={addFromFavouritesClick}>
             <Text style={[GlobalStyles.text16]}>Load saved</Text>
           </TouchableOpacity>
       </Animated.View>
 
-      <TouchableOpacity style={DietHomeStyles.addMealButton} onPress={optionButtonPressed}>
+      <TouchableOpacity style={[DietHomeStyles.addMealButton, GlobalStyles.elevated]} onPress={optionButtonPressed}>
         <Animated.View
           style={{
             transform: [

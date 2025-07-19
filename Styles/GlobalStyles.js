@@ -140,6 +140,14 @@ export const GlobalStyles = StyleSheet.create({
         backgroundColor: '#FF8303',
         marginBottom: 10,
     },
+    elevated: {
+        elevation: 4,
+
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+    },
     rounded: {
         borderRadius: 25,
     },

@@ -232,7 +232,7 @@ const InspectMealModal = ({ visible, closeInspectModal, item, specialClose, navi
                             {specialClose ? (
                                 <View>
                                     <View style = {styles.expander}></View>
-                                    <TouchableOpacity style={styles.hoverButton} onPress={() => addToMeal()} >
+                                    <TouchableOpacity style={[styles.hoverButton, GlobalStyles.elevated]} onPress={() => addToMeal()} >
                                         <Text style={[GlobalStyles.text16, GlobalStyles.white]}>Add to meal</Text>
                                     </TouchableOpacity>
                                 </View>
@@ -411,7 +411,7 @@ const styles = StyleSheet.create({
     marginBottom: 20,
   },
   expander: {
-    height: 80,
+    height: 40,
   },
   expanderMini: {
     height: 40,

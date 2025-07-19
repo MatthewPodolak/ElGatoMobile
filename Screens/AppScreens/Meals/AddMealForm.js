@@ -717,7 +717,7 @@ function AddMealForm({ navigation }) {
             </ScrollView>
 
             <TouchableOpacity onPress={() => publish()}>
-                <View style={[styles.hoverButton, GlobalStyles.center]}>
+                <View style={[styles.hoverButton, GlobalStyles.center, GlobalStyles.elevated]}>
                     <Text style = {[styles.hoverButtonText, GlobalStyles.text16]}>Publish</Text>
                 </View>
             </TouchableOpacity>

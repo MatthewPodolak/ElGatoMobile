@@ -1029,7 +1029,7 @@ const AddIngredient = ({ route, navigation }) => {
               </View>
               <View style={AddIngredientStyles.addProductRow}>
                 <TouchableOpacity onPress={addProductRequest}>
-                  <View style={AddIngredientStyles.addProductConfirmButton}>
+                  <View style={[AddIngredientStyles.addProductConfirmButton, GlobalStyles.elevated]}>
                     <Text style={AddIngredientStyles.addProductBtnText}>Add</Text>
                   </View>
                 </TouchableOpacity>
@@ -1050,6 +1050,7 @@ const AddIngredient = ({ route, navigation }) => {
         animationType="slide"
         visible={reportModalVisible}
         onRequestClose={closeReportModal}
+        statusBarTranslucent
         transparent={true}
       >
         <View style={AddIngredientStyles.reportModalOverlay}>
@@ -1397,7 +1398,7 @@ const AddIngredient = ({ route, navigation }) => {
               </View>
             </View>
 
-            <TouchableOpacity onPress={() => handleAddIngredient(selectedItem)} style={AddIngredientStyles.confirmButtonContainer}>
+            <TouchableOpacity onPress={() => handleAddIngredient(selectedItem)} style={[AddIngredientStyles.confirmButtonContainer, GlobalStyles.elevated]}>
               <View style={AddIngredientStyles.confirmButton}>
                 <Text style = {{color: 'whitesmoke', fontSize: 26, fontWeight: '700', fontFamily: 'Helvetica'}}>+</Text>
               </View>

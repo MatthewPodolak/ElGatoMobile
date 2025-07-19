@@ -179,6 +179,7 @@ function AccountHome({ navigation }) {
       }
 
       const data = await res.json();
+      console.log("data followed " + JSON.stringify(data));
       setFollowedList(data);
 
     }catch(error){
@@ -746,9 +747,9 @@ function AccountHome({ navigation }) {
                       </>
                     ):(
                       <>
-                      {(!followedList || followedList.length === 0) ? (
+                      {(!followedList || followedList?.followed.length === 0) ? (
                         <>
-                          {/**GATO - FRIENDS DATA LIST ERROR. */}
+                          {/**GATO - FRIENDS DATA LIST empty. */}
                           <View style={styles.emptyGatoContainer}>
 
                           </View>

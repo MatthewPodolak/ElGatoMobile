@@ -710,7 +710,7 @@ function AddExercise({ navigation, route }) {
                       </View>
 
                       <View style={[styles.addNewButtonRow, GlobalStyles.center]}>
-                        <TouchableOpacity onPress={() => addNewExercise()} style={styles.addNewButton}>
+                        <TouchableOpacity onPress={() => addNewExercise()} style={[styles.addNewButton, GlobalStyles.elevated]}>
                           <Text style={[GlobalStyles.text16]}>Add new exercise</Text>
                         </TouchableOpacity>
                       </View>                   
@@ -955,7 +955,7 @@ const styles = StyleSheet.create({
 
       addNewButton: {
         height: 50,
-        backgroundColor: '#ff6600',
+        backgroundColor: '#FF8303',
         width: '60%',
         borderRadius: 25,
         justifyContent: 'center',

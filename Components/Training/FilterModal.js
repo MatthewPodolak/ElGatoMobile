@@ -299,7 +299,7 @@ const FilterModal = ({
 
               </View>
               <TouchableOpacity onPress={handleApplyFilters}>
-                <View style = {styles.elGatoAddConfirm}>
+                <View style = {[styles.elGatoAddConfirm, GlobalStyles.elevated]}>
                   <Text style = {styles.elGatoConfirmText}>Apply filters</Text>
                 </View>
               </TouchableOpacity>
@@ -310,7 +310,7 @@ const FilterModal = ({
 
 const styles = StyleSheet.create({ 
     bottomSpacing: {
-        height: 70,
+        height: 100,
     },
     elGatoAddOverlay: {
         flex: 1,
@@ -321,7 +321,7 @@ const styles = StyleSheet.create({
         width: '50%',
         position: 'absolute',
         height: 50,
-        bottom: 20,
+        bottom: 35,
         borderRadius: 25,
         marginLeft: '25%',
         backgroundColor: '#FF8303',
