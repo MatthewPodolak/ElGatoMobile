@@ -398,7 +398,7 @@ function AddMealForm({ navigation }) {
                 </TouchableOpacity>
             </View>
 
-            <ScrollView style = {styles.mainCont}>
+            <ScrollView style={styles.mainCont} showsHorizontalScrollIndicator={false} showsVerticalScrollIndicator={false}>
                 <TouchableOpacity onPress={handleImagePick} style = {[styles.photoCont, GlobalStyles.center, { overflow: 'hidden' }]}>
                     <ImageBackground style={mainImage ? styles.fullImg : styles.mainImg} source={mainImage ? { uri: mainImage } : AddImage} />
                 </TouchableOpacity>

@@ -135,6 +135,7 @@ const FilterModal = ({
     <Modal
       animationType="slide"
       visible={visible}
+      statusBarTranslucent
       onRequestClose={closeFilterModal}
       transparent={true}
     >    

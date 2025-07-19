@@ -49,13 +49,11 @@ function MealsHome({ navigation }) {
   const [filterModalVisible, setFilterModalVisible] = useState(false);
   const [inspectModalVisible, setInspectModalVisible] = useState(false);
 
-  //inspect
   const [currentlyInspectedItem, setCurrentlyInspectedItem] = useState(null);
 
-  //searching
-  const [typingTimeout, setTypingTimeout] = useState(null);
-
   const [searchedPhrase, setSearchedPhrase] = useState(null);
+  const lastSearchRef = useRef(0);
+  const SEARCH_INTERVAL = 2000;
   const [currentPage, setCurrentPage] = useState(1);
   const [currentQty, setCurrentQty] = useState(100);
   const [currentSorting, setCurrentSorting] = useState(0);
@@ -91,6 +89,19 @@ function MealsHome({ navigation }) {
   
       setRefreshing(false);
   }, [activeTab, fetchAllMealsData, fetchSearchData, fetchUserLikedAndSavedMeals, fetchOwnData]);
+
+  useEffect(() => {
+    if(!searchedPhrase){ return; }
+
+    const now = Date.now();
+    const sinceLast = now - lastSearchRef.current;
+    if(sinceLast > SEARCH_INTERVAL){
+        lastSearchRef.current = now;
+        setCurrentPage(1);
+        fetchSearchData(1);
+    }
+
+  }, [searchedPhrase]);
 
   const starterPress = (requestType) => {
     navigation.navigate('StartersDisplay', { requestType });
@@ -133,22 +144,8 @@ function MealsHome({ navigation }) {
         setCurrentPage(nextPage);
         fetchMoreSearchedData(nextPage);
     }
-};
-
-  const getSearchedPhrase = (phrase) => {
-    setSearchedPhrase(phrase);
-
-    if (typingTimeout) {
-      clearTimeout(typingTimeout);
-    }
-
-    setTypingTimeout(
-      setTimeout(() => {
-        setSearchedPhrase(phrase);
-      }, 1000)
-    );
   };
-
+  
   const closeFilterModal = () => {
     setFilterModalVisible(false);
   };
@@ -333,15 +330,7 @@ function MealsHome({ navigation }) {
 
   useEffect(() => {
     fetchAllMealsData();
-  }, []);
-
-  useEffect(() => {
-    if (currentNutris || currentTime || currentSorting || searchedPhrase) {
-      setCurrentPage(1);
-      fetchSearchData(1);
-    }
-  }, [currentNutris, currentTime, currentSorting, searchedPhrase]);
-  
+  }, []);  
 
   const renderContent = () => {
     switch (activeTab) {
@@ -561,30 +550,6 @@ function MealsHome({ navigation }) {
             ):(
               <>
                 <View style = {styles.container}>
-                  <View style = {styles.containerSearchBar}>
-                      <View style = {styles.searchBarContainer}>
-                        <View style={styles.barContainer}>
-                          <TextInput
-                            style={styles.searchInput}
-                            selectionColor="#FF8303"
-                            placeholder="Search for ..."
-                            placeholderTextColor="#999"
-                            value={searchedPhrase}
-                            onChangeText={getSearchedPhrase}
-                          />
-                        </View>
-                      </View>
-
-                      <View style = {styles.filterRow}>
-                        <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
-                          <View style = {styles.filterContainer}>
-                            <Text style = {styles.filterText}>Filters </Text>
-                            <ChevronDown style={{ marginTop: 3 , marginRight: 5}} width={17} height={17} fill={'whitesmoke'} />
-                          </View>
-                        </TouchableOpacity>
-                      </View>
-                  </View>
-
                   {(!searchedMealsData || searchedMealsData.length === 0) && !isLoadingSearch ? (
                     <View style={styles.emptySearchContainer}>
                       <View style = {styles.emptySearchGatoLottie}>
@@ -645,20 +610,6 @@ function MealsHome({ navigation }) {
             ):(
               <>
                 <View style = {styles.container}>
-                  <View style = {styles.containerSearchBar}>
-                      <View style = {styles.searchBarContainer}>
-                        <View style={styles.barContainer}>
-                          <TextInput
-                            style={styles.searchInput}
-                            selectionColor="#FF8303"
-                            placeholder="Search in liked ..."
-                            placeholderTextColor="#999"
-                            onChangeText={setLikedRecepieSearch}
-                          />
-                        </View>
-                      </View>
-                  </View>
-
                   {(!filteredLikedMealsData || filteredLikedMealsData.length === 0) && !isLoadingLikedAndSaved ? (
                     <View style={styles.emptySearchContainer}>
                       <View style = {styles.emptySearchGatoLottie}>
@@ -794,25 +745,68 @@ function MealsHome({ navigation }) {
         </TouchableOpacity>
       </View>
 
+      <View style={AllRecepies.topMenu}>
+          <TouchableOpacity onPress={() => setActiveTabFun('All')} style={AllRecepies.option}>
+              <Text style={[AllRecepies.optionText, activeTab === 'All' && AllRecepies.activeTab]}>All</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTabFun('Search')} style={AllRecepies.option}>
+              <Text style={[AllRecepies.optionText, activeTab === 'Search' && AllRecepies.activeTab]}>Search</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTabFun('Favourites')} style={AllRecepies.option}>
+              <Text style={[AllRecepies.optionText, activeTab === 'Favourites' && AllRecepies.activeTab]}>Favourites</Text>
+          </TouchableOpacity>
+          <TouchableOpacity onPress={() => setActiveTabFun('Own')} style={AllRecepies.option}>
+              <Text style={[AllRecepies.optionText, activeTab === 'Own' && AllRecepies.activeTab]}>Own</Text>
+          </TouchableOpacity>
+      </View>
+
+      {(activeTab === "Search" && !searchError) && (
+        <>
+          <View style = {styles.containerSearchBar}>
+              <View style = {styles.searchBarContainer}>
+                  <View style={styles.barContainer}>
+                      <TextInput
+                        style={styles.searchInput}
+                        selectionColor="#FF8303"
+                        placeholder="Search for ..."
+                        placeholderTextColor="#999"
+                        value={searchedPhrase}
+                        onChangeText={(text) => setSearchedPhrase(text)}
+                      />
+                  </View>
+              </View>
+
+              <View style = {styles.filterRow}>
+                  <TouchableOpacity onPress={() => setFilterModalVisible(true)}>
+                      <View style = {styles.filterContainer}>
+                          <Text style = {styles.filterText}>Filters </Text>
+                          <ChevronDown style={{ marginTop: 3 , marginRight: 5}} width={17} height={17} fill={'whitesmoke'} />
+                      </View>
+                  </TouchableOpacity>
+              </View>
+          </View>
+        </>
+      )}
+
+      {(activeTab === "Favourites" && !favouritesError) && (
+        <View style = {styles.containerSearchBar}>
+            <View style = {styles.searchBarContainer}>
+              <View style={styles.barContainer}>
+                  <TextInput
+                      style={styles.searchInput}
+                      selectionColor="#FF8303"
+                      placeholder="Search in liked ..."
+                      placeholderTextColor="#999"
+                      onChangeText={setLikedRecepieSearch}
+                  />
+              </View>
+            </View>
+          </View>
+      )}
+
       <FlatList
           style={AllRecepies.content}
           data={[]}
-          ListHeaderComponent={() => (
-            <View style={AllRecepies.topMenu}>
-              <TouchableOpacity onPress={() => setActiveTabFun('All')} style={AllRecepies.option}>
-                <Text style={[AllRecepies.optionText, activeTab === 'All' && AllRecepies.activeTab]}>All</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setActiveTabFun('Search')} style={AllRecepies.option}>
-                <Text style={[AllRecepies.optionText, activeTab === 'Search' && AllRecepies.activeTab]}>Search</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setActiveTabFun('Favourites')} style={AllRecepies.option}>
-                <Text style={[AllRecepies.optionText, activeTab === 'Favourites' && AllRecepies.activeTab]}>Favourites</Text>
-              </TouchableOpacity>
-              <TouchableOpacity onPress={() => setActiveTabFun('Own')} style={AllRecepies.option}>
-                <Text style={[AllRecepies.optionText, activeTab === 'Own' && AllRecepies.activeTab]}>Own</Text>
-              </TouchableOpacity>
-            </View>
-          )}
           renderItem={null}
           ListEmptyComponent={renderContent}
           showsVerticalScrollIndicator={false}
@@ -859,7 +853,6 @@ function MealsHome({ navigation }) {
 
 const styles = StyleSheet.create({
   row: {
-    //minHeight: screenHeight * 0.32, ????
     minHeight: 229,
     height: 'auto',
     marginVertical: 10,    
@@ -966,13 +959,13 @@ const styles = StyleSheet.create({
     marginTop: 20,
   },
   ownGatoCont: {
-    height: '85%',
+    minHeight: 525,
   },
   ownGatoTextCont: {
 
   },
   emptyGatoContainer: {
-    minHeight: 500,
+    minHeight: 525,
   },
 });
 

@@ -10,21 +10,14 @@ import ChevDown from '../../assets/main/Diet/chevron-down.svg';
 import ReportIcon from '../../assets/main/Diet/flag-fill.svg';
 import ChevronLeft from '../../assets/main/Diet/chevron-left.svg';
 import Trash from '../../assets/main/Diet/trash3.svg'
-import EditIcon from '../../assets/main/Diet/pencil-square.svg';
 
 import { AuthContext } from '../../Services/Auth/AuthContext.js';
 import MealDataService from '../../Services/ApiCalls/MealData/MealDataService.js';
 
-const InspectMealModal = ({
-    visible,
-    closeInspectModal,
-    item,
-    specialClose,
-    navigation
-  }) => {
+const InspectMealModal = ({ visible, closeInspectModal, item, specialClose, navigation }) => {
 
     const mainDishImage = item && item.img ? { uri: `http://192.168.0.143:5094${item.img}` } : require('../../assets/recepieBaseImage.png');
-    const userPfp = item && item.creatorPfp ? { uri: `http://192.168.0.143:5094${item.creatorPfp}` } : require('../../assets/userPfpBase.png');
+    const GATO_ID = "356df418-75f7-41f3-b59d-6b534e270e21";
 
     const [isNutriExpanded, setIsNutriExpanded] = useState(true);
     const [isDescExpanded, setIsDescExpanded] = useState(false);
@@ -43,6 +36,16 @@ const InspectMealModal = ({
     };
     const openReportModal = () => {
         setReportModalVisible(true);
+    };
+
+    const goToCreatorProfile = () => {
+        if(!item.creatorId || item.creatorId === GATO_ID) { return; }
+
+        if(item.own){ navigation?.navigate('ProfileDisplay'); return; }
+
+        navigation?.push('ProfileDisplay', {
+            userId: item.creatorId
+        });
     };
 
     const deleteRequest = () => {
@@ -98,16 +101,21 @@ const InspectMealModal = ({
                         <TouchableOpacity style = {styles.titleLeft} onPress={() => closeInspectModal()}>
                             <ChevronLeft width={28} height={28} fill={"#fff"}/>
                         </TouchableOpacity>
-                        <TouchableOpacity style={styles.titleMid}>
-                            <Text style={[GlobalStyles.bold, GlobalStyles.text22]}>
-                                @{item.creatorName ?? "Unknown"}
-                            </Text>
-                        </TouchableOpacity>
+                        {item.creatorId === GATO_ID ? (
+                            <View style={styles.titleMid}>
+                                <Text style={[GlobalStyles.bold, GlobalStyles.text22]}>
+                                    @{item.creatorName ?? "Unknown"}
+                                </Text>
+                            </View>
+                        ):(
+                            <TouchableOpacity style={styles.titleMid} onPress={() => goToCreatorProfile()}>
+                                <Text style={[GlobalStyles.bold, GlobalStyles.text22]}>
+                                    @{item.creatorName ?? "Unknown"}
+                                </Text>
+                            </TouchableOpacity>
+                        )}
                         {item.own ? (
                             <View style={[styles.titleRight, styles.columnFlex]}>
-                                <TouchableOpacity style={styles.extLeft}>
-                                    <EditIcon width={28} height={28} fill={"#fff"}/>
-                                </TouchableOpacity>
                                 <TouchableOpacity style={styles.extRight} onPress={() => deleteRequest()}>
                                     <Trash width={26} height={26} fill={"#fff"}/>
                                 </TouchableOpacity>
@@ -123,20 +131,20 @@ const InspectMealModal = ({
                             <ImageBackground imageStyle={{ borderRadius: 25 }} source={mainDishImage} style={styles.mainImg} />
                         </View>
                         <View style={styles.nameContainer}>
-                            <Text style={[GlobalStyles.text22, GlobalStyles.bold]}> {item.name} </Text>
+                            <Text style={[{textAlign: 'center'},GlobalStyles.text22, GlobalStyles.bold, GlobalStyles.textShadow]}> {item.name} </Text>
                         </View>
                         <View style = {styles.svgDescCont}>
                             <View style = {styles.svgRow}>
-                                <Text style={[GlobalStyles.text18]}>Portions: </Text>
-                                <Text style={GlobalStyles.text18}>12</Text>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>Portions: </Text>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>12</Text>
                             </View>
                             <View style = {styles.svgRow}>
-                                <Text style={[GlobalStyles.text18]}>Est time: </Text>
-                                <Text style={GlobalStyles.text18}>{item.time}</Text>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>Est time: </Text>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>{item.time}</Text>
                             </View>
                             <View style = {styles.svgRow}>
-                                <Text style={[GlobalStyles.text18]}>Difficulty: </Text>
-                                <Text style={[GlobalStyles.text18, { color: item.difficulty === "Easy" ? "#8BFF03" : item.difficulty === "Medium" ? "#FF8303" : "red" }]}>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>Difficulty: </Text>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow, { color: item.difficulty === "Easy" ? "#8BFF03" : item.difficulty === "Medium" ? "#FF8303" : "red" }]}>
                                     {item.difficulty}
                                 </Text>
                             </View>
@@ -144,7 +152,7 @@ const InspectMealModal = ({
                         <View style={styles.nutriContainer}>
                             <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsNutriExpanded(!isNutriExpanded)}>
                             <View>
-                                <Text style={[GlobalStyles.text18]}>
+                                <Text style={[GlobalStyles.text18, GlobalStyles.textShadow]}>
                                     Nutritions <Text style={{ fontSize: 14 }}>{item.servings !== 0 ? "(per serving)" : "(per 100g)"}</Text>
                                 </Text>
                             </View>
@@ -166,7 +174,7 @@ const InspectMealModal = ({
 
                         <View style = {styles.descContainer}>
                             <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsDescExpanded(!isDescExpanded)}>
-                                <View><Text style = {[GlobalStyles.text18]}>Description </Text></View>
+                                <View><Text style = {[GlobalStyles.text18, GlobalStyles.textShadow]}>Description </Text></View>
                                 {isDescExpanded ? (
                                     <View><ChevDown width = {24} height = {24} fill={"#000"}/></View>
                                 ):(
@@ -182,7 +190,7 @@ const InspectMealModal = ({
 
                         <View style = {styles.ingredientContainer}>
                             <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsIngridientsExpanded(!isIngridientsExpanded)}>
-                                <View><Text style = {[GlobalStyles.text18]}>Ingredients </Text></View>
+                                <View><Text style = {[GlobalStyles.text18, GlobalStyles.textShadow]}>Ingredients ({item.ingredients.length ?? 0})</Text></View>
                                 {isIngridientsExpanded ? (
                                     <View><ChevDown width = {24} height = {24} fill={"#000"}/></View>
                                 ):(
@@ -193,7 +201,6 @@ const InspectMealModal = ({
                                 <View style = {styles.expandableContentIng}>
                                     {item.ingredients.map((ingredient, index) => (
                                         <View key={index} style={styles.ingRow}>
-                                            <Text>{index + 1}.</Text> 
                                             <Text style={GlobalStyles.text16}>{ingredient}</Text>
                                         </View>
                                     ))}
@@ -203,7 +210,7 @@ const InspectMealModal = ({
 
                         <View style = {styles.stepsContainer}>
                             <TouchableOpacity style = {styles.expandTitle} onPress={() => setIsStepsExpanded(!isStepsExpanded)}>
-                                <View><Text style = {[GlobalStyles.text18]}>Steps </Text></View>
+                                <View><Text style = {[GlobalStyles.text18, GlobalStyles.textShadow]}>Steps ({item.steps.length ?? 0})</Text></View>
                                 {isStepsExpanded ? (
                                     <View><ChevDown width = {24} height = {24} fill={"#000"}/></View>
                                 ):(
@@ -256,136 +263,159 @@ const InspectMealModal = ({
     );    
 };
 
-const styles = StyleSheet.create({ 
-    expander: {
-        height: 100,
-    },
-    expanderMini: {
-        height: 50,
-    },
-    container: {
-        flex: 1,
-    },
-    titleCont: {
-        width: '100%',
-        height: '9%',
-        backgroundColor: '#FF8303',
-        flexDirection: 'row',
-        alignItems: 'center',
-        justifyContent: 'center',
-        position: 'relative',
-      },
-      titleLeft: {
-        width: '12.5%',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      titleMid: {
-        width: '75%',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      titleRight: {
-        width: '12.5%',
-        alignItems: 'center',
-        justifyContent: 'center',
-      },
-      extLeft: {
-        width: '50%',
-        position: 'absolute',
-        right: 50,
-      },
-      extRight: {
-        width: '50%',
-        position: 'absolute',
-      },
-      columnFlex: {
-        flexDirection: 'row',
-        position: 'relative',
-      },
-    mainContentContainer: {
-        flex: 1,
-        backgroundColor: '#F0E3CA',
-        padding: 10,
-    },
-    imgContainer: {
-        height: 250,
-        borderRadius: 25,
-        backgroundColor: 'red',
-    },
-    mainImg: {
-        height: '100%',
-        width: '100%',
-    },
-    nameContainer: {
-        padding: 5,
-    },
-    svgDescCont: {
-        flexDirection: 'column',
-        padding: 5,
-    },
-    svgRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center', 
-        paddingHorizontal: 5,
-        marginTop: 5,
-    },
-    nutriContainer: {
-        flexDirection: 'column',
-        paddingVertical: 10,
-    },
-    descContainer: {
-        paddingVertical: 10,
-    },
-    ingredientContainer: {
-        paddingVertical: 10,
-    },
-    stepsContainer:{
-        paddingVertical: 10,
-    },
-    expandTitle: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center', 
-        paddingHorizontal: 5,
-        marginTop: 5,
-    },
-    expandableContentNutri: {
-        flexDirection: 'row',
-        justifyContent: 'space-around',
-        paddingVertical: 15,
-    },
-    expandableContentIng: {
-        flexDirection: 'column',
-        paddingVertical: 15,
-        padding: 5,
-    },
-    ingRow: {
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-    },
-    stepRow: {
-        flexDirection: 'row',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-    },
-    marginLeft: {
-        marginLeft: 10,
-    },
-
-    hoverButton: {
-        width: '50%',
-        marginLeft: '25%',
-        height: 60,
-        position: 'absolute',
-        backgroundColor: '#FF8303',
-        bottom: 35,
-        borderRadius: 25,
-        justifyContent: 'center',
-        alignItems: 'center',
-    },    
-
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: '#F0E3CA',
+  },
+  titleCont: {
+    width: '100%',
+    height: 60,
+    backgroundColor: '#FF8303',
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 12,
+  },
+  titleLeft: {
+    width: 40,
+    alignItems: 'center',
+  },
+  titleMid: {
+    flex: 1,
+    alignItems: 'center',
+  },
+  titleRight: {
+    width: 40,
+    alignItems: 'center',
+  },
+  mainContentContainer: {
+    flex: 1,
+    backgroundColor: '#F0E3CA',
+    paddingHorizontal: 16,
+    paddingTop: 10,
+  },
+  imgContainer: {
+    height: 240,
+    borderRadius: 20,
+    overflow: 'hidden',
+    marginBottom: 15,
+    elevation: 4,
+  },
+  mainImg: {
+    height: '100%',
+    width: '100%',
+  },
+  nameContainer: {
+    alignItems: 'center',
+    marginBottom: 10,
+  },
+  svgDescCont: {
+    backgroundColor: '#F7EEDD',
+    padding: 10,
+    borderRadius: 12,
+    marginBottom: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  svgRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    marginVertical: 4,
+  },
+  nutriContainer: {
+    marginBottom: 10,
+    backgroundColor: '#F7EEDD',
+    borderRadius: 12,
+    padding: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  descContainer: {
+    marginBottom: 10,
+    backgroundColor: '#F7EEDD',
+    borderRadius: 12,
+    padding: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  ingredientContainer: {
+    marginBottom: 10,
+    backgroundColor: '#F7EEDD',
+    borderRadius: 12,
+    padding: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  stepsContainer: {
+    marginBottom: 20,
+    backgroundColor: '#F7EEDD',
+    borderRadius: 12,
+    padding: 10,
+    elevation: 4,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 6,
+  },
+  expandTitle: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 8,
+  },
+  expandableContentNutri: {
+    flexDirection: 'row',
+    justifyContent: 'space-evenly',
+    textAlign: 'center',
+    marginTop: 10,
+  },
+  expandableContentIng: {
+    marginTop: 10,
+  },
+  ingRow: {
+    flexDirection: 'row',
+    marginBottom: 4,
+    alignItems: 'center',
+  },
+  stepRow: {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+    marginBottom: 6,
+  },
+  marginLeft: {
+    marginLeft: 8,
+    flex: 1,
+  },
+  hoverButton: {
+    width: '90%',
+    marginHorizontal: '5%',
+    height: 50,
+    backgroundColor: '#FF8303',
+    borderRadius: 15,
+    justifyContent: 'center',
+    alignItems: 'center',
+    alignSelf: 'center',
+    marginBottom: 20,
+  },
+  expander: {
+    height: 80,
+  },
+  expanderMini: {
+    height: 40,
+  },
 });
 
 export default InspectMealModal;
